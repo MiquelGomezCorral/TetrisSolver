@@ -28,26 +28,31 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Maybe more than one movement
         if (Input.GetKeyDown(KeyCode.A)) {
+            Debug.Log("LEFT");
             currentPiece.movePieze(DirectionEnum.LEFT);
         } if (Input.GetKeyDown(KeyCode.W)) {
+            Debug.Log("UP");
             currentPiece.movePieze(DirectionEnum.UP);
         } if (Input.GetKeyDown(KeyCode.D)) {
+            Debug.Log("RIGHT");
             currentPiece.movePieze(DirectionEnum.RIGHT);
         } if (Input.GetKeyDown(KeyCode.S)) {
+            Debug.Log("DOWN");
             currentPiece.movePieze(DirectionEnum.DOWN);
         }
 
+        // Only one rotation
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+            Debug.Log("ACLOCK");
             currentPiece.rotatePiece(RorateEnum.ACLOCK);
-        } if (Input.GetKeyDown(KeyCode.RightArrow)) {
+        } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
+            Debug.Log("CLOCK");
             currentPiece.rotatePiece(RorateEnum.CLOCK);
-        } if (Input.GetKeyDown(KeyCode.RightArrow)) {
+        } else if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow)) {
+            Debug.Log("R180");
             currentPiece.rotatePiece(RorateEnum.R180);
         }
-
-
     }
-
-
 }

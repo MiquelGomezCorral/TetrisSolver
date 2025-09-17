@@ -13,7 +13,9 @@ public class Tetrimino : MonoBehaviour {
     public Vector2Int position;
 
 
-
+    // ========================================================
+    //                          START
+    // ========================================================
     void Start() {
         // ============= GAME MANAGER =============
         gameM = FindObjectOfType<GameManager>();
@@ -29,11 +31,15 @@ public class Tetrimino : MonoBehaviour {
         gridM.updateGrid();
     }
 
-    void Update() {
-    
-    
-    }
+    // ========================================================
+    //                          UPDATE
+    // ========================================================
+    void Update() {}
 
+
+    // ========================================================
+    //                          METHODS
+    // ========================================================
     public void movePieze(DirectionEnum direction) {
         Vector2Int delta = direction switch {
             DirectionEnum.LEFT => Vector2Int.left,
@@ -56,7 +62,31 @@ public class Tetrimino : MonoBehaviour {
         gridM.updateGrid();
     }
 
-    public void rotatePiece(RorateEnum direction) {
+
+
+    public bool rotatePiece(RorateEnum direction) {
+        if (direction == RorateEnum.R180) {
+            // Try 180° ACLOCK first
+            if (rotate(RorateEnum.ACLOCK)) {
+                if (rotate(RorateEnum.ACLOCK))
+                    return true;
+                else //undo last rotation
+                    rotate(RorateEnum.CLOCK);
+            }
+            // If failed, try 180° CLOCK
+            if (rotate(RorateEnum.CLOCK)) {
+                if (rotate(RorateEnum.CLOCK))
+                    return true;
+                else //undo last rotation
+                    rotate(RorateEnum.ACLOCK);
+            }
+            return false; // both failed
+        } else {// normal rotation
+            return rotate(direction);
+        }
+    }
+
+    private bool rotate(RorateEnum direction) {
         DirectionEnum newDirection = TetriminoSettings.getNewDirection(pieceOrientation, direction);
         List<Vector2Int>offSets = TetriminoSettings.getTetriminoOffsets(piezeType, newDirection);
         List<Vector2Int> rotationMatrix = TetriminoSettings.getRotationMatrix(direction);
@@ -82,7 +112,10 @@ public class Tetrimino : MonoBehaviour {
 
         if (rotationSuccess) {
             positionsList = newPositions;
+            pieceOrientation = newDirection;
         }
+        return rotationSuccess;
+
     }
 
     private Vector2Int rotate(Vector2Int pos, List<Vector2Int> rotationMatrix) {

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Tetrimino : MonoBehaviour {
@@ -7,6 +8,7 @@ public class Tetrimino : MonoBehaviour {
     private GridManager gridM; // Do to look for it every time
 
     public TetriminoEnum piezeType;
+    public DirectionEnum pieceOrientation;
     public List<Vector2Int> positionsList;
     public Vector2Int position;
 
@@ -22,6 +24,7 @@ public class Tetrimino : MonoBehaviour {
         // ============= GRID MANAGER =============
         gridM = FindObjectOfType<GridManager>();
         position = gridM.startingPosition;
+        pieceOrientation = DirectionEnum.LEFT; // by default 0, nothing special
 
         gridM.updateGrid();
     }
@@ -31,12 +34,12 @@ public class Tetrimino : MonoBehaviour {
     
     }
 
-    public void movePieze(MoveEnum direction) {
+    public void movePieze(DirectionEnum direction) {
         Vector2Int delta = direction switch {
-            MoveEnum.LEFT => Vector2Int.left,
-            MoveEnum.RIGHT => Vector2Int.right,
-            MoveEnum.UP => Vector2Int.up,
-            MoveEnum.DOWN => Vector2Int.down,
+            DirectionEnum.LEFT => Vector2Int.left,
+            DirectionEnum.RIGHT => Vector2Int.right,
+            DirectionEnum.UP => Vector2Int.up,
+            DirectionEnum.DOWN => Vector2Int.down,
             _ => Vector2Int.zero
         };
 
@@ -54,12 +57,39 @@ public class Tetrimino : MonoBehaviour {
     }
 
     public void rotatePiece(RorateEnum direction) {
-        for(int i = 0; i < positionsList.Count; i++) {
-            positionsList[i] = rotateCell(positionsList[i], direction);
+        DirectionEnum newDirection = TetriminoSettings.getNewDirection(pieceOrientation, direction);
+        List<Vector2Int>offSets = TetriminoSettings.getTetriminoOffsets(piezeType, newDirection);
+        List<Vector2Int> rotationMatrix = TetriminoSettings.getRotationMatrix(direction);
+
+        bool rotationSuccess = false;
+        List<Vector2Int> newPositions = positionsList; 
+        foreach (Vector2Int offSet in offSets) {
+            rotationSuccess = true;
+            newPositions = new List<Vector2Int>();
+
+            foreach (Vector2Int pos in positionsList) {
+                Vector2Int newPos = rotate(pos, rotationMatrix) + offSet;
+                if (gridM.isValidPosition(newPos)) {
+                    newPositions.Add(newPos);
+                } else {
+                    rotationSuccess = false;
+                    break;
+                }
+            }
+            if (rotationSuccess) 
+                break;
+        }
+
+        if (rotationSuccess) {
+            positionsList = newPositions;
         }
     }
 
-    private Vector2Int rotateCell(Vector2Int oldPost, RorateEnum direction) {
-        return oldPost;
+    private Vector2Int rotate(Vector2Int pos, List<Vector2Int> rotationMatrix) {
+        return new Vector2Int(
+            rotationMatrix[0].x * pos.x + rotationMatrix[0].y * pos.y,
+            rotationMatrix[1].x * pos.x + rotationMatrix[1].y * pos.y
+        );
     }
+
 }

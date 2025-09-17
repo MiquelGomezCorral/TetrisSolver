@@ -29,13 +29,13 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.A)) {
-            currentPiece.movePieze(MoveEnum.LEFT);
+            currentPiece.movePieze(DirectionEnum.LEFT);
         } if (Input.GetKeyDown(KeyCode.W)) {
-            currentPiece.movePieze(MoveEnum.UP);
+            currentPiece.movePieze(DirectionEnum.UP);
         } if (Input.GetKeyDown(KeyCode.D)) {
-            currentPiece.movePieze(MoveEnum.RIGHT);
+            currentPiece.movePieze(DirectionEnum.RIGHT);
         } if (Input.GetKeyDown(KeyCode.S)) {
-            currentPiece.movePieze(MoveEnum.DOWN);
+            currentPiece.movePieze(DirectionEnum.DOWN);
         }
 
         if (Input.GetKeyDown(KeyCode.LeftArrow)) {

@@ -6,6 +6,9 @@ using UnityEngine.UIElements;
 public enum TetriminoEnum { // X is empty
     X, I, O, T, S, Z, J, L
 }
+public enum DirectionEnum { 
+    LEFT, UP, RIGHT, DOWN
+}
 public class TetriminoSettings : MonoBehaviour{
     public static TetriminoSettings Instance;
 

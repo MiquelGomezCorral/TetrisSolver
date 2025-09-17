@@ -280,6 +280,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09d181cca3cc38a41b4473ea774fb4fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  tetriminoPrefab: {fileID: 7313570058335182414, guid: 705e640071d93ab49aff5fb255d094e0, type: 3}
+  currentPieceType: 0
+  currentPiece: {fileID: 0}
 --- !u!1 &1705091938
 GameObject:
   m_ObjectHideFlags: 0

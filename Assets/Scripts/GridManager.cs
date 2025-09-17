@@ -1,17 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.U2D;
 
 public class GridManager : MonoBehaviour {
-    [SerializeField] public int width = 10, height = 20;
     [SerializeField] public Cell cellPrefab;
+    [SerializeField] public int width = 10, height = 20;
+    [SerializeField] public Vector2Int startingPosition;
+
+    private List<Vector2Int> lastPositions = new List<Vector2Int> { };
+
+
     Vector2 sizeInUnits;
     public TetriminoEnum[,] gridTypes;
     public Cell[,] gridCell;
 
     // Start is called before the first frame update
     void Start() {
+        startingPosition = new Vector2Int(
+            Mathf.Max(0, Mathf.FloorToInt(width / 2) - 1),
+            height - 3
+        );
+
         gridTypes = new TetriminoEnum[width, height];
         gridCell = new Cell[width, height];
 
@@ -40,11 +51,27 @@ public class GridManager : MonoBehaviour {
     // Update is called once per frame
     void Update() {
         GameManager gm = FindObjectOfType<GameManager>();
-        Tetrimino currPirce = gm.CurrentPiece;
-        foreach (Vector2Int cell in currPirce.position) {
-            gridTypes[cell.x, cell.y] = currPirce.piezeType;
-            gridCell[cell.x, cell.y].changeType(currPirce.piezeType);
+        if ( gm == null ) {
+            return;
+        }
+        Tetrimino currPiece = gm.CurrentPiece;
+
+        // Clear previous cells
+        foreach (Vector2Int cell in lastPositions) {
+            gridTypes[cell.x, cell.y] = TetriminoEnum.X;
+            gridCell[cell.x, cell.y].changeType(TetriminoEnum.X);
+        }
+        lastPositions = currPiece.positionsList
+            .Select(cell => cell + currPiece.position)
+            .ToList();
+
+        // Add new cells
+        foreach (Vector2Int cell in currPiece.positionsList) {
+            Vector2Int absPos = cell + currPiece.position;
+            gridTypes[absPos.x, absPos.y] = currPiece.piezeType;
+            gridCell[absPos.x, absPos.y].changeType(currPiece.piezeType);
         }
 
+        
     }
 }

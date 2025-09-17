@@ -22,6 +22,8 @@ public class Tetrimino : MonoBehaviour {
         // ============= GRID MANAGER =============
         gridM = FindObjectOfType<GridManager>();
         position = gridM.startingPosition;
+
+        gridM.updateGrid();
     }
 
     void Update() {
@@ -48,6 +50,7 @@ public class Tetrimino : MonoBehaviour {
             }
         }
         position = newPos;
+        gridM.updateGrid();
     }
 
     public void rotatePiece(RorateEnum direction) {

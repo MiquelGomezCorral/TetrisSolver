@@ -54,16 +54,15 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-
-    // ========================================================
-    // HACER UN CALL Y QUE SOLO SE HAGA UPDATE CUANDO SE MUEVE LA PIEZA
     // ========================================================
     //                          UPDATE
     // ========================================================
     void Update() {
-        if ( gameM == null ) {
-            return;
-        }
+    }
+    // ========================================================
+    //   AVOID UPDATING IT EVERY FRAME AND JUST WHEN NEEDED
+    // ========================================================
+    public void updateGrid() {
         Tetrimino currPiece = gameM.CurrentPiece;
 
         // Clear previous cells

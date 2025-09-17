@@ -5,6 +5,8 @@ using UnityEngine;
 using UnityEngine.U2D;
 
 public class GridManager : MonoBehaviour {
+    private GameManager gameM; // Do to look for it every time
+
     [SerializeField] public Cell cellPrefab;
     [SerializeField] public int width = 10, height = 20;
     [SerializeField] public Vector2Int startingPosition;
@@ -16,8 +18,12 @@ public class GridManager : MonoBehaviour {
     public TetriminoEnum[,] gridTypes;
     public Cell[,] gridCell;
 
-    // Start is called before the first frame update
+    // ========================================================
+    //                          START
+    // ========================================================
     void Start() {
+        gameM = FindObjectOfType<GameManager>();
+
         startingPosition = new Vector2Int(
             Mathf.Max(0, Mathf.FloorToInt(width / 2) - 1),
             height - 3
@@ -48,17 +54,21 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-    // Update is called once per frame
+
+    // ========================================================
+    // HACER UN CALL Y QUE SOLO SE HAGA UPDATE CUANDO SE MUEVE LA PIEZA
+    // ========================================================
+    //                          UPDATE
+    // ========================================================
     void Update() {
-        GameManager gm = FindObjectOfType<GameManager>();
-        if ( gm == null ) {
+        if ( gameM == null ) {
             return;
         }
-        Tetrimino currPiece = gm.CurrentPiece;
+        Tetrimino currPiece = gameM.CurrentPiece;
 
         // Clear previous cells
         foreach (Vector2Int cell in lastPositions) {
-            gridTypes[cell.x, cell.y] = TetriminoEnum.X;
+            //gridTypes[cell.x, cell.y] = TetriminoEnum.X; // No need to update new 
             gridCell[cell.x, cell.y].changeType(TetriminoEnum.X);
         }
         lastPositions = currPiece.positionsList
@@ -68,10 +78,30 @@ public class GridManager : MonoBehaviour {
         // Add new cells
         foreach (Vector2Int cell in currPiece.positionsList) {
             Vector2Int absPos = cell + currPiece.position;
-            gridTypes[absPos.x, absPos.y] = currPiece.piezeType;
+            //gridTypes[absPos.x, absPos.y] = currPiece.piezeType; // No need to update new 
             gridCell[absPos.x, absPos.y].changeType(currPiece.piezeType);
         }
+    }
 
-        
+
+    // ========================================================
+    //                          METHODS
+    // ========================================================
+    public bool areValidPositions(List<Vector2Int> positions) {
+        //Efficient implementation without extra variales
+        foreach (Vector2Int pos in positions) {
+            if (!isValidPosition(pos)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public bool isValidPosition( Vector2Int position ) {
+        return (
+            position != null &&
+            position.x < width && position.x >= 0 && 
+            position.y < height && position.y >= 0 &&
+            gridTypes[position.x, position.y] == TetriminoEnum.X
+        );
     }
 }

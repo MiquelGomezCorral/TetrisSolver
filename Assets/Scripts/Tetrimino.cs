@@ -3,20 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Tetrimino : MonoBehaviour {
+    private GameManager gameM; // Do to look for it every time
+    private GridManager gridM; // Do to look for it every time
+
     public TetriminoEnum piezeType;
     public List<Vector2Int> positionsList;
     public Vector2Int position;
 
 
+
     void Start() {
         // ============= GAME MANAGER =============
-        GameManager gameM = FindObjectOfType<GameManager>();
+        gameM = FindObjectOfType<GameManager>();
         piezeType = gameM.CurrentPieceType;
         positionsList = TetriminoSettings.getTetriminoPositions(piezeType);
 
         gameM.CurrentPiece = this;
         // ============= GRID MANAGER =============
-        GridManager gridM = FindObjectOfType<GridManager>();
+        gridM = FindObjectOfType<GridManager>();
         position = gridM.startingPosition;
     }
 
@@ -26,15 +30,24 @@ public class Tetrimino : MonoBehaviour {
     }
 
     public void movePieze(MoveEnum direction) {
-        if (direction == MoveEnum.LEFT) {
-            position += Vector2Int.left;
-        }else if (direction == MoveEnum.UP) {
-            position += Vector2Int.up;
-        }else if (direction == MoveEnum.RIGHT) {
-            position += Vector2Int.right;
-        }else { // if(direction == DirectionEnum.DOWN){
-            position += Vector2Int.down;
+        Vector2Int delta = direction switch {
+            MoveEnum.LEFT => Vector2Int.left,
+            MoveEnum.RIGHT => Vector2Int.right,
+            MoveEnum.UP => Vector2Int.up,
+            MoveEnum.DOWN => Vector2Int.down,
+            _ => Vector2Int.zero
+        };
+
+        Vector2Int newPos = position + delta;
+
+
+        // Efficiently cheking all the pieces
+        foreach(Vector2Int pos in positionsList) {
+            if (!gridM.isValidPosition(newPos + pos)) {
+                return;
+            }
         }
+        position = newPos;
     }
 
     public void rotatePiece(RorateEnum direction) {

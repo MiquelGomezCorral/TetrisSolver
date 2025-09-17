@@ -25,15 +25,25 @@ public class Tetrimino : MonoBehaviour {
     
     }
 
-    public void movePieze(DirectionEnum direction) {
-        if (direction == DirectionEnum.LEFT) {
+    public void movePieze(MoveEnum direction) {
+        if (direction == MoveEnum.LEFT) {
             position += Vector2Int.left;
-        }else if (direction == DirectionEnum.UP) {
+        }else if (direction == MoveEnum.UP) {
             position += Vector2Int.up;
-        }else if (direction == DirectionEnum.RIGHT) {
+        }else if (direction == MoveEnum.RIGHT) {
             position += Vector2Int.right;
         }else { // if(direction == DirectionEnum.DOWN){
             position += Vector2Int.down;
         }
+    }
+
+    public void rotatePiece(RorateEnum direction) {
+        for(int i = 0; i < positionsList.Count; i++) {
+            positionsList[i] = rotateCell(positionsList[i], direction);
+        }
+    }
+
+    private Vector2Int rotateCell(Vector2Int oldPost, RorateEnum direction) {
+        return oldPost;
     }
 }

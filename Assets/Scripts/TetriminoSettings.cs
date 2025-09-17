@@ -6,10 +6,13 @@ using UnityEngine.UIElements;
 public enum TetriminoEnum { // X is empty
     X, I, O, T, S, Z, J, L
 }
-public enum DirectionEnum { 
+public enum MoveEnum {
     LEFT, UP, RIGHT, DOWN
 }
-public class TetriminoSettings : MonoBehaviour{
+public enum RorateEnum {
+    ACLOCK, CLOCK, R180
+}
+public class TetriminoSettings : MonoBehaviour {
     public static TetriminoSettings Instance;
 
     [Header("Tetromino Sprites")]
@@ -19,6 +22,16 @@ public class TetriminoSettings : MonoBehaviour{
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
     }
+
+    public static TetriminoEnum getRandomPiece(bool includeX = false) {
+        int startIndex = includeX ? 0 : 1; // 0 = X, 1 = first actual piece
+        int endIndex = System.Enum.GetValues(typeof(TetriminoEnum)).Length;
+        return (TetriminoEnum)Random.Range(startIndex, endIndex);
+    }
+
+    // ==============================================================================
+    //                                  TEXTURES
+    // ==============================================================================
     public static Sprite getTetriminoTexture(TetriminoEnum pieceType) {
         switch (pieceType) {
             case TetriminoEnum.I: return Instance.textureI;
@@ -33,6 +46,9 @@ public class TetriminoSettings : MonoBehaviour{
         }
     }
 
+    // ==============================================================================
+    //                                  SPAWN POINTS
+    // ==============================================================================
     public static List<Vector2Int> getTetriminoPositions(TetriminoEnum pieceType) {
         switch (pieceType) {
             case TetriminoEnum.I:
@@ -90,9 +106,11 @@ public class TetriminoSettings : MonoBehaviour{
         }
     }
 
-    public static TetriminoEnum getRandomPiece(bool includeX = false) {
-        int startIndex = includeX ? 0 : 1; // 0 = X, 1 = first actual piece
-        int endIndex = System.Enum.GetValues(typeof(TetriminoEnum)).Length;
-        return (TetriminoEnum)Random.Range(startIndex, endIndex);
+    // ==============================================================================
+    //                                  ROTATION
+    // ==============================================================================
+    public static List<Vector2Int> getTetriminoOffsets(TetriminoEnum pieceType) {
+        return null;
     }
+
 }

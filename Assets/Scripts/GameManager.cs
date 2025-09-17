@@ -29,14 +29,23 @@ public class GameManager : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.A)) {
-            currentPiece.movePieze(DirectionEnum.LEFT);
+            currentPiece.movePieze(MoveEnum.LEFT);
         } if (Input.GetKeyDown(KeyCode.W)) {
-            currentPiece.movePieze(DirectionEnum.UP);
+            currentPiece.movePieze(MoveEnum.UP);
         } if (Input.GetKeyDown(KeyCode.D)) {
-            currentPiece.movePieze(DirectionEnum.RIGHT);
+            currentPiece.movePieze(MoveEnum.RIGHT);
         } if (Input.GetKeyDown(KeyCode.S)) {
-            currentPiece.movePieze(DirectionEnum.DOWN);
+            currentPiece.movePieze(MoveEnum.DOWN);
         }
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
+            currentPiece.rotatePiece(RorateEnum.ACLOCK);
+        } if (Input.GetKeyDown(KeyCode.RightArrow)) {
+            currentPiece.rotatePiece(RorateEnum.CLOCK);
+        } if (Input.GetKeyDown(KeyCode.RightArrow)) {
+            currentPiece.rotatePiece(RorateEnum.R180);
+        }
+
 
     }
 

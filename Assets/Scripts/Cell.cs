@@ -20,11 +20,11 @@ public class Cell : MonoBehaviour {
     }
 
     public void changeType(TetriminoEnum piecetype) {
-        this.pieceType = piecetype;
+        pieceType = piecetype;
 
-        this.texture = TetriminoClass.getTetriminoTexture(this.pieceType);
+        texture = TetriminoSettings.getTetriminoTexture(pieceType);
 
         var sr = GetComponent<SpriteRenderer>();
-        if (sr != null) sr.sprite = this.texture;
+        if (sr != null) sr.sprite = texture;
     }
 }

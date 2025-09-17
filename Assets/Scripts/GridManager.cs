@@ -7,12 +7,12 @@ public class GridManager : MonoBehaviour {
     [SerializeField] public int width = 10, height = 20;
     [SerializeField] public Cell cellPrefab;
     Vector2 sizeInUnits;
-    public TetriminoEnum[,] gridInt;
+    public TetriminoEnum[,] gridTypes;
     public Cell[,] gridCell;
 
     // Start is called before the first frame update
     void Start() {
-        gridInt = new TetriminoEnum[width, height];
+        gridTypes = new TetriminoEnum[width, height];
         gridCell = new Cell[width, height];
 
         sizeInUnits = new Vector2(
@@ -39,11 +39,12 @@ public class GridManager : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        int x = Random.Range(0,width);
-        int y = Random.Range(0,height);
-        TetriminoEnum newType = TetriminoClass.getRandomPiece(true);
+        GameManager gm = FindObjectOfType<GameManager>();
+        Tetrimino currPirce = gm.CurrentPiece;
+        foreach (Vector2Int cell in currPirce.position) {
+            gridTypes[cell.x, cell.y] = currPirce.piezeType;
+            gridCell[cell.x, cell.y].changeType(currPirce.piezeType);
+        }
 
-        gridInt[x, y] = newType;
-        gridCell[x, y].changeType( newType );
     }
 }

@@ -38,10 +38,14 @@ public class Tetrimino : MonoBehaviour {
 
 
     // ========================================================
-    //                          ONDESTRO
+    //                          ON DESTROy
     // ========================================================
     void OnDestroy() {
         // Get the absolute positions and fix those cells
+        while(movePieze(DirectionEnum.DOWN, false)) {
+        }
+
+
         List<Vector2Int> absPositions = new List<Vector2Int>(positionsList);
         for (int i = 0; i < positionsList.Count; i++)
             absPositions[i] += position;
@@ -52,7 +56,7 @@ public class Tetrimino : MonoBehaviour {
     // ========================================================
     //                          METHODS
     // ========================================================
-    public void movePieze(DirectionEnum direction) {
+    public bool movePieze(DirectionEnum direction, bool updateGrid = true) {
         Vector2Int delta = direction switch {
             DirectionEnum.LEFT => Vector2Int.left,
             DirectionEnum.RIGHT => Vector2Int.right,
@@ -67,11 +71,14 @@ public class Tetrimino : MonoBehaviour {
         // Efficiently cheking all the pieces
         foreach(Vector2Int pos in positionsList) {
             if (!gridM.isValidPosition(newPos + pos)) {
-                return;
+                return false;
             }
         }
         position = newPos;
-        gridM.updateGrid();
+        if (updateGrid)
+            gridM.updateGrid();
+
+        return true;
     }
 
 
@@ -130,9 +137,10 @@ public class Tetrimino : MonoBehaviour {
                     break;
                 }
             }
-            if (rotationSuccess)
+            if (rotationSuccess) {
                 newOffSet = offSet;
                 break;
+            }
         }
 
         Debug.Log("rotate 2");

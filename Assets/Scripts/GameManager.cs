@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class GameManager : MonoBehaviour
 {
@@ -19,8 +20,7 @@ public class GameManager : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void Start()
-    {
+    void Start(){
         spawnNewPiece();
     }
 
@@ -67,8 +67,13 @@ public class GameManager : MonoBehaviour
     public void spawnNewPiece() {
         if(currentPiece != null) {
             Destroy(currentPiece.gameObject);
+            AwaitNextFrame();
         }
         currentPieceType = TetriminoSettings.getRandomPiece();
         Instantiate(tetriminoPrefab);
+    }
+
+    private async Task AwaitNextFrame() {
+        await Task.Yield();  // Unity-friendly "wait 1 frame"
     }
 }

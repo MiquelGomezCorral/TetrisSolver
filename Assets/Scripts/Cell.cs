@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class Cell : MonoBehaviour {
     public TetriminoEnum pieceType = TetriminoEnum.X;
-
     [SerializeField] public Sprite texture = null;
 
     // Start is called before the first frame update

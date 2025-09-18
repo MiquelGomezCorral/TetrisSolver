@@ -184,7 +184,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 4.058171
+  orthographic size: 4.5116053
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -281,8 +281,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tetriminoPrefab: {fileID: 7313570058335182414, guid: 705e640071d93ab49aff5fb255d094e0, type: 3}
-  currentPieceType: 0
   currentPiece: {fileID: 0}
+  currentPieceType: 0
 --- !u!1 &1705091938
 GameObject:
   m_ObjectHideFlags: 0
@@ -312,9 +312,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11aea51ed1b2f7f4ca5e3cd3a1335ebe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cellPrefab: {fileID: 5128450251401385695, guid: b7121f385b0eba844ab4251e61af0da6, type: 3}
   width: 10
   height: 20
-  cellPrefab: {fileID: 5128450251401385695, guid: b7121f385b0eba844ab4251e61af0da6, type: 3}
+  startingPosition: {x: 0, y: 0}
 --- !u!4 &1705091940
 Transform:
   m_ObjectHideFlags: 0

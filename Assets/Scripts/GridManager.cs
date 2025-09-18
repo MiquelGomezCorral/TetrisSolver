@@ -16,7 +16,7 @@ public class GridManager : MonoBehaviour {
 
     Vector2 sizeInUnits;
     public TetriminoEnum[,] gridTypes;
-    public Cell[,] gridCell;
+    public Cell[,] gridCells;
 
     // ========================================================
     //                          START
@@ -30,7 +30,7 @@ public class GridManager : MonoBehaviour {
         );
 
         gridTypes = new TetriminoEnum[width, height];
-        gridCell = new Cell[width, height];
+        gridCells = new Cell[width, height];
 
         sizeInUnits = new Vector2(
             cellPrefab.texture.texture.width / cellPrefab.texture.pixelsPerUnit,
@@ -41,7 +41,7 @@ public class GridManager : MonoBehaviour {
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                gridCell[x, y] = Instantiate(
+                gridCells[x, y] = Instantiate(
                     cellPrefab, 
                     new Vector3(
                         sizeInUnits.x * x - offsetX, 
@@ -67,7 +67,7 @@ public class GridManager : MonoBehaviour {
         // Clear previous cells
         foreach (Vector2Int cell in lastPositions) {
             //gridTypes[cell.x, cell.y] = TetriminoEnum.X; // No need to update new 
-            gridCell[cell.x, cell.y].changeType(TetriminoEnum.X);
+            gridCells[cell.x, cell.y].changeType(TetriminoEnum.X);
         }
         lastPositions = currPiece.positionsList
             .Select(cell => cell + currPiece.position)
@@ -77,7 +77,7 @@ public class GridManager : MonoBehaviour {
         foreach (Vector2Int cell in currPiece.positionsList) {
             Vector2Int absPos = cell + currPiece.position;
             //gridTypes[absPos.x, absPos.y] = currPiece.piezeType; // No need to update new 
-            gridCell[absPos.x, absPos.y].changeType(currPiece.piezeType);
+            gridCells[absPos.x, absPos.y].changeType(currPiece.piezeType);
         }
     }
 
@@ -88,8 +88,43 @@ public class GridManager : MonoBehaviour {
     public void lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType) {
         foreach (Vector2Int pos in positions) {
             gridTypes[pos.x, pos.y] = pieceType;
-            gridCell[pos.x, pos.y].changeType(pieceType);
+            gridCells[pos.x, pos.y].changeType(pieceType);
         }
+
+        clearLines();
+    }
+
+    public int clearLines() {
+        int y = 0, count = 0;
+        bool full;
+        while(y < height) {
+            // check line clear
+            full = true;
+            for (int x = 0; x < width; x++) {
+                if (gridTypes[x,y] == TetriminoEnum.X) {
+                    full = false; break;
+                }
+            }
+
+            // If clear sum points and move lines down
+            if (full) {
+                count++;
+                for(int yy = y; yy < height-1; yy++) {
+                    for(int xx = 0; xx < width; xx++) {
+                        gridTypes[xx, yy] = gridTypes[xx, yy+1];
+                        gridCells[xx, yy].changeType(gridCells[xx, yy+1].pieceType);
+                    }
+                }
+                // last line 
+                for (int xx = 0; xx < width; xx++) {
+                    gridTypes[xx, height-1] = TetriminoEnum.X;
+                    gridCells[xx, height-1].changeType(TetriminoEnum.X);
+                }
+            } else { //if not full move to the next
+                y++;
+            }
+        }
+        return count;
     }
 
     public bool areValidPositions(List<Vector2Int> positions) {

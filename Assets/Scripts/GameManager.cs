@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Threading.Tasks;
 
 public class GameManager : MonoBehaviour
 {
@@ -65,15 +64,13 @@ public class GameManager : MonoBehaviour
     //                          METHODS
     // ========================================================
     public void spawnNewPiece() {
-        if(currentPiece != null) {
-            Destroy(currentPiece.gameObject);
-            AwaitNextFrame();
+        if (currentPiece == null) {
+            currentPieceType = TetriminoSettings.getRandomPiece();
+            Instantiate(tetriminoPrefab);
+        } else {
+            currentPiece.lockPeace();
+            currentPieceType = TetriminoSettings.getRandomPiece();
+            currentPiece.resetPeace();
         }
-        currentPieceType = TetriminoSettings.getRandomPiece();
-        Instantiate(tetriminoPrefab);
-    }
-
-    private async Task AwaitNextFrame() {
-        await Task.Yield();  // Unity-friendly "wait 1 frame"
     }
 }

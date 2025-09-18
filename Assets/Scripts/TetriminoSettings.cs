@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+// =================================================================
+//                              ENUMS
+// =================================================================
 public enum TetriminoEnum { // X is empty
     X, I, O, T, S, Z, J, L
 }
@@ -12,6 +15,10 @@ public enum DirectionEnum {
 public enum RorateEnum {
     ACLOCK, CLOCK, R180
 }
+
+// =================================================================
+//                              SETTINGS
+// =================================================================
 public class TetriminoSettings : MonoBehaviour {
     public static TetriminoSettings Instance;
 
@@ -141,10 +148,10 @@ public class TetriminoSettings : MonoBehaviour {
 
         switch (rotation) {
             case RorateEnum.CLOCK:
-                dir = (dir + 1) % 4;   // clockwise: LEFT→UP→RIGHT→DOWN→LEFT
+                dir = (dir + 1) % 4; // clockwise: LEFT→UP→RIGHT→DOWN→LEFT
                 break;
             case RorateEnum.ACLOCK:
-                dir = (dir + 3) % 4;   // counter-clockwise: LEFT→DOWN→RIGHT→UP→LEFT
+                dir = (dir + 3) % 4; // counter-clockwise: LEFT→DOWN→RIGHT→UP→LEFT
                 break;
         }
 

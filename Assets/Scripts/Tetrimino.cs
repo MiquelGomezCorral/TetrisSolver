@@ -7,7 +7,7 @@ public class Tetrimino : MonoBehaviour {
     private GameManager gameM; // Do to look for it every time
     private GridManager gridM; // Do to look for it every time
 
-    public TetriminoEnum piezeType;
+    public TetriminoEnum pieceType;
     public DirectionEnum pieceOrientation;
     public List<Vector2Int> positionsList;
     public Vector2Int position;
@@ -17,19 +17,16 @@ public class Tetrimino : MonoBehaviour {
     //                          START
     // ========================================================
     void Start() {
-        // ============= GAME MANAGER =============
+        // GAME MANAGER 
         gameM = FindObjectOfType<GameManager>();
-        piezeType = gameM.CurrentPieceType;
-        positionsList = TetriminoSettings.getTetriminoPositions(piezeType);
-
         gameM.CurrentPiece = this;
-        // ============= GRID MANAGER =============
-        gridM = FindObjectOfType<GridManager>();
-        position = gridM.startingPosition;
-        pieceOrientation = DirectionEnum.UP; // by default 0, nothing special
 
-        gridM.updateGrid();
+        // GRID MANAGER 
+        gridM = FindObjectOfType<GridManager>();
+
+        resetPeace();
     }
+
 
     // ========================================================
     //                          UPDATE
@@ -38,19 +35,28 @@ public class Tetrimino : MonoBehaviour {
 
 
     // ========================================================
-    //                          ON DESTROy
+    //                      Reset peace
     // ========================================================
-    void OnDestroy() {
+    public void resetPeace() {
+        pieceType = gameM.CurrentPieceType;
+
+        positionsList = TetriminoSettings.getTetriminoPositions(pieceType);
+        position = gridM.startingPosition;
+        pieceOrientation = DirectionEnum.UP; // by default 0 looking up
+
+        gridM.updateGrid();
+    }
+
+    public void lockPeace() {
+        List<Vector2Int> absPositions = getAbsPositions();
+        gridM.unRenderPiece(absPositions);
+
+        // Move the piece to the bottom
+        while (movePieze(DirectionEnum.DOWN, false)) { }
+
         // Get the absolute positions and fix those cells
-        while(movePieze(DirectionEnum.DOWN, true)){}
-
-
-        List<Vector2Int> absPositions = new List<Vector2Int>(positionsList);
-        for (int i = 0; i < positionsList.Count; i++)
-            absPositions[i] += position;
-        gridM.lockPiece(absPositions, piezeType);
-
-        Debug.Log($"{name} destroyed!");
+        absPositions = getAbsPositions();
+        gridM.lockPiece(absPositions, pieceType);
     }
 
     // ========================================================
@@ -70,11 +76,11 @@ public class Tetrimino : MonoBehaviour {
 
         // Efficiently cheking all the pieces
         foreach(Vector2Int pos in positionsList) {
-            if (!gridM.isValidPosition(newPos + pos)) {
+            if (!gridM.isValidPosition(newPos + pos)) 
                 return false;
-            }
         }
         position = newPos;
+
         if (uptateGrid)
             gridM.updateGrid();
 
@@ -82,6 +88,13 @@ public class Tetrimino : MonoBehaviour {
     }
 
 
+    public List<Vector2Int> getAbsPositions() {
+        List<Vector2Int> absPositions = new List<Vector2Int>(positionsList);
+        for (int i = 0; i < positionsList.Count; i++)
+            absPositions[i] += position;
+
+        return absPositions;
+    }
 
     public bool rotatePiece(RorateEnum direction) {
         bool rotationSuccess = false;
@@ -111,7 +124,7 @@ public class Tetrimino : MonoBehaviour {
 
     private bool rotate(RorateEnum direction) {
         DirectionEnum newDirection = TetriminoSettings.getNewDirection(pieceOrientation, direction);
-        List<Vector2Int>offSets = TetriminoSettings.getTetriminoOffsets(piezeType, newDirection);
+        List<Vector2Int> offSets = TetriminoSettings.getTetriminoOffsets(pieceType, newDirection);
         List<Vector2Int> rotationMatrix = TetriminoSettings.getRotationMatrix(direction);
 
         Debug.Log("rotate 1");
@@ -126,7 +139,7 @@ public class Tetrimino : MonoBehaviour {
 
             foreach (Vector2Int pos in positionsList) {
                 Debug.Log("rotate 1.1.1: " + rotationSuccess);
-                Vector2Int rotatedPos = rotate(pos, rotationMatrix) + offSet;
+                Vector2Int rotatedPos = rotateVector(pos, rotationMatrix) + offSet;
                 Vector2Int absPos = rotatedPos + position;
                 if (gridM.isValidPosition(absPos)) {
                     newPositions.Add(rotatedPos);
@@ -155,7 +168,7 @@ public class Tetrimino : MonoBehaviour {
 
     }
 
-    private Vector2Int rotate(Vector2Int pos, List<Vector2Int> rotationMatrix) {
+    private Vector2Int rotateVector(Vector2Int pos, List<Vector2Int> rotationMatrix) {
         return new Vector2Int(
             rotationMatrix[0].x * pos.x + rotationMatrix[0].y * pos.y,
             rotationMatrix[1].x * pos.x + rotationMatrix[1].y * pos.y
@@ -168,8 +181,9 @@ public class Tetrimino : MonoBehaviour {
             newPositions.Add(pos - offSet);
         }
 
-        position+=offSet;
+        position += offSet;
         positionsList = newPositions;
     }
 
+    
 }

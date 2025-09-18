@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.U2D;
+using UnityEngine.UIElements;
 
 public class GridManager : MonoBehaviour {
     private GameManager gameM; // Do to look for it every time
@@ -65,33 +66,38 @@ public class GridManager : MonoBehaviour {
         Tetrimino currPiece = gameM.CurrentPiece;
 
         // Clear previous cells
-        foreach (Vector2Int cell in lastPositions) {
-            //gridTypes[cell.x, cell.y] = TetriminoEnum.X; // No need to update new 
-            gridCells[cell.x, cell.y].changeType(TetriminoEnum.X);
-        }
+        updateGridPositions(lastPositions, TetriminoEnum.X);
+
+        // Add new cells
         lastPositions = currPiece.positionsList
             .Select(cell => cell + currPiece.position)
             .ToList();
-
-        // Add new cells
-        foreach (Vector2Int cell in currPiece.positionsList) {
-            Vector2Int absPos = cell + currPiece.position;
-            //gridTypes[absPos.x, absPos.y] = currPiece.piezeType; // No need to update new 
-            gridCells[absPos.x, absPos.y].changeType(currPiece.piezeType);
-        }
+        updateGridPositions(currPiece.getAbsPositions(), currPiece.pieceType);
     }
 
+    public void updateGridPositions(List<Vector2Int> positions, TetriminoEnum pieceType) {
+        foreach (Vector2Int cell in positions) { 
+            gridCells[cell.x, cell.y].changeType(pieceType);
+        }
+    }
+    public void unRenderPiece(List<Vector2Int> positions) {
+        updateGridPositions(positions, TetriminoEnum.X);
+    }
 
-    // ========================================================
-    //                          METHODS
-    // ========================================================
+    // ================================================================================================================
+    //                                              METHODS
+    // ================================================================================================================
     public void lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType) {
+        Debug.Log("Piece type: " +  pieceType);
         foreach (Vector2Int pos in positions) {
             gridTypes[pos.x, pos.y] = pieceType;
             gridCells[pos.x, pos.y].changeType(pieceType);
         }
 
+        updateGridPositions(positions, pieceType);
+
         clearLines();
+        lastPositions = new List<Vector2Int>();
     }
 
     public int clearLines() {

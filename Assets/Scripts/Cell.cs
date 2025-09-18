@@ -10,7 +10,7 @@ public class Cell : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
-        this.changeType(this.pieceType);
+        changeType(this.pieceType);
     }
 
     // Update is called once per frame

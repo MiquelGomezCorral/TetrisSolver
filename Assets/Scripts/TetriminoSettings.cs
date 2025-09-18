@@ -57,10 +57,20 @@ public class TetriminoSettings : MonoBehaviour {
         else Destroy(gameObject);
     }
 
-    public static TetriminoEnum getRandomPiece(bool includeX = false) {
-        int startIndex = includeX ? 0 : 1; // 0 = X, 1 = first actual piece
-        int endIndex = System.Enum.GetValues(typeof(TetriminoEnum)).Length;
-        return (TetriminoEnum)Random.Range(startIndex, endIndex);
+
+    public static List<TetriminoEnum> basePiecesBag = new List<TetriminoEnum>{
+        TetriminoEnum.I, TetriminoEnum.O, TetriminoEnum.T,
+        TetriminoEnum.S, TetriminoEnum.Z, TetriminoEnum.J, TetriminoEnum.L
+    };
+    public static List<TetriminoEnum> piecesBag = new List<TetriminoEnum>{};
+    public static TetriminoEnum getRandomPiece() {
+        if (piecesBag.Count == 0) 
+            piecesBag = new List<TetriminoEnum>(basePiecesBag);
+        
+
+        TetriminoEnum newType = piecesBag[UnityEngine.Random.Range(0, piecesBag.Count)];
+        piecesBag.Remove(newType);
+        return newType;
     }
 
     // ==============================================================================

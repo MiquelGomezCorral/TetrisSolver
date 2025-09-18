@@ -26,18 +26,18 @@ public class TetriminoSettings : MonoBehaviour {
     public Sprite textureX, textureI, textureO, textureT, textureS, textureZ, textureJ, textureL;
 
     public static readonly List<List<Vector2Int>> JLSTZ_OFFSET_DATA = new List<List<Vector2Int>> {
-        new List<Vector2Int> { Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero },
-        new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, 0),         Vector2Int.zero,              new Vector2Int(-1, 0) },
-        new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, -1),        Vector2Int.zero,              new Vector2Int(-1, -1) },
-        new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(0, 2),         Vector2Int.zero,              new Vector2Int(0, 2) },
-        new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, 2),         Vector2Int.zero,              new Vector2Int(-1, 2) }
+         new List<Vector2Int> { Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero },
+         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, 0),         Vector2Int.zero,              new Vector2Int(-1, 0) },
+         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, -1),        Vector2Int.zero,              new Vector2Int(-1, -1) },
+         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(0, 2),         Vector2Int.zero,              new Vector2Int(0, 2) },
+         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, 2),         Vector2Int.zero,              new Vector2Int(-1, 2) }
     };
     public static readonly List<List<Vector2Int>> I_OFFSET_DATA = new List<List<Vector2Int>> {
-        new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(-1, 0),        new Vector2Int(-1, 1),        new Vector2Int(0, 1) },
-        new List<Vector2Int> { new Vector2Int(-1, 0),        Vector2Int.zero,              new Vector2Int(1, 1),         new Vector2Int(0, 1) },
-        new List<Vector2Int> { new Vector2Int(2, 0),         Vector2Int.zero,              new Vector2Int(-2, 1),        new Vector2Int(0, 1) },
-        new List<Vector2Int> { new Vector2Int(-1, 0),        new Vector2Int(0, 1),         new Vector2Int(1, 0),         new Vector2Int(0, -1) },
-        new List<Vector2Int> { new Vector2Int(2, 0),         new Vector2Int(0, -2),        new Vector2Int(-2, 0),        new Vector2Int(0, 2) }
+         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(-1, 0),        new Vector2Int(-1, 1),        new Vector2Int(0, 1) },
+         new List<Vector2Int> { new Vector2Int(-1, 0),        Vector2Int.zero,              new Vector2Int(1, 1),         new Vector2Int(0, 1) },
+         new List<Vector2Int> { new Vector2Int(2, 0),         Vector2Int.zero,              new Vector2Int(-2, 1),        new Vector2Int(0, 1) },
+         new List<Vector2Int> { new Vector2Int(-1, 0),        new Vector2Int(0, 1),         new Vector2Int(1, 0),         new Vector2Int(0, -1) },
+         new List<Vector2Int> { new Vector2Int(2, 0),         new Vector2Int(0, -2),        new Vector2Int(-2, 0),        new Vector2Int(0, 2) }
     };
 
     public static readonly List<List<Vector2Int>> O_OFFSET_DATA = new List<List<Vector2Int>> {
@@ -167,14 +167,14 @@ public class TetriminoSettings : MonoBehaviour {
 
         return (DirectionEnum)dir;
     }
-    public static List<Vector2Int> getTetriminoOffsets(TetriminoEnum pieceType, DirectionEnum direction) {
+    public static List<List<Vector2Int>> getTetriminoOffsets(TetriminoEnum pieceType) {
         switch (pieceType) {
             case TetriminoEnum.O:
-                return O_OFFSET_DATA[(int)direction];
+                return O_OFFSET_DATA;
             case TetriminoEnum.I:
-                return I_OFFSET_DATA[(int)direction];
+                return I_OFFSET_DATA;
             default:
-                return JLSTZ_OFFSET_DATA[(int)direction];
+                return JLSTZ_OFFSET_DATA;
         }
     }
     public static List<Vector2Int> getRotationMatrix(RorateEnum direction) {

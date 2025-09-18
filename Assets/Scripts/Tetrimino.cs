@@ -124,7 +124,7 @@ public class Tetrimino : MonoBehaviour {
 
     private bool rotate(RorateEnum direction) {
         DirectionEnum newDirection = TetriminoSettings.getNewDirection(pieceOrientation, direction);
-        List<Vector2Int> offSets = TetriminoSettings.getTetriminoOffsets(pieceType, newDirection);
+        List<List<Vector2Int>> offSets = TetriminoSettings.getTetriminoOffsets(pieceType);
         List<Vector2Int> rotationMatrix = TetriminoSettings.getRotationMatrix(direction);
 
         Debug.Log("rotate 1");
@@ -132,7 +132,7 @@ public class Tetrimino : MonoBehaviour {
         List<Vector2Int> newPositions = this.positionsList;
         Vector2Int newOffSet = Vector2Int.zero;
         Debug.Log(offSets.Count);
-        foreach (Vector2Int offSet in offSets) {
+        foreach (Vector2Int offSet in offSets[(int)direction]) {
             Debug.Log("rotate 1.1");
             rotationSuccess = true;
             newPositions = new List<Vector2Int>();

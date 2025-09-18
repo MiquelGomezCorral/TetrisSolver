@@ -21,8 +21,7 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currentPieceType = TetriminoSettings.getRandomPiece();
-        Instantiate(tetriminoPrefab);
+        spawnNewPiece();
     }
 
     // Update is called once per frame
@@ -54,5 +53,22 @@ public class GameManager : MonoBehaviour
             Debug.Log("R180");
             currentPiece.rotatePiece(RorateEnum.R180);
         }
+
+
+        if (Input.GetKeyDown(KeyCode.Space)) {
+            Debug.Log("LOCK");
+            spawnNewPiece();
+        }
+    }
+
+    // ========================================================
+    //                          METHODS
+    // ========================================================
+    public void spawnNewPiece() {
+        if(currentPiece != null) {
+            Destroy(currentPiece.gameObject);
+        }
+        currentPieceType = TetriminoSettings.getRandomPiece();
+        Instantiate(tetriminoPrefab);
     }
 }

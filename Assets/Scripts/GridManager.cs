@@ -26,7 +26,7 @@ public class GridManager : MonoBehaviour {
 
         startingPosition = new Vector2Int(
             Mathf.Max(0, Mathf.FloorToInt(width / 2) - 1),
-            height - 3
+            height - 4
         );
 
         gridTypes = new TetriminoEnum[width, height];
@@ -57,8 +57,7 @@ public class GridManager : MonoBehaviour {
     // ========================================================
     //                          UPDATE
     // ========================================================
-    void Update() {
-    }
+    void Update() {}
     // ========================================================
     //   AVOID UPDATING IT EVERY FRAME AND JUST WHEN NEEDED
     // ========================================================
@@ -86,6 +85,13 @@ public class GridManager : MonoBehaviour {
     // ========================================================
     //                          METHODS
     // ========================================================
+    public void lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType) {
+        foreach (Vector2Int pos in positions) {
+            gridTypes[pos.x, pos.y] = pieceType;
+            gridCell[pos.x, pos.y].changeType(pieceType);
+        }
+    }
+
     public bool areValidPositions(List<Vector2Int> positions) {
         //Efficient implementation without extra variales
         foreach (Vector2Int pos in positions) {

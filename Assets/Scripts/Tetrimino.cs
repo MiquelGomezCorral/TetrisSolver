@@ -26,7 +26,7 @@ public class Tetrimino : MonoBehaviour {
         // ============= GRID MANAGER =============
         gridM = FindObjectOfType<GridManager>();
         position = gridM.startingPosition;
-        pieceOrientation = DirectionEnum.LEFT; // by default 0, nothing special
+        pieceOrientation = DirectionEnum.UP; // by default 0, nothing special
 
         gridM.updateGrid();
     }
@@ -37,6 +37,18 @@ public class Tetrimino : MonoBehaviour {
     void Update() {}
 
 
+    // ========================================================
+    //                          ONDESTRO
+    // ========================================================
+    void OnDestroy() {
+        // Get the absolute positions and fix those cells
+        List<Vector2Int> absPositions = new List<Vector2Int>(positionsList);
+        for (int i = 0; i < positionsList.Count; i++)
+            absPositions[i] += position;
+        gridM.lockPiece(absPositions, piezeType);
+
+        Debug.Log($"{name} destroyed!");
+    }
     // ========================================================
     //                          METHODS
     // ========================================================
@@ -97,7 +109,9 @@ public class Tetrimino : MonoBehaviour {
 
         Debug.Log("rotate 1");
         bool rotationSuccess = false;
-        List<Vector2Int> newPositions = positionsList; 
+        List<Vector2Int> newPositions = this.positionsList;
+        Vector2Int newOffSet = Vector2Int.zero;
+        Debug.Log(offSets.Count);
         foreach (Vector2Int offSet in offSets) {
             Debug.Log("rotate 1.1");
             rotationSuccess = true;
@@ -105,9 +119,10 @@ public class Tetrimino : MonoBehaviour {
 
             foreach (Vector2Int pos in positionsList) {
                 Debug.Log("rotate 1.1.1: " + rotationSuccess);
-                Vector2Int newPos = rotate(pos, rotationMatrix) + offSet + position;
-                if (gridM.isValidPosition(newPos)) {
-                    newPositions.Add(newPos);
+                Vector2Int rotatedPos = rotate(pos, rotationMatrix) + offSet;
+                Vector2Int absPos = rotatedPos + position;
+                if (gridM.isValidPosition(absPos)) {
+                    newPositions.Add(rotatedPos);
                     Debug.Log("rotate 1.1.2: " + rotationSuccess);
                 } else {
                     rotationSuccess = false;
@@ -115,7 +130,8 @@ public class Tetrimino : MonoBehaviour {
                     break;
                 }
             }
-            if (rotationSuccess) 
+            if (rotationSuccess)
+                newOffSet = offSet;
                 break;
         }
 
@@ -123,8 +139,8 @@ public class Tetrimino : MonoBehaviour {
 
         if (rotationSuccess) {
             Debug.Log("rotate 2.1");
-            positionsList = newPositions;
-            pieceOrientation = newDirection;
+            normalizePositionList(newPositions, newOffSet);
+            this.pieceOrientation = newDirection;
         }
         Debug.Log("rotate 3");
         return rotationSuccess;
@@ -136,6 +152,16 @@ public class Tetrimino : MonoBehaviour {
             rotationMatrix[0].x * pos.x + rotationMatrix[0].y * pos.y,
             rotationMatrix[1].x * pos.x + rotationMatrix[1].y * pos.y
         );
+    }
+
+    private void normalizePositionList(List<Vector2Int> positions, Vector2Int offSet) {
+        List<Vector2Int> newPositions = new List<Vector2Int>();
+        foreach(Vector2Int pos in positions) {
+            newPositions.Add(pos - offSet);
+        }
+
+        position+=offSet;
+        positionsList = newPositions;
     }
 
 }

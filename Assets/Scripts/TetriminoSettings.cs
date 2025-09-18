@@ -7,7 +7,7 @@ public enum TetriminoEnum { // X is empty
     X, I, O, T, S, Z, J, L
 }
 public enum DirectionEnum {
-    LEFT, UP, RIGHT, DOWN
+    UP, RIGHT, DOWN, LEFT
 }
 public enum RorateEnum {
     ACLOCK, CLOCK, R180

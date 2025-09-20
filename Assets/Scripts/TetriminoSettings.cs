@@ -27,8 +27,8 @@ public class TetriminoSettings : MonoBehaviour {
     public static int PerfectClearPoints = 2000;
     public static TetriminoSettings Instance;
 
-    [Header("Tetromino Sprites")]
     public Sprite textureX, textureI, textureO, textureT, textureS, textureZ, textureJ, textureL;
+    public Sprite texturePieceX, texturePieceI, texturePieceO, texturePieceT, texturePieceS, texturePieceZ, texturePieceJ, texturePieceL;
 
     public static readonly List<List<Vector2Int>> JLSTZ_OFFSET_DATA = new List<List<Vector2Int>> {
          new List<Vector2Int> { Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero },
@@ -125,6 +125,20 @@ public class TetriminoSettings : MonoBehaviour {
             default: return Instance.textureX;
         }
     }
+    public static Sprite getTetriminoPieceTexture(TetriminoEnum pieceType) {
+        switch (pieceType) {
+            case TetriminoEnum.I: return Instance.texturePieceI;
+            case TetriminoEnum.O: return Instance.texturePieceO;
+            case TetriminoEnum.T: return Instance.texturePieceT;
+            case TetriminoEnum.S: return Instance.texturePieceS;
+            case TetriminoEnum.Z: return Instance.texturePieceZ;
+            case TetriminoEnum.J: return Instance.texturePieceJ;
+            case TetriminoEnum.L: return Instance.texturePieceL;
+            case TetriminoEnum.X:
+            default: return Instance.texturePieceX;
+        }
+    }
+    
 
     // ==============================================================================
     //                                  SPAWN POINTS

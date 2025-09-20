@@ -12,6 +12,7 @@ public class GridManager : MonoBehaviour {
     [SerializeField] private Transform canvasTransform; // assign Canvas here
 
     [SerializeField] public Cell cellPrefab;
+    [SerializeField] public PiecePlaceholder swapPlaceholderPrefab;
     [SerializeField] public int width = 10, height = 20;
     [SerializeField] public Vector2Int startingPosition;
 
@@ -21,6 +22,7 @@ public class GridManager : MonoBehaviour {
     Vector2 sizeInUnits;
     public TetriminoEnum[,] gridTypes;
     public Cell[,] gridCells;
+    public PiecePlaceholder swapPlaceholder;
 
     // ========================================================
     //                          START
@@ -59,6 +61,17 @@ public class GridManager : MonoBehaviour {
                 );
             }
         }
+        // ============== Swap Placeholder ==============
+        swapPlaceholder = Instantiate(
+            swapPlaceholderPrefab,
+            new Vector3(
+                sizeInUnits.x * width + sizeInUnits.x * 0.5f - offsetX + 1f, // right of grid, small offset
+                sizeInUnits.y * height / 2f - 1f,                  // vertically centered
+                0f
+            ),
+            Quaternion.identity
+        );
+
 
         // ============== Initialize text ==============
         // --- instantiate & parent (keep what you already do) ---

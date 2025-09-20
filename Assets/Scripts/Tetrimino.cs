@@ -66,8 +66,13 @@ public class Tetrimino : MonoBehaviour {
         // Unrender piece
         gridM.unRenderPiece(getAbsPositions());
 
+
+        // Change placeholder type before reseting.
+        gridM.swapPlaceholder.changeType(pieceType);
+
         // Reset piece
         resetPeace();
+
     }
     // ========================================================
     //                          METHODS

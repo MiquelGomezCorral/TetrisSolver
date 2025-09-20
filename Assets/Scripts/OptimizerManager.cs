@@ -1,6 +1,7 @@
 using Unity.VisualScripting;
 using UnityEngine;
 using System;
+using System.Collections;
 
 public enum AleoType { 
     Simple, Double,  SwapSimple, SwapDoble
@@ -8,6 +9,7 @@ public enum AleoType {
 
 
 public class Genotype {
+    public static int[] movementInitialRagnes = { -4, 4 };
     public static int[] movementRagnes = { -9, 9 };
     public static int[] rotateRanges = { 0, 3 };
     public static int[] swapRanges = { 0, 1 };
@@ -31,7 +33,7 @@ public class Genotype {
                 for (int i = 0; i < nPieces; i++) {
                     movement[i, 0] = getRandomSwap();
                     movement[i, 1] = getRandomRotate();
-                    movement[i, 2] = getRandomMovement();
+                    movement[i, 2] = getRandomMovementInitial();
                     movement[i, 3] = getRandomMovement();
                     movement[i, 4] = getRandomRotate();
                 }
@@ -50,7 +52,7 @@ public class Genotype {
 
                 for (int i = 0; i < nPieces; i++) {
                     movement[i, 0] = getRandomRotate();
-                    movement[i, 1] = getRandomMovement();
+                    movement[i, 1] = getRandomMovementInitial();
                     movement[i, 2] = getRandomMovement();
                     movement[i, 3] = getRandomRotate();
                 }
@@ -61,7 +63,7 @@ public class Genotype {
 
                 for (int i = 0; i < nPieces; i++) {
                     movement[i, 0] = getRandomRotate();
-                    movement[i, 1] = getRandomMovement();
+                    movement[i, 1] = getRandomMovementInitial();
                 }
                 break;
         }
@@ -70,14 +72,17 @@ public class Genotype {
     // ========================================================
     //                       METHODS
     // ========================================================
+    public int getRandomMovementInitial() {
+        return UnityEngine.Random.Range(movementInitialRagnes[0], movementInitialRagnes[1]+1);
+    }
     public int getRandomMovement() {
-        return UnityEngine.Random.Range(movementRagnes[0], movementRagnes[1]);
+        return UnityEngine.Random.Range(movementRagnes[0], movementRagnes[1]+1);
     }
     public int getRandomRotate() {
-        return UnityEngine.Random.Range(rotateRanges[0], rotateRanges[1]);
+        return UnityEngine.Random.Range(rotateRanges[0], rotateRanges[1]+1);
     }
     public int getRandomSwap() {
-        return UnityEngine.Random.Range(swapRanges[0], swapRanges[1]);
+        return UnityEngine.Random.Range(swapRanges[0], swapRanges[1]+1);
     }
 
     // ========================================================
@@ -87,12 +92,14 @@ public class Genotype {
 }
 
 public class OptimizerManager : MonoBehaviour{
+    [SerializeField] float timeDelay = 0.1f;
     [SerializeField] float timePerSearch = 1.0f;
     [SerializeField] int initialPoblation = 200;
     [SerializeField] int nPieces = 10;
-    [SerializeField] float mutationChange = 0.3f;
+    [SerializeField] float mutationChance = 0.3f;
     [SerializeField] AleoType aleoType = AleoType.Simple;
 
+    private float timer = 0f;
     public Genotype[] pobation;
     public int[] scores;
 
@@ -110,19 +117,26 @@ public class OptimizerManager : MonoBehaviour{
         for (int i = 0; i < initialPoblation; i++) {
             pobation[i] = new Genotype(aleoType, nPieces);
         }
+
+        StartCoroutine(RunSimulation());
     }
 
     // ========================================================
     //                          UPDATE
     // ========================================================
     void Update(){
-        for(int genI = 0; genI < pobation.Length; genI++) {
+    }
+
+    IEnumerator RunSimulation() {
+        for (int genI = 0; genI < pobation.Length; genI++) {
             Genotype genotype = pobation[genI];
 
             // For each piece
             for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
                 // For each movement in that piece
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
+                    // Wait 0.2s before next movement
+                    yield return new WaitForSeconds(0.1f);
                     // Play a movement
                     playMovement(genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
@@ -130,16 +144,16 @@ public class OptimizerManager : MonoBehaviour{
                 gameM.spawnNewPiece();
             }
             scores[genI] = gameM.getScore();
-            //gameM.reset();
+            gameM.resetGame();
         }
     }
-
     // ========================================================
     //                          METHODS
     // ========================================================
     private void playMovement(int movement, int pos, AleoType aleoType) {
         if (pos == 0 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) {
-            gameM.swapCurrentPiece();
+            if(movement == 1)
+                gameM.swapCurrentPiece();
 
         } else if (
             (aleoType == AleoType.Simple     && (pos == 0)) ||

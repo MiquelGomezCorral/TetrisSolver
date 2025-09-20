@@ -16,7 +16,7 @@ public class GridManager : MonoBehaviour {
     [SerializeField] public int width = 10, height = 20;
     [SerializeField] public Vector2Int startingPosition;
 
-    private List<Vector2Int> lastPositions = new List<Vector2Int> { };
+    private List<Vector2Int> lastPositions = null;
 
 
     Vector2 sizeInUnits;
@@ -126,6 +126,8 @@ public class GridManager : MonoBehaviour {
     }
 
     public void updateGridPositions(List<Vector2Int> positions, TetriminoEnum pieceType) {
+        if (positions == null) return;
+
         foreach (Vector2Int cell in positions) { 
             gridCells[cell.x, cell.y].changeType(pieceType);
         }
@@ -137,6 +139,35 @@ public class GridManager : MonoBehaviour {
     // ================================================================================================================
     //                                              METHODS
     // ================================================================================================================
+    public void resetGrid() {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                gridTypes[x, y] = TetriminoEnum.X;
+                gridCells[x, y].changeType(TetriminoEnum.X);
+            }
+        }
+
+        lastPositions = null;
+    }
+
+    public bool areValidPositions(List<Vector2Int> positions) {
+        //Efficient implementation without extra variales
+        foreach (Vector2Int pos in positions) {
+            if (!isValidPosition(pos)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    public bool isValidPosition(Vector2Int position) {
+        return (
+            position != null &&
+            position.x < width && position.x >= 0 &&
+            position.y < height && position.y >= 0 &&
+            gridTypes[position.x, position.y] == TetriminoEnum.X
+        );
+    }
+
     public void lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType, ActionEnum lastAction) {
         foreach (Vector2Int pos in positions) {
             gridTypes[pos.x, pos.y] = pieceType;
@@ -147,7 +178,7 @@ public class GridManager : MonoBehaviour {
 
         int score = clearLines(lastAction);
         gameM.addScore(score);
-        lastPositions = new List<Vector2Int>();
+        lastPositions = null;
     }
 
     public int clearLines(ActionEnum lastAction) {
@@ -199,21 +230,5 @@ public class GridManager : MonoBehaviour {
         return TetriminoSettings.computeScore(count, lastAction, allClear);
     }
 
-    public bool areValidPositions(List<Vector2Int> positions) {
-        //Efficient implementation without extra variales
-        foreach (Vector2Int pos in positions) {
-            if (!isValidPosition(pos)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    public bool isValidPosition( Vector2Int position ) {
-        return (
-            position != null &&
-            position.x < width && position.x >= 0 && 
-            position.y < height && position.y >= 0 &&
-            gridTypes[position.x, position.y] == TetriminoEnum.X
-        );
-    }
+
 }

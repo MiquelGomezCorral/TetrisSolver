@@ -6,6 +6,8 @@ using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 
 public class GameManager : MonoBehaviour {
+    private GridManager gridM; // Do to look for it every time
+
     [SerializeField] private GameObject tetriminoPrefab;
     [SerializeField] private Tetrimino currentPiece;
     public Tetrimino CurrentPiece {
@@ -37,6 +39,7 @@ public class GameManager : MonoBehaviour {
 
     // Start is called before the first frame update
     void Start() {
+        gridM = FindFirstObjectByType<GridManager>();
         spawnNewPiece();
     }
 
@@ -58,8 +61,10 @@ public class GameManager : MonoBehaviour {
             currentPiece.rotatePiece(RorateEnum.ACLOCK);
         } else if (Input.GetKeyDown(KeyCode.RightArrow)) {
             currentPiece.rotatePiece(RorateEnum.CLOCK);
-        } else if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow)) {
+        } else if (Input.GetKeyDown(KeyCode.DownArrow)) {
             currentPiece.rotatePiece(RorateEnum.R180);
+        } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
+            swapCurrentPiece();
         }
 
         if (Input.GetKeyDown(KeyCode.Space)) {
@@ -67,13 +72,20 @@ public class GameManager : MonoBehaviour {
         }
 
         if (Input.GetKeyDown(KeyCode.R)) {
-            swapCurrentPiece();
+            resetGame();
         }
     }
 
     // ========================================================
     //                          METHODS
     // ========================================================
+    public void resetGame() {
+        gridM.resetGrid();
+
+        currentPieceType = TetriminoSettings.getRandomPiece();
+        currentPiece.resetPeace();
+    }
+
     public void spawnNewPiece() {
         if (currentPiece == null) {
             currentPieceType = TetriminoSettings.getRandomPiece();

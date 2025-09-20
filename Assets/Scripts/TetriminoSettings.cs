@@ -41,7 +41,7 @@ public class TetriminoSettings : MonoBehaviour {
     };
 
     public static readonly List<List<Vector2Int>> O_OFFSET_DATA = new List<List<Vector2Int>> {
-        new List<Vector2Int> { Vector2Int.zero,              Vector2Int.down,              new Vector2Int(-1, -1),       Vector2Int.left }
+        new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(0, -1),              new Vector2Int(-1, -1), new Vector2Int(-1, 0) }
     };
 
     public static readonly List<Vector2Int> CLOCK_ROTATION = new List<Vector2Int> {

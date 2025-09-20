@@ -23,7 +23,7 @@ public class GridManager : MonoBehaviour {
     //                          START
     // ========================================================
     void Start() {
-        gameM = FindObjectOfType<GameManager>();
+        gameM = FindFirstObjectByType<GameManager>();
 
         startingPosition = new Vector2Int(
             Mathf.Max(0, Mathf.FloorToInt(width / 2) - 1),
@@ -88,7 +88,6 @@ public class GridManager : MonoBehaviour {
     //                                              METHODS
     // ================================================================================================================
     public void lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType) {
-        Debug.Log("Piece type: " +  pieceType);
         foreach (Vector2Int pos in positions) {
             gridTypes[pos.x, pos.y] = pieceType;
             gridCells[pos.x, pos.y].changeType(pieceType);

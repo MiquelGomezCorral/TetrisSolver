@@ -18,11 +18,11 @@ public class Tetrimino : MonoBehaviour {
     // ========================================================
     void Start() {
         // GAME MANAGER 
-        gameM = FindObjectOfType<GameManager>();
+        gameM = FindFirstObjectByType<GameManager>();
         gameM.CurrentPiece = this;
 
         // GRID MANAGER 
-        gridM = FindObjectOfType<GridManager>();
+        gridM = FindFirstObjectByType<GridManager>();
 
         resetPeace();
     }
@@ -124,31 +124,28 @@ public class Tetrimino : MonoBehaviour {
 
     private bool rotate(RorateEnum direction) {
         DirectionEnum newDirection = TetriminoSettings.getNewDirection(pieceOrientation, direction);
-        List<List<Vector2Int>> offSets = TetriminoSettings.getTetriminoOffsets(pieceType);
+        List<List<Vector2Int>> offSetTable = TetriminoSettings.getTetriminoOffsets(pieceType);
         List<Vector2Int> rotationMatrix = TetriminoSettings.getRotationMatrix(direction);
 
-        Debug.Log("rotate 1");
         bool rotationSuccess = false;
         List<Vector2Int> newPositions = this.positionsList;
         Vector2Int newOffSet = Vector2Int.zero;
-        Debug.Log(offSets.Count);
-        foreach (Vector2Int offSet in offSets[(int)direction]) {
-            Debug.Log("rotate 1.1");
+        foreach (List<Vector2Int> offSetTest in offSetTable) {
             rotationSuccess = true;
             newPositions = new List<Vector2Int>();
 
+            // compute offset: current - new
+            Vector2Int offSet = offSetTest[(int)pieceOrientation] - offSetTest[(int)newDirection];
             foreach (Vector2Int pos in positionsList) {
-                Debug.Log("rotate 1.1.1: " + rotationSuccess);
+                // compute new position 
                 Vector2Int rotatedPos = rotateVector(pos, rotationMatrix) + offSet;
                 Vector2Int absPos = rotatedPos + position;
-                if (gridM.isValidPosition(absPos)) {
-                    newPositions.Add(rotatedPos);
-                    Debug.Log("rotate 1.1.2: " + rotationSuccess);
-                } else {
-                    rotationSuccess = false;
-                    Debug.Log("rotate 1.1.3: " + rotationSuccess);
-                    break;
+
+                if (!gridM.isValidPosition(absPos)) {
+                    rotationSuccess = false; break;
                 }
+                    
+                newPositions.Add(rotatedPos);
             }
             if (rotationSuccess) {
                 newOffSet = offSet;
@@ -156,14 +153,10 @@ public class Tetrimino : MonoBehaviour {
             }
         }
 
-        Debug.Log("rotate 2");
-
         if (rotationSuccess) {
-            Debug.Log("rotate 2.1");
             normalizePositionList(newPositions, newOffSet);
-            this.pieceOrientation = newDirection;
+            pieceOrientation = newDirection;
         }
-        Debug.Log("rotate 3");
         return rotationSuccess;
 
     }

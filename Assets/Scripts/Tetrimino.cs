@@ -60,6 +60,15 @@ public class Tetrimino : MonoBehaviour {
         gridM.lockPiece(absPositions, pieceType, lastAction);
     }
 
+
+    // will take the new type from the Game manager
+    public void swapPiece() {
+        // Unrender piece
+        gridM.unRenderPiece(getAbsPositions());
+
+        // Reset piece
+        resetPeace();
+    }
     // ========================================================
     //                          METHODS
     // ========================================================

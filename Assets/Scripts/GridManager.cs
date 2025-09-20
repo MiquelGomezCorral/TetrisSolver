@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.U2D;
 using UnityEngine.UIElements;
 
 public class GridManager : MonoBehaviour {
     private GameManager gameM; // Do to look for it every time
+    [SerializeField] private GameObject scorePrefab;
+    [SerializeField] private Transform canvasTransform; // assign Canvas here
 
     [SerializeField] public Cell cellPrefab;
     [SerializeField] public int width = 10, height = 20;
@@ -23,13 +26,16 @@ public class GridManager : MonoBehaviour {
     //                          START
     // ========================================================
     void Start() {
+        // ============== get game manager ==============
         gameM = FindFirstObjectByType<GameManager>();
 
+        // ============== Define pieces starting position ==============
         startingPosition = new Vector2Int(
             Mathf.Max(0, Mathf.FloorToInt(width / 2) - 1),
             height - 4
         );
 
+        // ============== Initialize grid ==============
         gridTypes = new TetriminoEnum[width, height];
         gridCells = new Cell[width, height];
 
@@ -53,6 +59,37 @@ public class GridManager : MonoBehaviour {
                 );
             }
         }
+
+        // ============== Initialize text ==============
+        // --- instantiate & parent (keep what you already do) ---
+        GameObject go = Instantiate(scorePrefab);
+        go.transform.SetParent(canvasTransform, false);
+
+        // get rect transforms
+        RectTransform canvasRect = canvasTransform as RectTransform;
+        RectTransform rt = go.GetComponent<RectTransform>();
+
+        // 1) world position of the top-center of the grid (center of top cell)
+        Vector3 worldTopCenter = new Vector3(
+            sizeInUnits.x * (width - 1f) / 2f - offsetX,        // x = center column
+            sizeInUnits.y * (height - 1f) - offsetY + sizeInUnits.y * 0.5f, // y = top cell center + half cell
+            0f
+        );
+
+        // 2) choose the camera used by the canvas (null for ScreenSpace-Overlay)
+        Canvas canvasComp = canvasTransform.GetComponent<Canvas>();
+        Camera uiCamera = (canvasComp != null && canvasComp.renderMode == RenderMode.ScreenSpaceCamera)
+                          ? canvasComp.worldCamera
+                          : null;
+
+        // 3) convert world -> screen -> canvas local
+        Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(uiCamera, worldTopCenter);
+        Vector2 localPoint;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, uiCamera, out localPoint);
+
+        // 4) place the UI element. use anchoredPosition so it's correct regardless of anchors/pivot
+        rt.anchoredPosition = localPoint + new Vector2(0f, 4f); // small extra pixel margin (tweak 4f)
+        gameM.scoreText = go.GetComponent<TextMeshProUGUI>();
     }
 
     // ========================================================
@@ -95,7 +132,8 @@ public class GridManager : MonoBehaviour {
 
         updateGridPositions(positions, pieceType);
 
-        clearLines(lastAction);
+        int score = clearLines(lastAction);
+        gameM.addPoint(score);
         lastPositions = new List<Vector2Int>();
     }
 

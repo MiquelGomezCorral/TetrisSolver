@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 
@@ -11,17 +13,27 @@ public class GameManager : MonoBehaviour
         get => currentPiece;
         set => currentPiece = value;
     }
-    [SerializeField] private TetriminoEnum currentPieceType;
+    [SerializeField] private TetriminoEnum currentPieceType = TetriminoEnum.X;
     public TetriminoEnum CurrentPieceType {
         get => currentPieceType;            
         set => currentPieceType = value;    
     }
+    [SerializeField] private TetriminoEnum swapPieceType = TetriminoEnum.X;
+    public TetriminoEnum SwapPieceType {
+        get => swapPieceType;
+        set => swapPieceType = value;
+    }
 
     [SerializeField] private int score;
-    public int Score { 
+    private int Score {
         get => score;
-        set => score += value;
+        set {
+            score = value;
+            if (scoreText != null)
+                scoreText.text = "Score: " + score.ToString(); 
+        }
     }
+    [SerializeField] public TextMeshProUGUI scoreText;
 
 
     // Start is called before the first frame update
@@ -57,7 +69,7 @@ public class GameManager : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.R)) {
-            spawnNewPiece();
+            swapCurrentPiece();
         }
     }
 
@@ -75,16 +87,35 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void swapCurrentPiece() {
+        if (currentPieceType == TetriminoEnum.X && swapPieceType == TetriminoEnum.X) 
+            return;
+
+
+        // If no piece get a new one
+        if (swapPieceType == TetriminoEnum.X) {
+            swapPieceType = TetriminoSettings.getRandomPiece();
+        }
+
+        // Swap types
+        TetriminoEnum auxPieceType = currentPieceType;
+        currentPieceType = swapPieceType;
+        swapPieceType = auxPieceType;
+
+        // swap with new current type,will take it from this class
+        currentPiece.swapPiece();
+    }
+
 
     // ========================================================
     //                          SCORE
     // ========================================================
     public int addPoint(int points) {
-        score += points;
-        return score;
+        Score += points;
+        return Score;
     }
-    public int getPoint(int points) {
-        return score;
+    public int getPoint() {
+        return Score;
     }
 
 }

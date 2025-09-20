@@ -65,8 +65,8 @@ public class GridManager : MonoBehaviour {
         swapPlaceholder = Instantiate(
             swapPlaceholderPrefab,
             new Vector3(
-                sizeInUnits.x * width + sizeInUnits.x * 0.5f - offsetX + 1f, // right of grid, small offset
-                sizeInUnits.y * height / 2f - 1f,                  // vertically centered
+                sizeInUnits.x * width + sizeInUnits.x * 0.5f - offsetX + 1f, 
+                sizeInUnits.y * height / 2f - 1f,                            
                 0f
             ),
             Quaternion.identity
@@ -146,7 +146,7 @@ public class GridManager : MonoBehaviour {
         updateGridPositions(positions, pieceType);
 
         int score = clearLines(lastAction);
-        gameM.addPoint(score);
+        gameM.addScore(score);
         lastPositions = new List<Vector2Int>();
     }
 

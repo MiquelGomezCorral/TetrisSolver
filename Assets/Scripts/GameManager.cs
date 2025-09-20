@@ -5,8 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 
-public class GameManager : MonoBehaviour
-{
+public class GameManager : MonoBehaviour {
     [SerializeField] private GameObject tetriminoPrefab;
     [SerializeField] private Tetrimino currentPiece;
     public Tetrimino CurrentPiece {
@@ -15,8 +14,8 @@ public class GameManager : MonoBehaviour
     }
     [SerializeField] private TetriminoEnum currentPieceType = TetriminoEnum.X;
     public TetriminoEnum CurrentPieceType {
-        get => currentPieceType;            
-        set => currentPieceType = value;    
+        get => currentPieceType;
+        set => currentPieceType = value;
     }
     [SerializeField] private TetriminoEnum swapPieceType = TetriminoEnum.X;
     public TetriminoEnum SwapPieceType {
@@ -30,20 +29,19 @@ public class GameManager : MonoBehaviour
         set {
             score = value;
             if (scoreText != null)
-                scoreText.text = "Score: " + score.ToString(); 
+                scoreText.text = "Score: " + score.ToString();
         }
     }
     [SerializeField] public TextMeshProUGUI scoreText;
 
 
     // Start is called before the first frame update
-    void Start(){
+    void Start() {
         spawnNewPiece();
     }
 
     // Update is called once per frame
-    void Update()
-    {
+    void Update() {
         // Maybe more than one movement
         if (Input.GetKeyDown(KeyCode.A)) {
             currentPiece.movePieze(DirectionEnum.LEFT);
@@ -87,9 +85,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void swapCurrentPiece() {
-        if (currentPieceType == TetriminoEnum.X && swapPieceType == TetriminoEnum.X) 
-            return;
+    public int swapCurrentPiece() {
+        if (currentPieceType == TetriminoEnum.X && swapPieceType == TetriminoEnum.X)
+            return 0;
 
 
         // If no piece get a new one
@@ -104,17 +102,26 @@ public class GameManager : MonoBehaviour
 
         // swap with new current type,will take it from this class
         currentPiece.swapPiece();
+
+        return 0;
+    }
+
+    public void moveCurrentPieceSide(DirectionEnum direction) { 
+        currentPiece.movePieze(direction);
+    }
+    public void rotateCurrentPiece(RorateEnum direction) {
+         currentPiece.rotatePiece(direction);
     }
 
 
     // ========================================================
     //                          SCORE
     // ========================================================
-    public int addPoint(int points) {
+    public int addScore(int points) {
         Score += points;
         return Score;
     }
-    public int getPoint() {
+    public int getScore() {
         return Score;
     }
 

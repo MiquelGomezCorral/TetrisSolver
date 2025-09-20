@@ -114,6 +114,10 @@ public class Tetrimino : MonoBehaviour {
     }
 
     public bool rotatePiece(RorateEnum direction) {
+        if (direction == RorateEnum.X)  // Do nothing
+            return true;
+        
+
         bool rotationSuccess = false;
         if (direction == RorateEnum.R180) {
             // Try 180° ACLOCK first

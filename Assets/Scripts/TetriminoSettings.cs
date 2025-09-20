@@ -13,8 +13,8 @@ public enum TetriminoEnum { // X is empty
 public enum DirectionEnum {
     UP, RIGHT, DOWN, LEFT
 }
-public enum RorateEnum {
-    ACLOCK, CLOCK, R180
+public enum RorateEnum {  // X is empty
+    X, ACLOCK, CLOCK, R180
 }
 public enum ActionEnum {
     MOVE, T_SPIN, MINI_T_SPIN
@@ -262,8 +262,9 @@ public class TetriminoSettings : MonoBehaviour {
                 case 0: return score + 400;
                 case 1: return score + 800;
                 case 2: return score + 1200;
+                case 3: 
                 default:
-                case 3: return score + 1600;
+                    return score + 1600;
             }
         } else {  // if (lastAction == ActionEnum.MINI_T_SPIN) {
             switch (count) {

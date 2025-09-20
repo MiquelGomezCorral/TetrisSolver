@@ -100,7 +100,7 @@ public class GridManager : MonoBehaviour {
     }
 
     public int clearLines(ActionEnum lastAction) {
-        int y = 0, count = 0, score = 0;
+        int y = 0, count = 0;
         bool full;
 
         // ================ CLEAR LINES ================ 
@@ -130,8 +130,20 @@ public class GridManager : MonoBehaviour {
             } else { //if not full move to the next
                 y++;
             }
+
+            if(count == 4) {
+                break; // wont be more lines to clear
+            }
         }
-        bool allClear = false;
+
+
+        // ================ CHECK ALL CLEAR ================ 
+        bool allClear = true; // IF FIRST LINE IS EMPTY -> ALL CLEAR
+        for (int x = 0; x < width; x++) {
+            if (gridTypes[x, 0] != TetriminoEnum.X) {
+                allClear = false; break;
+            }
+        }
         // ================ COMPUTE SCORE ================ 
         return TetriminoSettings.computeScore(count, lastAction, allClear);
     }

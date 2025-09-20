@@ -52,8 +52,7 @@ public class Tetrimino : MonoBehaviour {
         List<Vector2Int> absPositions = getAbsPositions();
         gridM.unRenderPiece(absPositions);
 
-        // Move the piece to the bottom
-        while (movePieze(DirectionEnum.DOWN, false)) { }
+        movePieceBootom();
 
         // Get the absolute positions and fix those cells
         absPositions = getAbsPositions();
@@ -77,6 +76,14 @@ public class Tetrimino : MonoBehaviour {
     // ========================================================
     //                          METHODS
     // ========================================================
+    public List<Vector2Int> getAbsPositions() {
+        List<Vector2Int> absPositions = new List<Vector2Int>(positionsList);
+        for (int i = 0; i < positionsList.Count; i++)
+            absPositions[i] += position;
+
+        return absPositions;
+    }
+
     public bool movePieze(DirectionEnum direction, bool uptateGrid = true) {
         Vector2Int delta = direction switch {
             DirectionEnum.LEFT => Vector2Int.left,
@@ -104,13 +111,13 @@ public class Tetrimino : MonoBehaviour {
         return true;
     }
 
-
-    public List<Vector2Int> getAbsPositions() {
-        List<Vector2Int> absPositions = new List<Vector2Int>(positionsList);
-        for (int i = 0; i < positionsList.Count; i++)
-            absPositions[i] += position;
-
-        return absPositions;
+    public bool movePieceBootom() {
+        // Move the piece to the bottom
+        bool movedAtLeastOnce = false;
+        while (movePieze(DirectionEnum.DOWN, false)) { 
+            movedAtLeastOnce = true;
+        }
+        return movedAtLeastOnce;
     }
 
     public bool rotatePiece(RorateEnum direction) {

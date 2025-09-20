@@ -112,7 +112,9 @@ public class GameManager : MonoBehaviour {
     public void rotateCurrentPiece(RorateEnum direction) {
          currentPiece.rotatePiece(direction);
     }
-
+    public void moveCurrentPieceBootom() {
+        currentPiece.movePieceBootom();
+    }
 
     // ========================================================
     //                          SCORE

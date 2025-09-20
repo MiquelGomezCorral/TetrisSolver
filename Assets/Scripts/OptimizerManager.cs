@@ -137,23 +137,23 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          METHODS
     // ========================================================
-    private int playMovement(int movement, int pos, AleoType aleoType) {
+    private void playMovement(int movement, int pos, AleoType aleoType) {
         if (pos == 0 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) {
-            return gameM.swapCurrentPiece();
+            gameM.swapCurrentPiece();
 
         } else if (
-            (pos == 0 && (aleoType == AleoType.Simple || aleoType == AleoType.Double)) || 
-            (pos == 1 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) || 
-            (pos == 3 && (aleoType == AleoType.Double)) || 
-            (pos == 4 && (aleoType == AleoType.SwapDoble))
+            (aleoType == AleoType.Simple     && (pos == 0)) ||
+            (aleoType == AleoType.Double     && (pos == 0 || pos == 3)) ||
+            (aleoType == AleoType.SwapSimple && (pos == 1)) ||
+            (aleoType == AleoType.SwapDoble  && (pos == 1 || pos == 4)) 
         ) {
              gameM.rotateCurrentPiece((RorateEnum)movement);
 
         } else if (
-            (pos == 1 && (aleoType == AleoType.Simple || aleoType == AleoType.Double)) ||
-            (pos == 2 && (aleoType == AleoType.Double)) ||
-            (pos == 2 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) ||
-            (pos == 3 && (aleoType == AleoType.SwapDoble))
+            (aleoType == AleoType.Simple     && (pos == 1)) ||
+            (aleoType == AleoType.Double     && (pos == 1 || pos == 2)) ||
+            (aleoType == AleoType.SwapSimple && (pos == 2)) ||
+            (aleoType == AleoType.SwapDoble  && (pos == 2 || pos == 3))
         ) {
             DirectionEnum direction = (pos >=0 ) ? DirectionEnum.RIGHT : DirectionEnum.LEFT;
             for (int i = 0; i < Math.Abs(movement); i++) {
@@ -161,6 +161,11 @@ public class OptimizerManager : MonoBehaviour{
             }
         }
 
-        return 0;
+
+        // After the movement, move the piece down for the doubles
+        if( (pos == 1 && aleoType == AleoType.Double) || (pos == 2 && aleoType == AleoType.SwapDoble)) {
+            gameM.moveCurrentPieceBootom();
+        }
+
     }
 }

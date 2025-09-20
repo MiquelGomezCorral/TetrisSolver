@@ -87,7 +87,7 @@ public class GridManager : MonoBehaviour {
     // ================================================================================================================
     //                                              METHODS
     // ================================================================================================================
-    public void lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType) {
+    public void lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType, ActionEnum lastAction) {
         foreach (Vector2Int pos in positions) {
             gridTypes[pos.x, pos.y] = pieceType;
             gridCells[pos.x, pos.y].changeType(pieceType);
@@ -95,14 +95,16 @@ public class GridManager : MonoBehaviour {
 
         updateGridPositions(positions, pieceType);
 
-        clearLines();
+        clearLines(lastAction);
         lastPositions = new List<Vector2Int>();
     }
 
-    public int clearLines() {
-        int y = 0, count = 0;
+    public int clearLines(ActionEnum lastAction) {
+        int y = 0, count = 0, score = 0;
         bool full;
-        while(y < height) {
+
+        // ================ CLEAR LINES ================ 
+        while (y < height) {
             // check line clear
             full = true;
             for (int x = 0; x < width; x++) {
@@ -129,7 +131,9 @@ public class GridManager : MonoBehaviour {
                 y++;
             }
         }
-        return count;
+        bool allClear = false;
+        // ================ COMPUTE SCORE ================ 
+        return TetriminoSettings.computeScore(count, lastAction, allClear);
     }
 
     public bool areValidPositions(List<Vector2Int> positions) {

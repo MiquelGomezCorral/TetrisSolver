@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 public class GameManager : MonoBehaviour
 {
@@ -16,6 +17,11 @@ public class GameManager : MonoBehaviour
         set => currentPieceType = value;    
     }
 
+    [SerializeField] private int score;
+    public int Score { 
+        get => score;
+        set => score += value;
+    }
 
 
     // Start is called before the first frame update
@@ -46,8 +52,11 @@ public class GameManager : MonoBehaviour
             currentPiece.rotatePiece(RorateEnum.R180);
         }
 
-
         if (Input.GetKeyDown(KeyCode.Space)) {
+            spawnNewPiece();
+        }
+
+        if (Input.GetKeyDown(KeyCode.R)) {
             spawnNewPiece();
         }
     }
@@ -65,4 +74,17 @@ public class GameManager : MonoBehaviour
             currentPiece.resetPeace();
         }
     }
+
+
+    // ========================================================
+    //                          SCORE
+    // ========================================================
+    public int addPoint(int points) {
+        score += points;
+        return score;
+    }
+    public int getPoint(int points) {
+        return score;
+    }
+
 }

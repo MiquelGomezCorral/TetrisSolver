@@ -11,6 +11,7 @@ public class Tetrimino : MonoBehaviour {
     public DirectionEnum pieceOrientation;
     public List<Vector2Int> positionsList;
     public Vector2Int position;
+    public ActionEnum lastAction = ActionEnum.MOVE;
 
 
     // ========================================================
@@ -56,7 +57,7 @@ public class Tetrimino : MonoBehaviour {
 
         // Get the absolute positions and fix those cells
         absPositions = getAbsPositions();
-        gridM.lockPiece(absPositions, pieceType);
+        gridM.lockPiece(absPositions, pieceType, lastAction);
     }
 
     // ========================================================
@@ -84,6 +85,8 @@ public class Tetrimino : MonoBehaviour {
         if (uptateGrid)
             gridM.updateGrid();
 
+        // last action was a movement
+        lastAction = ActionEnum.MOVE;
         return true;
     }
 
@@ -156,6 +159,8 @@ public class Tetrimino : MonoBehaviour {
         if (rotationSuccess) {
             normalizePositionList(newPositions, newOffSet);
             pieceOrientation = newDirection;
+
+            checkTSpin();
         }
         return rotationSuccess;
 
@@ -168,6 +173,7 @@ public class Tetrimino : MonoBehaviour {
         );
     }
 
+    
     private void normalizePositionList(List<Vector2Int> positions, Vector2Int offSet) {
         List<Vector2Int> newPositions = new List<Vector2Int>();
         foreach(Vector2Int pos in positions) {
@@ -178,5 +184,30 @@ public class Tetrimino : MonoBehaviour {
         positionsList = newPositions;
     }
 
-    
+
+    private void checkTSpin() {
+        if (pieceType != TetriminoEnum.T) return;
+
+        bool A = !gridM.isValidPosition(position + new Vector2Int(-1, 1)); // occupiedUpLeft
+        bool B = !gridM.isValidPosition(position + new Vector2Int(1, 1)); // occupiedUpRight
+        bool C = !gridM.isValidPosition(position + new Vector2Int(-1, -1)); // occupiedDownLeft
+        bool D = !gridM.isValidPosition(position + new Vector2Int(1, -1)); // occupiedDownRight
+
+        // Rotate for the check as many times as the orientation says UP 0, Right 1, Down 2, Left 3
+        for (int i = 0; i < (int)pieceOrientation; i++) {
+            bool auxA = A;
+            A = C;
+            C = D;
+            D = B;
+            B = auxA;
+        }
+
+        if (A && B && (C || D))
+            lastAction = ActionEnum.T_SPIN;
+        else if (C && D && (A || B))
+            lastAction = ActionEnum.MINI_T_SPIN;
+
+    }
+
+
 }

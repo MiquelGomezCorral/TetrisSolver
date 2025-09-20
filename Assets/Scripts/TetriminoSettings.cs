@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UIElements;
 
 // =================================================================
@@ -15,11 +16,15 @@ public enum DirectionEnum {
 public enum RorateEnum {
     ACLOCK, CLOCK, R180
 }
+public enum ActionEnum {
+    MOVE, T_SPIN, MINI_T_SPIN
+}
 
 // =================================================================
 //                              SETTINGS
 // =================================================================
 public class TetriminoSettings : MonoBehaviour {
+    public static int PerfectClearPoints = 2000;
     public static TetriminoSettings Instance;
 
     [Header("Tetromino Sprites")]
@@ -185,6 +190,43 @@ public class TetriminoSettings : MonoBehaviour {
             case RorateEnum.R180:
             default:
                 return ACLOCK_ROTATION;
+        }
+    }
+
+    // ==============================================================================
+    //                                  SCORE
+    // ==============================================================================
+    public static int computeScore(int count, ActionEnum lastAction, bool PerfectClear) {
+        if(count < 0 || count > 4) {
+            Debug.LogError("COUNT OF CLEARED LINE NOT VALID, UNCONSISTENT POINTS. Cleared lines:" + count);
+        }
+
+        int score = PerfectClear ? PerfectClearPoints : 0;
+        if (lastAction == ActionEnum.MOVE) {
+            switch (count) {
+                case 0: return score + 0;
+                case 1: return score + 100;
+                case 2: return score + 300;
+                case 3: return score + 500;
+                case 4: 
+                default:
+                    return score + 800;
+            }
+        }else if (lastAction == ActionEnum.T_SPIN) {
+            switch (count) {
+                case 0: return score + 400;
+                case 1: return score + 800;
+                case 2: return score + 1200;
+                default:
+                case 3: return score + 1600;
+            }
+        } else {  // if (lastAction == ActionEnum.MINI_T_SPIN) {
+            switch (count) {
+                case 0: return score + 100;
+                case 1:
+                default:
+                    return score + 200;
+            }
         }
     }
 

@@ -6,8 +6,15 @@ using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 
 public class GameManager : MonoBehaviour {
+    // ========================================================
+    //                          Managers
+    // ========================================================
     private GridManager gridM; // Do to look for it every time
 
+
+    // ========================================================
+    //                          PIECES
+    // ========================================================
     [SerializeField] private GameObject tetriminoPrefab;
     [SerializeField] private Tetrimino currentPiece;
     public Tetrimino CurrentPiece {
@@ -37,13 +44,31 @@ public class GameManager : MonoBehaviour {
     [SerializeField] public TextMeshProUGUI scoreText;
 
 
-    // Start is called before the first frame update
+    // ========================================================
+    //                          QUEUE
+    // ========================================================
+    // is okey to be empty, fist call will add 7, then take 1 so 6 and in the
+    // next call will add 7 more so 13. No need to initialize here.
+    public Queue<TetriminoEnum> bagQueue = new Queue<TetriminoEnum>();
+
+
+    // ========================================================
+    //                          START
+    // ========================================================
     void Start() {
         gridM = FindFirstObjectByType<GridManager>();
+
+        // add two new bags
+        produceRandomBag();
+        produceRandomBag();
+
+        // Spawn the piece
         spawnNewPiece();
     }
 
-    // Update is called once per frame
+    // ========================================================
+    //                          UPDATE
+    // ========================================================
     void Update() {
         // Maybe more than one movement
         if (Input.GetKeyDown(KeyCode.A)) {
@@ -79,10 +104,16 @@ public class GameManager : MonoBehaviour {
     // ========================================================
     //                          METHODS
     // ========================================================
-    public void resetGame() {
+    public void resetGame(Queue<TetriminoEnum> bagQueueSaved = null) {
+        if (bagQueueSaved != null) {
+            Debug.Log("3: " + string.Join(", ", bagQueueSaved));
+
+            bagQueue = bagQueueSaved;
+        }
+
         gridM.resetGrid();
 
-        currentPieceType = TetriminoSettings.getRandomPiece();
+        currentPieceType = getRandomPiece();
         currentPiece.resetPeace();
 
         swapPieceType = TetriminoEnum.X;
@@ -93,11 +124,11 @@ public class GameManager : MonoBehaviour {
 
     public void spawnNewPiece() {
         if (currentPiece == null) {
-            currentPieceType = TetriminoSettings.getRandomPiece();
+            currentPieceType = getRandomPiece();
             Instantiate(tetriminoPrefab);
         } else {
             currentPiece.lockPeace();
-            currentPieceType = TetriminoSettings.getRandomPiece();
+            currentPieceType = getRandomPiece();
             currentPiece.resetPeace();
         }
     }
@@ -106,10 +137,9 @@ public class GameManager : MonoBehaviour {
         if (currentPieceType == TetriminoEnum.X && swapPieceType == TetriminoEnum.X)
             return;
 
-
         // If no piece get a new one
         if (swapPieceType == TetriminoEnum.X) {
-            swapPieceType = TetriminoSettings.getRandomPiece();
+            swapPieceType = getRandomPiece();
         }
 
         // Swap types
@@ -144,4 +174,55 @@ public class GameManager : MonoBehaviour {
         return Score;
     }
 
+
+
+
+    // ========================================================
+    //                      GET PIECE
+    // ========================================================
+    public void produceRandomBag() {
+        List<TetriminoEnum> newBag = new List<TetriminoEnum>(TetriminoSettings.basePiecesBag);
+
+        // Suffle the bags with Fisher–Yates 
+        for (int i = 0; i < newBag.Count; i++) {
+            int j = UnityEngine.Random.Range(0, newBag.Count); // 1..Count-1
+            TetriminoEnum tmp = newBag[i];
+            newBag[i] = newBag[j];
+            newBag[j] = tmp;
+        }
+
+        // Enque new pieces
+        foreach (TetriminoEnum newPiece in newBag)
+            bagQueue.Enqueue(newPiece);
+    }
+    public TetriminoEnum getRandomPiece() {
+        Debug.Log("4: " + string.Join(", ", bagQueue));
+        if (bagQueue.Count <= 7) {
+            produceRandomBag();
+        }
+        return bagQueue.Dequeue();
+    }
+    public List<TetriminoEnum> PeekNext(int n) {
+        List<TetriminoEnum> nextPieces = new List<TetriminoEnum>();
+        int i = 0;
+        foreach (var piece in bagQueue) {
+            if (i >= n) break;
+            nextPieces.Add(piece);
+            i++;
+        }
+        return nextPieces;
+    }
+
+    public TetriminoEnum[] getBagsCopy(bool includeCurrent = true) {
+        // build a temporary list (does not touch the real bagQueue)
+        List<TetriminoEnum> list = new List<TetriminoEnum>(bagQueue.Count + (includeCurrent ? 1 : 0));
+
+        if (includeCurrent && currentPieceType != TetriminoEnum.X)
+            list.Add(currentPieceType);
+
+        foreach (TetriminoEnum piece in bagQueue)
+            list.Add(piece);
+
+        return list.ToArray(); // snapshot: safe to pass around / log / dequeue from a new queue
+    }
 }

@@ -62,9 +62,7 @@ public class TetriminoSettings : MonoBehaviour {
         TetriminoEnum.S, TetriminoEnum.Z, TetriminoEnum.J, TetriminoEnum.L
     };
 
-    // is okey to be empty, fist call will add 7, then take 1 so 6 and in the
-    // next call will add 7 more so 13. No need to initialize here.
-    public static Queue<TetriminoEnum> bagQueue = new Queue<TetriminoEnum>();
+
 
     // ========================================================
     //                          AWAKE
@@ -74,39 +72,6 @@ public class TetriminoSettings : MonoBehaviour {
         else Destroy(gameObject);
     }
 
-
-    // ========================================================
-    //                      GET PIECE
-    // ========================================================
-    public static List<TetriminoEnum> produceRandomBag() {
-        List<TetriminoEnum> newBag = new List<TetriminoEnum>(basePiecesBag);
-
-        for (int i = 0; i < newBag.Count; i++) {
-            int j = UnityEngine.Random.Range(0, newBag.Count); // 1..Count-1
-            TetriminoEnum tmp = newBag[i];
-            newBag[i] = newBag[j];
-            newBag[j] = tmp;
-        }
-
-        return newBag;
-    }
-    public static TetriminoEnum getRandomPiece() {
-        if (bagQueue.Count <= 7) {
-            foreach (TetriminoEnum newPiece in produceRandomBag())
-                bagQueue.Enqueue(newPiece);
-        }
-        return bagQueue.Dequeue();
-    }
-    public List<TetriminoEnum> PeekNext(int n) {
-        List<TetriminoEnum> nextPieces = new List<TetriminoEnum>();
-        int i = 0;
-        foreach (var piece in bagQueue) {
-            if (i >= n) break;
-            nextPieces.Add(piece);
-            i++;
-        }
-        return nextPieces;
-    }
    
 
     // ==============================================================================

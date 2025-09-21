@@ -166,7 +166,7 @@ public class OptimizerManager : MonoBehaviour{
     public int[] scores;
 
     private GameManager gameM; // Do to look for it every time
-    public static TetriminoEnum[] bagQueueSaved;
+    //public Queue<TetriminoEnum> bagQueueSaved;
 
     // ========================================================
     //                          START
@@ -181,18 +181,21 @@ public class OptimizerManager : MonoBehaviour{
             pobation[i] = new Genotype(aleoType, nPieces);
         }
 
-        StartCoroutine(EvaluateGenotypes());
     }
 
     // ========================================================
     //                          UPDATE
     // ========================================================
+    bool executed  = false;
     void Update(){
+        if (executed) { return;  }
+        executed = true;
+        StartCoroutine(EvaluateGenotypes());
     }
 
     IEnumerator EvaluateGenotypes() {
         // Create a copy of the bag at that moment
-        bagQueueSaved = gameM.getBagsCopy();
+        Queue<TetriminoEnum> bagQueueSaved = gameM.getBagsCopy();
         Debug.Log("1 " + string.Join(", ", bagQueueSaved));
 
         for (int genI = 0; genI < pobation.Length; genI++) {
@@ -204,10 +207,9 @@ public class OptimizerManager : MonoBehaviour{
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
                     // Wait 0.2s before next movement
                     yield return new WaitForSeconds(timeDelay);
-                    // Play a movement
+
                     playMovement(genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
-                // Then spawn new piece
                 gameM.spawnNewPiece();
             }
             scores[genI] = gameM.getScore();
@@ -217,6 +219,8 @@ public class OptimizerManager : MonoBehaviour{
             Debug.Log("2: " + string.Join(", ", bagQueueSaved));
             gameM.resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
         }
+
+        executed = false;
     }
     // ========================================================
     //                          METHODS

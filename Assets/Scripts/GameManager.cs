@@ -108,7 +108,13 @@ public class GameManager : MonoBehaviour {
         if (bagQueueSaved != null) {
             Debug.Log("3: " + string.Join(", ", bagQueueSaved));
 
-            bagQueue = bagQueueSaved;
+            bagQueue.Clear();
+            // Create a temporary copy to avoid modifying the passed queue
+            Queue<TetriminoEnum> tempSaved = new Queue<TetriminoEnum>(bagQueueSaved);
+
+            while (tempSaved.Count > 0) {
+                bagQueue.Enqueue(tempSaved.Dequeue());
+            }
         }
 
         gridM.resetGrid();
@@ -174,9 +180,6 @@ public class GameManager : MonoBehaviour {
         return Score;
     }
 
-
-
-
     // ========================================================
     //                      GET PIECE
     // ========================================================
@@ -196,8 +199,8 @@ public class GameManager : MonoBehaviour {
             bagQueue.Enqueue(newPiece);
     }
     public TetriminoEnum getRandomPiece() {
-        Debug.Log("4: " + string.Join(", ", bagQueue));
-        if (bagQueue.Count <= 7) {
+        //Debug.Log("4: " + string.Join(", ", bagQueue));
+        if (bagQueue.Count < 7) {
             produceRandomBag();
         }
         return bagQueue.Dequeue();
@@ -213,16 +216,19 @@ public class GameManager : MonoBehaviour {
         return nextPieces;
     }
 
-    public TetriminoEnum[] getBagsCopy(bool includeCurrent = true) {
+    public Queue<TetriminoEnum> getBagsCopy(bool includeCurrent = true) {
         // build a temporary list (does not touch the real bagQueue)
-        List<TetriminoEnum> list = new List<TetriminoEnum>(bagQueue.Count + (includeCurrent ? 1 : 0));
+        Queue<TetriminoEnum> newBags =  new Queue<TetriminoEnum>();
 
         if (includeCurrent && currentPieceType != TetriminoEnum.X)
-            list.Add(currentPieceType);
+            newBags.Enqueue(currentPieceType);
 
-        foreach (TetriminoEnum piece in bagQueue)
-            list.Add(piece);
+        // Create a temporary copy to iterate without modifying original
+        Queue<TetriminoEnum> tempQueue = new Queue<TetriminoEnum>(bagQueue);
+        while (tempQueue.Count > 0) {
+            newBags.Enqueue(tempQueue.Dequeue());
+        }
 
-        return list.ToArray(); // snapshot: safe to pass around / log / dequeue from a new queue
+        return newBags; 
     }
 }

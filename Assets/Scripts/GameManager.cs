@@ -84,6 +84,11 @@ public class GameManager : MonoBehaviour {
 
         currentPieceType = TetriminoSettings.getRandomPiece();
         currentPiece.resetPeace();
+
+        swapPieceType = TetriminoEnum.X;
+        gridM.swapPlaceholder.changeType(TetriminoEnum.X);
+        
+        Score = 0;
     }
 
     public void spawnNewPiece() {
@@ -97,9 +102,9 @@ public class GameManager : MonoBehaviour {
         }
     }
 
-    public int swapCurrentPiece() {
+    public void swapCurrentPiece() {
         if (currentPieceType == TetriminoEnum.X && swapPieceType == TetriminoEnum.X)
-            return 0;
+            return;
 
 
         // If no piece get a new one
@@ -115,7 +120,7 @@ public class GameManager : MonoBehaviour {
         // swap with new current type,will take it from this class
         currentPiece.swapPiece();
 
-        return 0;
+        return;
     }
 
     public void moveCurrentPieceSide(DirectionEnum direction) { 

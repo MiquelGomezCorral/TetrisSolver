@@ -9,7 +9,7 @@ public enum AleoType {
 
 
 public class Genotype {
-    public static int[] movementInitialRagnes = { -4, 4 };
+    public static int[] movementInitialRagnes = { -5, 5 };
     public static int[] movementRagnes = { -9, 9 };
     public static int[] rotateRanges = { 0, 3 };
     public static int[] swapRanges = { 0, 1 };
@@ -136,7 +136,7 @@ public class OptimizerManager : MonoBehaviour{
                 // For each movement in that piece
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
                     // Wait 0.2s before next movement
-                    yield return new WaitForSeconds(0.1f);
+                    yield return new WaitForSeconds(timeDelay);
                     // Play a movement
                     playMovement(genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
@@ -144,6 +144,7 @@ public class OptimizerManager : MonoBehaviour{
                 gameM.spawnNewPiece();
             }
             scores[genI] = gameM.getScore();
+            Debug.Log("Genotype: " + genI + " scored: " + scores[genI]);
             gameM.resetGame();
         }
     }
@@ -151,6 +152,7 @@ public class OptimizerManager : MonoBehaviour{
     //                          METHODS
     // ========================================================
     private void playMovement(int movement, int pos, AleoType aleoType) {
+        Debug.Log("  - movement: " + movement + " pos: " + pos);
         if (pos == 0 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) {
             if(movement == 1)
                 gameM.swapCurrentPiece();
@@ -169,7 +171,7 @@ public class OptimizerManager : MonoBehaviour{
             (aleoType == AleoType.SwapSimple && (pos == 2)) ||
             (aleoType == AleoType.SwapDoble  && (pos == 2 || pos == 3))
         ) {
-            DirectionEnum direction = (pos >=0 ) ? DirectionEnum.RIGHT : DirectionEnum.LEFT;
+            DirectionEnum direction = (movement >= 0 ) ? DirectionEnum.RIGHT : DirectionEnum.LEFT;
             for (int i = 0; i < Math.Abs(movement); i++) {
                 gameM.moveCurrentPieceSide(direction);
             }

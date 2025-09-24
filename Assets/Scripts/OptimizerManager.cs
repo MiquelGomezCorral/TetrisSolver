@@ -196,7 +196,6 @@ public class OptimizerManager : MonoBehaviour{
     IEnumerator EvaluateGenotypes() {
         // Create a copy of the bag at that moment
         Queue<TetriminoEnum> bagQueueSaved = gameM.getBagsCopy();
-        Debug.Log("1 " + string.Join(", ", bagQueueSaved));
 
         for (int genI = 0; genI < pobation.Length; genI++) {
             Genotype genotype = pobation[genI];
@@ -216,7 +215,6 @@ public class OptimizerManager : MonoBehaviour{
             Debug.Log("Genotype: " + genI + " scored: " + scores[genI]);
 
             // Create a copy of the bag saved
-            Debug.Log("2: " + string.Join(", ", bagQueueSaved));
             gameM.resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
         }
 

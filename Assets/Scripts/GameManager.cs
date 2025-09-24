@@ -106,8 +106,6 @@ public class GameManager : MonoBehaviour {
     // ========================================================
     public void resetGame(Queue<TetriminoEnum> bagQueueSaved = null) {
         if (bagQueueSaved != null) {
-            Debug.Log("3: " + string.Join(", ", bagQueueSaved));
-
             bagQueue.Clear();
             // Create a temporary copy to avoid modifying the passed queue
             Queue<TetriminoEnum> tempSaved = new Queue<TetriminoEnum>(bagQueueSaved);
@@ -199,7 +197,6 @@ public class GameManager : MonoBehaviour {
             bagQueue.Enqueue(newPiece);
     }
     public TetriminoEnum getRandomPiece() {
-        //Debug.Log("4: " + string.Join(", ", bagQueue));
         if (bagQueue.Count < 7) {
             produceRandomBag();
         }

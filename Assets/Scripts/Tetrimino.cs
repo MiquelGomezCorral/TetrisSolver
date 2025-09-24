@@ -84,7 +84,7 @@ public class Tetrimino : MonoBehaviour {
         return absPositions;
     }
 
-    public bool movePieze(DirectionEnum direction, bool uptateGrid = true) {
+    public bool movePieze(DirectionEnum direction) {
         Vector2Int delta = direction switch {
             DirectionEnum.LEFT => Vector2Int.left,
             DirectionEnum.RIGHT => Vector2Int.right,
@@ -103,8 +103,7 @@ public class Tetrimino : MonoBehaviour {
         }
         position = newPos;
 
-        if (uptateGrid)
-            gridM.updateGrid();
+        gridM.updateGrid();
 
         // last action was a movement
         lastAction = ActionEnum.MOVE;
@@ -114,7 +113,7 @@ public class Tetrimino : MonoBehaviour {
     public bool movePieceBootom() {
         // Move the piece to the bottom
         bool movedAtLeastOnce = false;
-        while (movePieze(DirectionEnum.DOWN, false)) { 
+        while (movePieze(DirectionEnum.DOWN)) { 
             movedAtLeastOnce = true;
         }
         return movedAtLeastOnce;

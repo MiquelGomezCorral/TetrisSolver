@@ -221,7 +221,7 @@ MonoBehaviour:
   initialPoblation: 200
   nPieces: 10
   mutationChance: 0.15
-  aleoType: 3
+  aleoType: 0
   scores: 
 --- !u!4 &274407757
 Transform:

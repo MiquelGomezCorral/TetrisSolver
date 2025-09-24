@@ -197,13 +197,15 @@ public class Genotype {
 }
 
 public class OptimizerManager : MonoBehaviour{
-    [SerializeField] float timeDelay = 0.1f;
-    [SerializeField] float timePerSearch = 1.0f;
+    [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int initialPoblation = 200;
     [SerializeField] int nPieces = 10;
     [SerializeField] float mutationChance = 0.15f;
-    [SerializeField] AleoType aleoType = AleoType.SwapDoble;
+
+    [SerializeField] float timePerSearch = 1.0f;
+    [SerializeField] float timeDelay = 0.1f;
     [SerializeField] public int showingIndex = 0;
+    [SerializeField] public int showEvery = 100;
 
     public Genotype[] poblation;
     public int[] scores;
@@ -249,16 +251,18 @@ public class OptimizerManager : MonoBehaviour{
         sortedIdxs = Enumerable.Range(0, scores.Length).ToArray();
         Array.Sort(sortedIdxs, (a, b) => scores[b].CompareTo(scores[a]));
 
-        if (generationI % 100 == 0) {
+        if (generationI % showEvery == 0) {
             StartCoroutine(playGenotype(
                 poblation[sortedIdxs[showingIndex]]
             ));
+        } else {
+            executed = false;
+            updateGeneration();
         }
 
         Debug.Log("Generation : " + generationI + ", 1st score: " + scores[sortedIdxs[showingIndex]]);
 
         // Update generation
-        //updateGeneration();
     }
 
     void EvaluateGenotypes() {
@@ -314,7 +318,7 @@ public class OptimizerManager : MonoBehaviour{
         // Use the half to reproduce the other three quarters
 
         int[] half = sortedIdxs[..(initialPoblation / 2)];
-        int[] quart = sortedIdxs[..1];
+        int[] quart = sortedIdxs[..(initialPoblation / 4)];
         float[] probs = computeSoftMax(
             half.Select(i => scores[i]).ToArray()
         );

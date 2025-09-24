@@ -103,8 +103,9 @@ public class Tetrimino : MonoBehaviour {
         }
         position = newPos;
 
+        // Update grid (may be optimized by just calling it at the end)
         gridM.updateGrid();
-
+        
         // last action was a movement
         lastAction = ActionEnum.MOVE;
         return true;

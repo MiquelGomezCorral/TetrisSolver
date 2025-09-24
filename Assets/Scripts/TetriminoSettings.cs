@@ -214,7 +214,7 @@ public class TetriminoSettings : MonoBehaviour {
         int score = PerfectClear ? PerfectClearPoints : 0;
         if (lastAction == ActionEnum.MOVE) {
             switch (count) {
-                case 0: return score + 0;
+                case 0: return score;
                 case 1: return score + 100;
                 case 2: return score + 300;
                 case 3: return score + 500;
@@ -224,7 +224,7 @@ public class TetriminoSettings : MonoBehaviour {
             }
         }else if (lastAction == ActionEnum.T_SPIN) {
             switch (count) {
-                case 0: return score + 400;
+                case 0: return score; //  + 400;  // DO NOT GIVE EXTRA FOR USELESS TSPINS
                 case 1: return score + 800;
                 case 2: return score + 1200;
                 case 3: 
@@ -233,7 +233,7 @@ public class TetriminoSettings : MonoBehaviour {
             }
         } else {  // if (lastAction == ActionEnum.MINI_T_SPIN) {
             switch (count) {
-                case 0: return score + 100;
+                case 0: return score; // + 100; // DO NOT GIVE EXTRA FOR USELESS TSPINS
                 case 1:
                 default:
                     return score + 200;

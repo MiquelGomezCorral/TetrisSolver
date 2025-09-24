@@ -3,7 +3,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using static UnityEditor.PlayerSettings;
+using System.Linq;
 
 public enum AleoType { 
     Simple, Double,  SwapSimple, SwapDoble
@@ -19,55 +19,74 @@ public class Genotype {
 
 
     public int[,] movement;
-
+    AleoType aleoType;
+    int nPieces;
 
     // ========================================================
     //                       CONSTRUCTOR
     // ========================================================
-    public Genotype(AleoType aleoType, int nPieces) {
-        switch (aleoType) {
-            case AleoType.SwapDoble:
-                movement = new int[nPieces, 5];
+    public Genotype(AleoType aleoTypeArg, int nPiecesArg, int[,] movementArg = null) {
+        aleoType = aleoTypeArg;
+        nPieces = nPiecesArg;
 
-                for (int i = 0; i < nPieces; i++) {
-                    movement[i, 0] = getRandomSwap();
-                    movement[i, 1] = getRandomRotate();
-                    movement[i, 2] = getRandomMovementInitial();
-                    movement[i, 3] = getRandomMovement();
-                    movement[i, 4] = getRandomRotate();
-                }
-                break;
-            case AleoType.SwapSimple:
-                movement = new int[nPieces, 3];
+        if (movement != movementArg) {
+            movement = movementArg;
+        } else {
+            switch (aleoType) {
+                case AleoType.SwapDoble:
+                    movement = new int[nPieces, 5];
 
-                for (int i = 0; i < nPieces; i++) {
-                    movement[i, 0] = getRandomSwap();
-                    movement[i, 1] = getRandomRotate();
-                    movement[i, 2] = getRandomMovementInitial();
-                }
-                break;
-            case AleoType.Double:
-                movement = new int[nPieces, 4];
+                    for (int i = 0; i < nPieces; i++) {
+                        movement[i, 0] = getRandomSwap();
+                        movement[i, 1] = getRandomRotate();
+                        movement[i, 2] = getRandomMovementInitial();
+                        movement[i, 3] = getRandomMovement();
+                        movement[i, 4] = getRandomRotate();
+                    }
+                    break;
+                case AleoType.SwapSimple:
+                    movement = new int[nPieces, 3];
 
-                for (int i = 0; i < nPieces; i++) {
-                    movement[i, 0] = getRandomRotate();
-                    movement[i, 1] = getRandomMovementInitial();
-                    movement[i, 2] = getRandomMovement();
-                    movement[i, 3] = getRandomRotate();
-                }
-                break;
-            case AleoType.Simple:
-            default:
-                movement = new int[nPieces, 2];
+                    for (int i = 0; i < nPieces; i++) {
+                        movement[i, 0] = getRandomSwap();
+                        movement[i, 1] = getRandomRotate();
+                        movement[i, 2] = getRandomMovementInitial();
+                    }
+                    break;
+                case AleoType.Double:
+                    movement = new int[nPieces, 4];
 
-                for (int i = 0; i < nPieces; i++) {
-                    movement[i, 0] = getRandomRotate();
-                    movement[i, 1] = getRandomMovementInitial();
-                }
-                break;
+                    for (int i = 0; i < nPieces; i++) {
+                        movement[i, 0] = getRandomRotate();
+                        movement[i, 1] = getRandomMovementInitial();
+                        movement[i, 2] = getRandomMovement();
+                        movement[i, 3] = getRandomRotate();
+                    }
+                    break;
+                case AleoType.Simple:
+                default:
+                    movement = new int[nPieces, 2];
+
+                    for (int i = 0; i < nPieces; i++) {
+                        movement[i, 0] = getRandomRotate();
+                        movement[i, 1] = getRandomMovementInitial();
+                    }
+                    break;
+            }
         }
     }
 
+    public Genotype DeepCopy() {
+        int[,] movementCpy = new int[movement.GetLength(0), movement.GetLength(1)];
+
+        for (int r = 0; r < movement.GetLength(0); r++) {
+            for (int c = 0; c < movement.GetLength(1); c++) {
+                movementCpy[r, c] = movement[r, c];
+            }
+        }
+
+        return new Genotype(aleoType, nPieces, movementCpy);
+    }
     // ========================================================
     //                       METHODS
     // ========================================================
@@ -84,12 +103,35 @@ public class Genotype {
         return UnityEngine.Random.Range(swapRanges[0], swapRanges[1]+1);
     }
 
+    public bool[,] GetRandomBooleans(int n, int m, float probabilityYes = 0.5f) {
+        bool[,] matrix = new bool[n, m];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+                matrix[i, j] = UnityEngine.Random.value < probabilityYes;
+            }
+        }
+        return matrix;
+    }
     // ========================================================
     //                         GSA
     // ========================================================
+    public Genotype reproduce(Genotype parent, float mutateChance) {
+        Genotype kid = DeepCopy();
 
+        if (parent != null) { 
+            // Copy half of the pieces movement alternating
+            for (int i = 0; i < movement.GetLength(0); i+=2) {
+                for (int j = 0; j < movement.GetLength(1); j++) {
+                   kid.movement[i, j] = parent.movement[i, j];
+                }
+            }
+        }// if no parent just kid mutated
 
-    public void mutate(float chance, AleoType aleoType) {
+        kid.mutate(mutateChance);
+        return kid;
+    }
+
+    public void mutate(float chance) {
         bool[,] mutates = GetRandomBooleans(movement.GetLength(0), movement.GetLength(1), chance);
         for (int i = 0; i < movement.GetLength(0); i++) {
             for (int pos = 0; pos < movement.GetLength(1); pos++) {
@@ -142,16 +184,7 @@ public class Genotype {
             }
         }
     }
-
-    public bool[,] GetRandomBooleans(int n, int m, float probabilityYes = 0.5f) {
-        bool[,] matrix = new bool[n, m];
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                matrix[i, j] = UnityEngine.Random.value < probabilityYes;
-            }
-        }
-        return matrix;
-    }
+    
 }
 
 public class OptimizerManager : MonoBehaviour{
@@ -162,8 +195,11 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float mutationChance = 0.15f;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
 
-    public Genotype[] pobation;
+    public Genotype[] poblation;
     public int[] scores;
+    public int[] sortedIdxs;
+    public int generationI;
+    Queue<TetriminoEnum> bagQueueSaved;
 
     private GameManager gameM; // Do to look for it every time
     //public Queue<TetriminoEnum> bagQueueSaved;
@@ -174,12 +210,13 @@ public class OptimizerManager : MonoBehaviour{
     void Start(){
         gameM = FindFirstObjectByType<GameManager>();
 
-
+        generationI = 0;
         scores = new int[initialPoblation];
-        pobation = new Genotype[initialPoblation];
+        poblation = new Genotype[initialPoblation];
         for (int i = 0; i < initialPoblation; i++) {
-            pobation[i] = new Genotype(aleoType, nPieces);
+            poblation[i] = new Genotype(aleoType, nPieces);
         }
+        Debug.Log("Initial poblation size: " + initialPoblation);
 
     }
 
@@ -190,36 +227,99 @@ public class OptimizerManager : MonoBehaviour{
     void Update(){
         if (executed) { return;  }
         executed = true;
-        StartCoroutine(EvaluateGenotypes());
+        
+
+        // Create a copy of the bag at that moment
+        bagQueueSaved = gameM.getBagsCopy();
+        // Evaluate current Genotypes
+        //StartCoroutine(EvaluateGenotypes());
+        EvaluateGenotypes();
+
+        // sort indices by scores
+        sortedIdxs = Enumerable.Range(0, scores.Length).ToArray();
+        Array.Sort(sortedIdxs, (a, b) => scores[b].CompareTo(scores[a]));
+
+        StartCoroutine(playGenotype(poblation[sortedIdxs[1]]));
+
+        Debug.Log("Generation : " + generationI + ", 1st score: " + scores[sortedIdxs[0]]);
+
+        // Update generation
+        //updateGeneration();
     }
 
-    IEnumerator EvaluateGenotypes() {
-        // Create a copy of the bag at that moment
-        Queue<TetriminoEnum> bagQueueSaved = gameM.getBagsCopy();
-
-        for (int genI = 0; genI < pobation.Length; genI++) {
-            Genotype genotype = pobation[genI];
+    void EvaluateGenotypes() {
+        for (int genI = 0; genI < poblation.Length; genI++) {
+            Genotype genotype = poblation[genI];
 
             // For each piece
             for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
                 // For each movement in that piece
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
                     // Wait 0.2s before next movement
-                    yield return new WaitForSeconds(timeDelay);
+                    //yield return new WaitForSeconds(timeDelay);
 
                     playMovement(genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
                 gameM.spawnNewPiece();
             }
             scores[genI] = gameM.getScore();
-            Debug.Log("Genotype: " + genI + " scored: " + scores[genI]);
+            //Debug.Log("Genotype: " + genI + " scored: " + scores[genI]);
 
             // Create a copy of the bag saved
             gameM.resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
         }
+    }
+
+    IEnumerator playGenotype(Genotype genotype) {
+        // For each piece
+        for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
+            // For each movement in that piece
+            for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
+                // Wait 0.2s before next movement
+                yield return new WaitForSeconds(timeDelay);
+
+                playMovement(genotype.movement[pieceI, moveJ], moveJ, aleoType);
+            }
+            gameM.spawnNewPiece();
+        }
+        Debug.Log("Best genotype scored " + " scored: " + gameM.getScore());
+
+        // Create a copy of the bag saved
+        gameM.resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
 
         executed = false;
+        updateGeneration();
     }
+
+    // ========================================================
+    //                            GA
+    // ========================================================
+    void updateGeneration() {
+        // Get the best half and first quarter of them (ignore the others)
+        // Keep with the same values the first quarter 
+        // Use the half to reproduce the other three quarters
+
+        int[] half = sortedIdxs[..(initialPoblation / 20)];
+        int[] quart = sortedIdxs[..(initialPoblation / 20)];
+        float[] probs = computeSoftMax(half);
+
+        Genotype[] newPoblation = new Genotype[initialPoblation];
+
+        for (int i = 0; i < quart.Length; i++) {
+            newPoblation[i] = poblation[quart[i]];
+        }
+
+        // Keep the first quart of the best, reproduce the rest
+        for (int i = quart.Length; i < initialPoblation; i++) {
+            Genotype parent1 = getRandomGenotype(half, probs);
+            Genotype parent2 = getRandomGenotype(half, probs);
+
+            newPoblation[i] = parent1.reproduce(parent2, mutationChance);
+        }
+
+        generationI++;
+    }
+
     // ========================================================
     //                          METHODS
     // ========================================================
@@ -253,6 +353,36 @@ public class OptimizerManager : MonoBehaviour{
         if( (pos == 1 && aleoType == AleoType.Double) || (pos == 2 && aleoType == AleoType.SwapDoble)) {
             gameM.moveCurrentPieceBootom();
         }
-
     }
+
+    public float[] computeSoftMax(int[] scores) {
+        float[] result = new float[scores.Length];
+
+        float divisor = 0f;
+        for (int i = 0;i < scores.Length;i++) {
+            result[i] = Mathf.Exp(scores[i]);
+            divisor += result[i];
+        }
+
+        for (int i = 0; i < scores.Length; i++) {
+            result[i] /= divisor;
+        }
+
+        return result;
+    }
+
+    public Genotype getRandomGenotype(int[] indices, float[] probs) {
+        float random = UnityEngine.Random.Range(0f, 1f);
+        float sum = 0f;
+        int i = -1;
+
+        while(sum < random) {
+            i++;
+            sum += probs[i];
+        }
+
+        return poblation[indices[i]];
+    }
+
+
 }

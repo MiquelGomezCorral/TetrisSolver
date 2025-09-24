@@ -218,11 +218,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeDelay: 0.05
   timePerSearch: 1
-  initialPoblation: 200
+  initialPoblation: 2000
   nPieces: 10
-  mutationChance: 0.15
-  aleoType: 0
+  mutationChance: 0.2
+  aleoType: 3
   scores: 
+  sortedIdxs: 
+  generationI: 0
 --- !u!4 &274407757
 Transform:
   m_ObjectHideFlags: 0

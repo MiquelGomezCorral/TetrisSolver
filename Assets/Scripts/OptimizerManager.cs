@@ -29,7 +29,7 @@ public class Genotype {
         aleoType = aleoTypeArg;
         nPieces = nPiecesArg;
 
-        if (movement != movementArg) {
+        if (movementArg != null) {
             movement = movementArg;
         } else {
             switch (aleoType) {
@@ -160,26 +160,35 @@ public class Genotype {
                     (aleoType == AleoType.SwapSimple && (pos == 2)) ||
                     (aleoType == AleoType.SwapDoble && (pos == 2))
                 ) { // Move intitial
-                    if (movement[i, pos] <= movementInitialRagnes[0]) {
-                        movement[i, pos] =  movementInitialRagnes[0] + 1;  // move up from lower limit
-                    } else if (movement[i, pos] >= movementInitialRagnes[1]) {
-                        movement[i, pos] = movementInitialRagnes[1] - 1;  // move down from upper limit
-                    } else {
-                        movement[i, pos] += (UnityEngine.Random.value > 0.5f ? 1 : -1);
-                    }
+
+                    // JUST ONE LEFT OR RIGHT
+                    //if (movement[i, pos] <= movementInitialRagnes[0]) {
+                    //    movement[i, pos] =  movementInitialRagnes[0] + 1;  // move up from lower limit
+                    //} else if (movement[i, pos] >= movementInitialRagnes[1]) {
+                    //    movement[i, pos] = movementInitialRagnes[1] - 1;  // move down from upper limit
+                    //} else {
+                    //    movement[i, pos] += (UnityEngine.Random.value > 0.5f ? 1 : -1);
+                    //}
+
+                    // GET ANY RANDOM VALUE
+                    movement[i, pos] = UnityEngine.Random.Range(movementInitialRagnes[0], movementInitialRagnes[1] + 1);
 
                 } else if (
                     (aleoType == AleoType.Double && (pos == 2)) ||
                     (aleoType == AleoType.SwapDoble && (pos == 3))
                 ) { // Move middle
-                    if (movement[i, pos] <= movementRagnes[0]) {
-                        movement[i, pos] = movementRagnes[0] + 1;  // move up from lower limit
-                    } else if (movement[i, pos] >= movementRagnes[1]) {
-                        movement[i, pos] = movementRagnes[1] - 1;  // move down from upper limit
-                    } else {
-                        movement[i, pos] += (UnityEngine.Random.value > 0.5f ? 1 : -1);
-                    }
 
+                    // JUST ONE LEFT OR RIGHT
+                    //if (movement[i, pos] <= movementRagnes[0]) {
+                    //    movement[i, pos] = movementRagnes[0] + 1;  // move up from lower limit
+                    //} else if (movement[i, pos] >= movementRagnes[1]) {
+                    //    movement[i, pos] = movementRagnes[1] - 1;  // move down from upper limit
+                    //} else {
+                    //    movement[i, pos] += (UnityEngine.Random.value > 0.5f ? 1 : -1);
+                    //}
+
+                    // GET ANY RANDOM VALUE
+                    movement[i, pos] = UnityEngine.Random.Range(movementRagnes[0], movementRagnes[1]+1);
                 }
             }
         }
@@ -194,6 +203,7 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] int nPieces = 10;
     [SerializeField] float mutationChance = 0.15f;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
+    [SerializeField] public int showingIndex = 0;
 
     public Genotype[] poblation;
     public int[] scores;
@@ -239,9 +249,13 @@ public class OptimizerManager : MonoBehaviour{
         sortedIdxs = Enumerable.Range(0, scores.Length).ToArray();
         Array.Sort(sortedIdxs, (a, b) => scores[b].CompareTo(scores[a]));
 
-        StartCoroutine(playGenotype(poblation[sortedIdxs[1]]));
+        if (generationI % 100 == 0) {
+            StartCoroutine(playGenotype(
+                poblation[sortedIdxs[showingIndex]]
+            ));
+        }
 
-        Debug.Log("Generation : " + generationI + ", 1st score: " + scores[sortedIdxs[0]]);
+        Debug.Log("Generation : " + generationI + ", 1st score: " + scores[sortedIdxs[showingIndex]]);
 
         // Update generation
         //updateGeneration();
@@ -299,9 +313,11 @@ public class OptimizerManager : MonoBehaviour{
         // Keep with the same values the first quarter 
         // Use the half to reproduce the other three quarters
 
-        int[] half = sortedIdxs[..(initialPoblation / 20)];
-        int[] quart = sortedIdxs[..(initialPoblation / 20)];
-        float[] probs = computeSoftMax(half);
+        int[] half = sortedIdxs[..(initialPoblation / 2)];
+        int[] quart = sortedIdxs[..1];
+        float[] probs = computeSoftMax(
+            half.Select(i => scores[i]).ToArray()
+        );
 
         Genotype[] newPoblation = new Genotype[initialPoblation];
 
@@ -317,6 +333,7 @@ public class OptimizerManager : MonoBehaviour{
             newPoblation[i] = parent1.reproduce(parent2, mutationChance);
         }
 
+        poblation = newPoblation;
         generationI++;
     }
 

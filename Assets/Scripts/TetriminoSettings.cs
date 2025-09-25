@@ -241,4 +241,20 @@ public class TetriminoSettings : MonoBehaviour {
         }
     }
 
+    // ==============================================================================
+    //                                   BAGS PIECE 
+    // ==============================================================================
+    public static List<TetriminoEnum> produceRandomBag() {
+        List<TetriminoEnum> newBag = new List<TetriminoEnum>(basePiecesBag);
+
+        // Suffle the bags with Fisher–Yates 
+        for (int i = 0; i < newBag.Count; i++) {
+            int j = UnityEngine.Random.Range(0, newBag.Count); // 1..Count-1
+            TetriminoEnum tmp = newBag[i];
+            newBag[i] = newBag[j];
+            newBag[j] = tmp;
+        }
+
+        return newBag;
+    }
 }

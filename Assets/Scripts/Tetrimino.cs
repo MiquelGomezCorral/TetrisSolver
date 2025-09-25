@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Tetrimino : MonoBehaviour {
-    private GameManager gameM; // Do to look for it every time
-    private GridManager gridM; // Do to look for it every time
+public class Tetrimino {
+    private GridManager gridM;
 
     public TetriminoEnum pieceType;
     public DirectionEnum pieceOrientation;
@@ -15,43 +14,27 @@ public class Tetrimino : MonoBehaviour {
 
 
     // ========================================================
-    //                          START
+    //                          CONSTRUCTOR
     // ========================================================
-    void Start() {
-        // GAME MANAGER 
-        gameM = FindFirstObjectByType<GameManager>();
-        gameM.CurrentPiece = this;
-
-        // GRID MANAGER 
-        gridM = FindFirstObjectByType<GridManager>();
-
-        resetPeace();
+    public Tetrimino(GridManager gridM, TetriminoEnum pieceType) {
+        this.gridM = gridM;
+        resetPeace(pieceType);
     }
-
-
-    // ========================================================
-    //                          UPDATE
-    // ========================================================
-    void Update() {}
 
 
     // ========================================================
     //                      Reset peace
     // ========================================================
-    public void resetPeace() {
-        pieceType = gameM.CurrentPieceType;
+    public void resetPeace(TetriminoEnum pieceType) {
+        this.pieceType = pieceType;
 
         positionsList = TetriminoSettings.getTetriminoPositions(pieceType);
         position = gridM.startingPosition;
         pieceOrientation = DirectionEnum.UP; // by default 0 looking up
-
-        gridM.updateGrid();
     }
 
     public void lockPeace() {
         List<Vector2Int> absPositions = getAbsPositions();
-        gridM.unRenderPiece(absPositions);
-
         movePieceBootom();
 
         // Get the absolute positions and fix those cells
@@ -59,20 +42,6 @@ public class Tetrimino : MonoBehaviour {
         gridM.lockPiece(absPositions, pieceType, lastAction);
     }
 
-
-    // will take the new type from the Game manager
-    public void swapPiece() {
-        // Unrender piece
-        gridM.unRenderPiece(getAbsPositions());
-
-
-        // Change placeholder type before reseting.
-        gridM.swapPlaceholder.changeType(pieceType);
-
-        // Reset piece
-        resetPeace();
-
-    }
     // ========================================================
     //                          METHODS
     // ========================================================
@@ -92,20 +61,15 @@ public class Tetrimino : MonoBehaviour {
             DirectionEnum.DOWN => Vector2Int.down,
             _ => Vector2Int.zero
         };
-
         Vector2Int newPos = position + delta;
 
-
         // Efficiently cheking all the pieces
-        foreach(Vector2Int pos in positionsList) {
-            if (!gridM.isValidPosition(newPos + pos)) 
+        foreach (Vector2Int pos in positionsList) {
+            if (!gridM.isValidPosition(newPos + pos))
                 return false;
         }
         position = newPos;
 
-        // Update grid (may be optimized by just calling it at the end)
-        gridM.updateGrid();
-        
         // last action was a movement
         lastAction = ActionEnum.MOVE;
         return true;
@@ -114,7 +78,7 @@ public class Tetrimino : MonoBehaviour {
     public bool movePieceBootom() {
         // Move the piece to the bottom
         bool movedAtLeastOnce = false;
-        while (movePieze(DirectionEnum.DOWN)) { 
+        while (movePieze(DirectionEnum.DOWN)) {
             movedAtLeastOnce = true;
         }
         return movedAtLeastOnce;
@@ -123,7 +87,7 @@ public class Tetrimino : MonoBehaviour {
     public bool rotatePiece(RorateEnum direction) {
         if (direction == RorateEnum.X)  // Do nothing
             return true;
-        
+
 
         bool rotationSuccess = false;
         if (direction == RorateEnum.R180) {
@@ -145,8 +109,6 @@ public class Tetrimino : MonoBehaviour {
             rotationSuccess = rotate(direction);
         }
 
-        if (rotationSuccess)
-            gridM.updateGrid();
         return rotationSuccess;
     }
 
@@ -172,7 +134,7 @@ public class Tetrimino : MonoBehaviour {
                 if (!gridM.isValidPosition(absPos)) {
                     rotationSuccess = false; break;
                 }
-                    
+
                 newPositions.Add(rotatedPos);
             }
             if (rotationSuccess) {
@@ -198,10 +160,10 @@ public class Tetrimino : MonoBehaviour {
         );
     }
 
-    
+
     private void normalizePositionList(List<Vector2Int> positions, Vector2Int offSet) {
         List<Vector2Int> newPositions = new List<Vector2Int>();
-        foreach(Vector2Int pos in positions) {
+        foreach (Vector2Int pos in positions) {
             newPositions.Add(pos - offSet);
         }
 
@@ -231,8 +193,5 @@ public class Tetrimino : MonoBehaviour {
             lastAction = ActionEnum.T_SPIN;
         else if (C && D && (A || B))
             lastAction = ActionEnum.MINI_T_SPIN;
-
     }
-
-
 }

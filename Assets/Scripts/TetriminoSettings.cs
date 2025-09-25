@@ -24,6 +24,8 @@ public enum ActionEnum {
 //                              SETTINGS
 // =================================================================
 public class TetriminoSettings : MonoBehaviour {
+    [SerializeField] public static int width = 10, height = 20;
+
     public static int PerfectClearPoints = 2000;
     public static TetriminoSettings Instance;
 

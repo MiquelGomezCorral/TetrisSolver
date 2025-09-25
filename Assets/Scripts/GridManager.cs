@@ -4,16 +4,15 @@ using TMPro;
 using UnityEngine;
 
 public class GridManager{
-    public int width = 10, height = 20;
+    public int width, height;
     public Vector2Int startingPosition;
     private TetriminoEnum[,] gridTypes;
 
     // ========================================================
     //                          START
     // ========================================================
-    public GridManager(int width = 10, int height = 20) { 
-        this.width = width;
-        this.height = height;
+    public GridManager(int width, int height) { 
+        this.width = width; this.height = height;
         // ============== Define pieces starting position ==============
         startingPosition = new Vector2Int(
             Mathf.Max(0, Mathf.FloorToInt(width / 2) - 1),
@@ -27,6 +26,16 @@ public class GridManager{
     // ================================================================================================================
     //                                              METHODS
     // ================================================================================================================
+    public TetriminoEnum[,] getGrid() {
+        TetriminoEnum[,] res = new TetriminoEnum[width, height];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                res[x, y] = gridTypes[x, y];
+            }
+        }
+        return res;
+    }
+
     public void resetGrid() {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -108,6 +117,8 @@ public class GridManager{
         // ================ COMPUTE SCORE ================ 
         return TetriminoSettings.computeScore(count, lastAction, allClear);
     }
+
+
 
 
 }

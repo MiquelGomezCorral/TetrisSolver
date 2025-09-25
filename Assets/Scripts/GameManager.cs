@@ -20,7 +20,6 @@ public class GameManager {
 
     public int score;
 
-
     // is okey to be empty, fist call will add 7, then take 1 so 6 and in the
     // next call will add 7 more so 13. No need to initialize here.
     public Queue<TetriminoEnum> bagQueue = new Queue<TetriminoEnum>();
@@ -28,7 +27,7 @@ public class GameManager {
     //                          CONSTRUCTOR
     // ========================================================
     public GameManager() {
-        gridM = new GridManager();
+        gridM = new GridManager(TetriminoSettings.width, TetriminoSettings.height);
 
         // Add two new bags
         fillRandomBag();
@@ -111,10 +110,22 @@ public class GameManager {
         swapPieceType = auxPieceType;
     }
 
+    // ========================================================
+    //                      GRID ACCESS
+    // ========================================================
+    public TetriminoEnum[,] getGrid() {
+        return gridM.getGrid();
+    }
 
     // ========================================================
     //                      GET PIECE
     // ========================================================
+    public List<Vector2Int> getPiecePositions() {
+        return currentPiece.positionsList;
+    }
+    public TetriminoEnum getPieceType() {
+        return currentPieceType;
+    }
     public void fillRandomBag() {
         List<TetriminoEnum> newBag = TetriminoSettings.produceRandomBag();
 

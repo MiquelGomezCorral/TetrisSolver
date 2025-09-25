@@ -11,7 +11,6 @@ public class Genotype {
     public static int rotateRangesModulo = rotateRanges[1] + 1;
     public static int[] swapRanges = { 0, 1 };
 
-
     public int[,] movement;
     AleoType aleoType;
     int nPieces;

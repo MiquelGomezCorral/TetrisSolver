@@ -11,19 +11,18 @@ public class GameViewer : MonoBehaviour {
     private GameManager gameM;
 
     // ========================= PIECES =========================
-    [SerializeField] private GameObject tetriminoPrefab;
-    [SerializeField] private GameObject scorePrefab;
-    [SerializeField] public PiecePlaceholder swapPlaceholderPrefab;
-    [SerializeField] private Transform canvasTransform;
-
+    [SerializeField] public GameObject scorePrefab;
+    [SerializeField] public Transform canvasTransform;
     [SerializeField] public TextMeshProUGUI scoreText;
 
     // ========================================================
     //                          START
     // ========================================================
     void Start() {
-        gridV = FindFirstObjectByType<GridViewer>();
         gameM = new GameManager();
+        gridV = FindFirstObjectByType<GridViewer>();
+        gridV.Init();
+        updateGridViewe();
     }
 
     // ========================================================
@@ -45,15 +44,14 @@ public class GameViewer : MonoBehaviour {
         moved |= HandleKey(KeyCode.UpArrow, () => gameM.swapCurrentPiece());
 
         // Other actions
-        moved |= HandleKey(KeyCode.Space, () => gameM.swapCurrentPiece());
+        moved |= HandleKey(KeyCode.Space, () => {
+            gameM.moveCurrentPieceBootom(); 
+            gameM.lockPiece(); 
+        });
         moved |= HandleKey(KeyCode.R, () => resetGame());
 
         if (moved) {
-            gridV.updateGrid(gameM.getGrid());
-            gridV.updateGridPositions(
-                gameM.getPiecePositions(), 
-                gameM.getPieceType()
-            );
+            updateGridViewe();
         }
     }
 
@@ -73,4 +71,12 @@ public class GameViewer : MonoBehaviour {
         gameM.resetGame();
     }
 
+    public void updateGridViewe() {
+        gridV.updateGrid(gameM.getGrid());
+        gridV.updateGridPositions(
+            gameM.getPiecePositions(),
+            gameM.getPieceType()
+        );
+        gridV.updateSwapPiece(gameM.getSwapPieceType());
+    }
 }

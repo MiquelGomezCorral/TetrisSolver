@@ -46,7 +46,7 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          UPDATE
     // ========================================================
-    bool executed  = false;
+    bool executed  = true;
     void Update(){
         if (executed) { return;  }
         executed = true;
@@ -85,11 +85,11 @@ public class OptimizerManager : MonoBehaviour{
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
                     // Wait 0.2s before next movement
                     //yield return new WaitForSeconds(timeDelay);
-                    playMovement(genotype.movement[pieceI, moveJ], moveJ, aleoType);
+                    playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
                 gameMs[0].getNewRandomPiece();
             }
-            scores[genI] = gameMs[0].score;
+            scores[genI] = gameMs[0].getScore();
             Debug.Log("Genotype: " + genI + " scored: " + scores[genI]);
 
             // Create a copy of the bag saved
@@ -105,14 +105,14 @@ public class OptimizerManager : MonoBehaviour{
                 // Wait 0.2s before next movement
                 yield return new WaitForSeconds(timeDelay);
 
-                playMovement(genotype.movement[pieceI, moveJ], moveJ, aleoType);
+                playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
             }
-            gameM.spawnNewPiece();
+            gameMs[0].getNewRandomPiece();
         }
-        Debug.Log("Best genotype scored " + " scored: " + gameM.getScore());
+        Debug.Log("Best genotype scored " + " scored: " + gameMs[0].getScore());
 
         // Create a copy of the bag saved
-        gameM.resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
+        gameMs[0].resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
 
         executed = false;
         updateGeneration();
@@ -153,7 +153,7 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          METHODS
     // ========================================================
-    private void playMovement(int movement, int pos, AleoType aleoType) {
+    private void playMovement(GameManager gameM, int movement, int pos, AleoType aleoType) {
         if (pos == 0 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) {
             if(movement == 1)
                 gameM.swapCurrentPiece();

@@ -227,6 +227,7 @@ MonoBehaviour:
   scores: 
   sortedIdxs: 
   generationI: 0
+  threadCount: 0
 --- !u!4 &274407757
 Transform:
   m_ObjectHideFlags: 0
@@ -346,7 +347,7 @@ GameObject:
   - component: {fileID: 611936573}
   - component: {fileID: 611936574}
   m_Layer: 0
-  m_Name: GameManager
+  m_Name: GameViewer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -407,12 +408,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09d181cca3cc38a41b4473ea774fb4fd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tetriminoPrefab: {fileID: 7313570058335182414, guid: 705e640071d93ab49aff5fb255d094e0, type: 3}
-  currentPiece: {fileID: 0}
-  currentPieceType: 0
-  swapPieceType: 0
-  score: 0
-  scoreText: {fileID: 0}
+  scorePrefab: {fileID: 5386066266805682043, guid: 2e337d58c51b9a64ba37da312426a762, type: 3}
+  canvasTransform: {fileID: 1181655841}
+  scoreText: {fileID: 7115534275033645885, guid: 2e337d58c51b9a64ba37da312426a762, type: 3}
 --- !u!1 &1181655837
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,7 +523,7 @@ GameObject:
   - component: {fileID: 1705091940}
   - component: {fileID: 1705091939}
   m_Layer: 0
-  m_Name: GridManager
+  m_Name: GridViewer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -543,14 +541,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 11aea51ed1b2f7f4ca5e3cd3a1335ebe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  scorePrefab: {fileID: 5386066266805682043, guid: 2e337d58c51b9a64ba37da312426a762, type: 3}
-  canvasTransform: {fileID: 1181655841}
   cellPrefab: {fileID: 5128450251401385695, guid: b7121f385b0eba844ab4251e61af0da6, type: 3}
   swapPlaceholderPrefab: {fileID: 5818909607780776781, guid: afaa32b5a34fe7540b67772ab1d45a3d, type: 3}
   width: 10
   height: 20
-  startingPosition: {x: 0, y: 0}
-  swapPlaceholder: {fileID: 0}
 --- !u!4 &1705091940
 Transform:
   m_ObjectHideFlags: 0
@@ -570,9 +564,9 @@ Transform:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 45456170}
   - {fileID: 519420032}
   - {fileID: 1705091940}
   - {fileID: 611936572}
   - {fileID: 1181655841}
-  - {fileID: 45456170}
   - {fileID: 274407757}

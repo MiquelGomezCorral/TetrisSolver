@@ -18,7 +18,7 @@ public class GameManager {
     private TetriminoEnum currentPieceType = TetriminoEnum.X;
     private TetriminoEnum swapPieceType = TetriminoEnum.X;
 
-    public int score;
+    private int score;
 
     // is okey to be empty, fist call will add 7, then take 1 so 6 and in the
     // next call will add 7 more so 13. No need to initialize here.
@@ -34,7 +34,8 @@ public class GameManager {
         fillRandomBag();
 
         // Spawn piece
-        currentPiece = new Tetrimino(gridM, getNewRandomPiece());
+        currentPieceType = bagQueue.Dequeue();
+        currentPiece = new Tetrimino(gridM, currentPieceType);
     }
 
     // ========================================================
@@ -48,6 +49,11 @@ public class GameManager {
     }
     public void moveCurrentPieceBootom() {
         currentPiece.movePieceBootom();
+    }
+
+    public void lockPiece() {
+        gridM.lockPiece(getPiecePositions(), currentPieceType, currentPiece.lastAction);
+        getNewRandomPiece();
     }
 
 
@@ -108,20 +114,28 @@ public class GameManager {
         TetriminoEnum auxPieceType = currentPieceType;
         currentPieceType = swapPieceType;
         swapPieceType = auxPieceType;
+
+        currentPiece.resetPeace(currentPieceType);
     }
 
     // ========================================================
-    //                      GRID ACCESS
+    //                      VALUE ACCESS
     // ========================================================
     public TetriminoEnum[,] getGrid() {
         return gridM.getGrid();
+    }
+    public int getScore() {
+        return score;
+    }
+    public TetriminoEnum getSwapPieceType() {
+        return swapPieceType;
     }
 
     // ========================================================
     //                      GET PIECE
     // ========================================================
     public List<Vector2Int> getPiecePositions() {
-        return currentPiece.positionsList;
+        return currentPiece.getAbsPositions();
     }
     public TetriminoEnum getPieceType() {
         return currentPieceType;

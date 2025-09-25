@@ -4,7 +4,7 @@ using UnityEngine;
 public class GridViewer : MonoBehaviour {
     [SerializeField] public Cell cellPrefab;
     [SerializeField] public PiecePlaceholder swapPlaceholderPrefab;
-    public PiecePlaceholder swapPlaceholder;
+    private PiecePlaceholder swapPlaceholder;
 
     Vector2 sizeInUnits;
     public Cell[,] gridCells;
@@ -13,7 +13,8 @@ public class GridViewer : MonoBehaviour {
     // ========================================================
     //                          START
     // ========================================================
-    void Start() {
+    void Start() {}
+    public void Init() {
         width = TetriminoSettings.width; height = TetriminoSettings.height;
 
         // ============== Initialize grid ==============
@@ -29,12 +30,12 @@ public class GridViewer : MonoBehaviour {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 gridCells[x, y] = Instantiate(
-                    cellPrefab, 
+                    cellPrefab,
                     new Vector3(
-                        sizeInUnits.x * x - offsetX, 
+                        sizeInUnits.x * x - offsetX,
                         sizeInUnits.y * y - offsetY,
                         0
-                     ), 
+                     ),
                     Quaternion.identity
                 );
             }
@@ -43,14 +44,13 @@ public class GridViewer : MonoBehaviour {
         swapPlaceholder = Instantiate(
             swapPlaceholderPrefab,
             new Vector3(
-                sizeInUnits.x * width + sizeInUnits.x * 0.5f - offsetX + 1f, 
-                sizeInUnits.y * height / 2f - 1f,                            
+                sizeInUnits.x * width + sizeInUnits.x * 0.5f - offsetX + 1f,
+                sizeInUnits.y * height / 2f - 1f,
                 0f
             ),
             Quaternion.identity
         );
     }
-
     // ========================================================
     //                          UPDATE
     // ========================================================
@@ -86,4 +86,8 @@ public class GridViewer : MonoBehaviour {
         updateGridPositions(positions, TetriminoEnum.X);
     }
 
+
+    public void updateSwapPiece(TetriminoEnum newType) {
+        swapPlaceholder.changeType(newType);
+    }
 }

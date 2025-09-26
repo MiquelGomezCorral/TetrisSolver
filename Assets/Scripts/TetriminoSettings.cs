@@ -247,18 +247,18 @@ public class TetriminoSettings : MonoBehaviour {
         }else if (lastAction == ActionEnum.T_SPIN) {
             switch (count) {
                 case 0: return score; //  + 4;  // DO NOT GIVE EXTRA FOR USELESS TSPINS
-                case 1: return score + 8;
-                case 2: return score + 12;
+                case 1: return score + 0;//8;
+                case 2: return score + 0;//12;
                 case 3: 
                 default:
-                    return score + 16;
+                    return score + 0;//16;
             }
         } else {  // if (lastAction == ActionEnum.MINI_T_SPIN) {
             switch (count) {
                 case 0: return score; // + 1; // DO NOT GIVE EXTRA FOR USELESS TSPINS
                 case 1:
                 default:
-                    return score + 2;
+                    return score + 0;//2;
             }
         }
     }

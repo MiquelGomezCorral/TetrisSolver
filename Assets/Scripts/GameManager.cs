@@ -29,12 +29,8 @@ public class GameManager {
     public GameManager() {
         gridM = new GridManager(TetriminoSettings.width, TetriminoSettings.height);
 
-        // Add two new bags
-        fillRandomBag();
-        fillRandomBag();
-
         // Spawn piece
-        currentPieceType = bagQueue.Dequeue();
+        currentPieceType = getNewRandomPiece(false);
         currentPiece = new Tetrimino(gridM, currentPieceType);
     }
 
@@ -107,6 +103,28 @@ public class GameManager {
     }
 
 
+    // ========================================================
+    //                      VALUE ACCESS
+    // ========================================================
+    public TetriminoEnum[,] getGrid() {
+        return gridM.getGrid();
+    }
+    public int getScore() {
+        return score;
+    }
+    public TetriminoEnum getSwapPieceType() {
+        return swapPieceType;
+    }
+    public List<Vector2Int> getPiecePositions() {
+        return currentPiece.getAbsPositions();
+    }
+    public TetriminoEnum getPieceType() {
+        return currentPieceType;
+    }
+
+    // ========================================================
+    //                 BAGS AND PIECE MANAGEMENT
+    // ========================================================
     public void swapCurrentPiece() {
         if (currentPieceType == TetriminoEnum.X && swapPieceType == TetriminoEnum.X)
             return;
@@ -124,28 +142,7 @@ public class GameManager {
         currentPiece.resetPeace(currentPieceType);
     }
 
-    // ========================================================
-    //                      VALUE ACCESS
-    // ========================================================
-    public TetriminoEnum[,] getGrid() {
-        return gridM.getGrid();
-    }
-    public int getScore() {
-        return score;
-    }
-    public TetriminoEnum getSwapPieceType() {
-        return swapPieceType;
-    }
 
-    // ========================================================
-    //                      GET PIECE
-    // ========================================================
-    public List<Vector2Int> getPiecePositions() {
-        return currentPiece.getAbsPositions();
-    }
-    public TetriminoEnum getPieceType() {
-        return currentPieceType;
-    }
     public void fillRandomBag() {
         List<TetriminoEnum> newBag = TetriminoSettings.produceRandomBag();
 
@@ -164,7 +161,6 @@ public class GameManager {
         }else{
             return bagQueue.Dequeue();
         }
-
     }
     public List<TetriminoEnum> PeekNext(int n) {
         List<TetriminoEnum> nextPieces = new List<TetriminoEnum>();

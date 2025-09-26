@@ -266,17 +266,26 @@ public class TetriminoSettings : MonoBehaviour {
     // ==============================================================================
     //                                   BAGS PIECE 
     // ==============================================================================
-    public static List<TetriminoEnum> produceRandomBag() {
-        List<TetriminoEnum> newBag = new List<TetriminoEnum>(basePiecesBag);
+    public static List<TetriminoEnum> produceRandomBag(int numBags = 1) {
+        List<TetriminoEnum> result = new List<TetriminoEnum>();
 
-        // Suffle the bags with Fisher–Yates 
-        for (int i = 0; i < newBag.Count; i++) {
-            int j = rng.Value.Next(0, newBag.Count); 
-            TetriminoEnum tmp = newBag[i];
-            newBag[i] = newBag[j];
-            newBag[j] = tmp;
+        for (int b = 0; b < numBags; b++) {
+            // Copy base bag
+            List<TetriminoEnum> newBag = new List<TetriminoEnum>(basePiecesBag);
+
+            // Shuffle only this bag
+            for (int i = 0; i < newBag.Count; i++) {
+                int j = rng.Value.Next(0, newBag.Count);
+                TetriminoEnum tmp = newBag[i];
+                newBag[i] = newBag[j];
+                newBag[j] = tmp;
+            }
+
+            // Append shuffled bag to result
+            result.AddRange(newBag);
         }
 
-        return newBag;
+        return result;
     }
+
 }

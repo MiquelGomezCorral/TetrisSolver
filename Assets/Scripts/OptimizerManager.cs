@@ -59,7 +59,7 @@ public class OptimizerManager : MonoBehaviour{
 
         // Create a copy of the bag at that moment
         // If TetriminoSettings instance is not present, produceRandomBag will still work (static data)
-        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag());
+        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag(2));
 
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores
@@ -112,6 +112,8 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
 
     void evaluateGenotypes(Genotype[] toEvaluatePoblation, int startIdx) {
+        Debug.Log("Initial bagQueueSaved: " + string.Join(", ", bagQueueSaved));
+
         gameMs[0].resetGame(bagQueueSaved);
         for (int genIdx = 0; genIdx < toEvaluatePoblation.Length; genIdx++) {
             Genotype genotype = toEvaluatePoblation[genIdx];
@@ -127,6 +129,7 @@ public class OptimizerManager : MonoBehaviour{
             }
             scores[startIdx+genIdx] = gameMs[0].getScore();
 
+
             // Create a copy of the bag saved
             gameMs[0].resetGame(bagQueueSaved);
         }
@@ -134,18 +137,9 @@ public class OptimizerManager : MonoBehaviour{
 
     IEnumerator playGenotype(Genotype genotype) {
         GameManager gameM = gameMs[0];
-        gameM.resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
+        Debug.Log("Playing bagQueueSaved: " + string.Join(", ", bagQueueSaved));
+        gameM.resetGame(bagQueueSaved);
         gridV.resetGrid();
-
-        //Debug.Log("==============================");
-        //for (int i = 0; i < gameM.getGrid().GetLength(0); i++) {
-        //    string row = "";
-        //    for (int j = 0; j < gameM.getGrid().GetLength(1); j++) {
-        //        row += gameM.getGrid()[i, j].ToString() + " ";
-        //    }
-        //    Debug.Log(row);
-        //}
-
 
         // For each piece
         for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
@@ -160,17 +154,7 @@ public class OptimizerManager : MonoBehaviour{
             updateGridViewer(gameM);
         }
 
-        //Debug.Log("==============================");
-        //for (int i = 0; i < gameM.getGrid().GetLength(0); i++) {
-        //    string row = "";
-        //    for (int j = 0; j < gameM.getGrid().GetLength(1); j++) {
-        //        row += gameM.getGrid()[i, j].ToString() + " ";
-        //    }
-        //    Debug.Log(row);
-        //}
-
         simulating = false;
-
     }
 
 

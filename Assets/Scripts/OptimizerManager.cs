@@ -59,12 +59,11 @@ public class OptimizerManager : MonoBehaviour{
 
         // Create a copy of the bag at that moment
         // If TetriminoSettings instance is not present, produceRandomBag will still work (static data)
-        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag(2));
+        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag(3));
 
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores
         // Rest will be evaluated in the processNextGeneration  
-        Debug.Log("FIRST evlauation population " + generationI);
         StartEvaluationThread(poblation[..(initialPoblation / 2)], 0);
     }
 
@@ -112,8 +111,6 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
 
     void evaluateGenotypes(Genotype[] toEvaluatePoblation, int startIdx) {
-        Debug.Log("Initial bagQueueSaved: " + string.Join(", ", bagQueueSaved));
-
         gameMs[0].resetGame(bagQueueSaved);
         for (int genIdx = 0; genIdx < toEvaluatePoblation.Length; genIdx++) {
             Genotype genotype = toEvaluatePoblation[genIdx];
@@ -125,7 +122,6 @@ public class OptimizerManager : MonoBehaviour{
                     playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
                 gameMs[0].lockPiece();
-                gameMs[0].getNewRandomPiece();
             }
             scores[startIdx+genIdx] = gameMs[0].getScore();
 
@@ -136,8 +132,7 @@ public class OptimizerManager : MonoBehaviour{
     }
 
     IEnumerator playGenotype(Genotype genotype) {
-        GameManager gameM = gameMs[0];
-        Debug.Log("Playing bagQueueSaved: " + string.Join(", ", bagQueueSaved));
+        GameManager gameM = gameMs[1];
         gameM.resetGame(bagQueueSaved);
         gridV.resetGrid();
 
@@ -149,7 +144,6 @@ public class OptimizerManager : MonoBehaviour{
                 playMovement(gameM, genotype.movement[pieceI, moveJ], moveJ, aleoType);
             }
             gameM.lockPiece();
-            gameM.getNewRandomPiece();
 
             updateGridViewer(gameM);
         }
@@ -200,7 +194,7 @@ public class OptimizerManager : MonoBehaviour{
         sortedIdxs = Enumerable.Range(0, scores.Length).ToArray();
         Array.Sort(sortedIdxs, (a, b) => scores[b].CompareTo(scores[a]));
 
-        Debug.Log("Generation : " + generationI + ", 1st score: " + scores[sortedIdxs[showingIndex]]);
+        Debug.Log("Generation : " + generationI + " scored " + scores[sortedIdxs[showingIndex]]);
     }
 
     // ========================================================

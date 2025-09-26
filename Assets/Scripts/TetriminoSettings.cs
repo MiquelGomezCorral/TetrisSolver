@@ -271,7 +271,7 @@ public class TetriminoSettings : MonoBehaviour {
 
         // Suffle the bags with Fisher–Yates 
         for (int i = 0; i < newBag.Count; i++) {
-            int j = rng.Value.Next(0, newBag.Count); // 0..Count-1
+            int j = rng.Value.Next(0, newBag.Count); 
             TetriminoEnum tmp = newBag[i];
             newBag[i] = newBag[j];
             newBag[j] = tmp;

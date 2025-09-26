@@ -52,7 +52,7 @@ public class GameManager {
     }
 
     public void lockPiece() {
-        gridM.lockPiece(getPiecePositions(), currentPieceType, currentPiece.lastAction);
+        score += gridM.lockPiece(getPiecePositions(), currentPieceType, currentPiece.lastAction);
         getNewRandomPiece();
     }
 

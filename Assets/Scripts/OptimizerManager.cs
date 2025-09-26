@@ -63,6 +63,7 @@ public class OptimizerManager : MonoBehaviour{
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores
         // Rest will be evaluated in the processNextGeneration  
+        Debug.Log("FIRST evlauation population " + generationI);
         StartEvaluationThread(poblation[..(initialPoblation / 2)], 0);
     }
 
@@ -75,7 +76,12 @@ public class OptimizerManager : MonoBehaviour{
         //if (mainComputationThread == null || mainComputationThread.IsAlive) return;
         if (executed) return;
 
+        // =========================== EVALUATE ========================
+        Debug.Log("Starting new evlauation population " + generationI);
+        StartEvaluationThread(poblation[(initialPoblation / 2)..], initialPoblation / 2);
+
         // =========================== SORT BEST ========================
+        Debug.Log("Sorting population " + generationI);
         SortPopulation();
 
         // =========================== PLAY MOVEMENT ========================
@@ -84,10 +90,9 @@ public class OptimizerManager : MonoBehaviour{
         //}
 
         // =========================== UPDATE GENERATION ========================
+        Debug.Log("Updating population " + generationI);
         updateGeneration();
 
-        // =========================== EVALUATE ========================
-        StartEvaluationThread(poblation[(initialPoblation / 2)..], initialPoblation / 2);
     }
     // ========================================================
     //                          THREDING
@@ -97,9 +102,10 @@ public class OptimizerManager : MonoBehaviour{
         //mainComputationThread.Start();
         executed = true;
         evaluateGenotypes(slice, startIdx);
+        executed = false;
     }
 
-    
+
     // ========================================================
     //                          EVALUATE
     // ========================================================
@@ -122,7 +128,6 @@ public class OptimizerManager : MonoBehaviour{
             // Create a copy of the bag saved
             gameMs[0].resetGame(bagQueueSaved);
         }
-        executed = true;
     }
 
     IEnumerator playGenotype(Genotype genotype) {
@@ -167,7 +172,8 @@ public class OptimizerManager : MonoBehaviour{
             Genotype parent2 = getRandomGenotype(sortedIdxs, probs);
 
             newPoblation[i] = parent1.reproduce(parent2, mutationChance);
-            newPoblation[i+1] = parent2.reproduce(parent1, mutationChance);
+            if(i+1 < initialPoblation) // not exeding array
+                newPoblation[i+1] = parent2.reproduce(parent1, mutationChance);
         }
 
         poblation = newPoblation;

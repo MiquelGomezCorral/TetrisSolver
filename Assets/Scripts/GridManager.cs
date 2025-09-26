@@ -67,7 +67,6 @@ public class GridManager{
             gridTypes[pos.x, pos.y] = pieceType;
         }
 
-
         return clearLines(lastAction);
     }
 
@@ -117,8 +116,4 @@ public class GridManager{
         // ================ COMPUTE SCORE ================ 
         return TetriminoSettings.computeScore(count, lastAction, allClear);
     }
-
-
-
-
 }

@@ -12,9 +12,7 @@ public class Cell : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update() {
-
-    }
+    void Update() {}
 
     public void changeType(TetriminoEnum piecetype) {
         pieceType = piecetype;

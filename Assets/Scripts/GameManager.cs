@@ -86,10 +86,13 @@ public class GameManager {
     //                          METHODS
     // ========================================================
     public void resetGame(Queue<TetriminoEnum> bagQueueSaved = null) {
-        // Get get new piece
+        // Reset bag
         if (bagQueueSaved != null) 
             bagQueue = new Queue<TetriminoEnum>(bagQueueSaved);
+        else
+            bagQueue.Clear();
 
+        // Get get new piece
         getNewRandomPiece();
         swapPieceType = TetriminoEnum.X;
 
@@ -107,7 +110,7 @@ public class GameManager {
 
         // If no piece get a new one
         if (swapPieceType == TetriminoEnum.X) {
-            swapPieceType = getNewRandomPiece();
+            swapPieceType = getNewRandomPiece(false);
         }
 
         // Swap types
@@ -147,14 +150,18 @@ public class GameManager {
         foreach (TetriminoEnum newPiece in newBag)
             bagQueue.Enqueue(newPiece);
     }
-    public TetriminoEnum getNewRandomPiece() {
+    public TetriminoEnum getNewRandomPiece(bool assignToCurrent = true) {
         if (bagQueue.Count < 7) 
             fillRandomBag();
 
-        currentPieceType = bagQueue.Dequeue();
-        currentPiece.resetPeace(currentPieceType);
+        if (assignToCurrent){
+            currentPieceType = bagQueue.Dequeue();
+            currentPiece.resetPeace(currentPieceType);
+            return currentPieceType;
+        }else{
+            return bagQueue.Dequeue();
+        }
 
-        return currentPieceType;
     }
     public List<TetriminoEnum> PeekNext(int n) {
         List<TetriminoEnum> nextPieces = new List<TetriminoEnum>();

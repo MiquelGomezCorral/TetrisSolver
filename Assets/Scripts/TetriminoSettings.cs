@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UIElements;
@@ -65,7 +66,8 @@ public class TetriminoSettings : MonoBehaviour {
     };
 
 
-
+    // For random Processed
+    private static ThreadLocal<System.Random> rng = new ThreadLocal<System.Random>(() => new System.Random());
     // ========================================================
     //                          AWAKE
     // ========================================================
@@ -251,7 +253,7 @@ public class TetriminoSettings : MonoBehaviour {
 
         // Suffle the bags with Fisher–Yates 
         for (int i = 0; i < newBag.Count; i++) {
-            int j = UnityEngine.Random.Range(0, newBag.Count); // 1..Count-1
+            int j = rng.Value.Next(0, newBag.Count); // 1..Count-1
             TetriminoEnum tmp = newBag[i];
             newBag[i] = newBag[j];
             newBag[j] = tmp;

@@ -11,9 +11,9 @@ public class GameViewer : MonoBehaviour {
     private GameManager gameM;
 
     // ========================= PIECES =========================
-    [SerializeField] public GameObject scorePrefab;
-    [SerializeField] public Transform canvasTransform;
-    [SerializeField] public TextMeshProUGUI scoreText;
+    //[SerializeField] public GameObject scorePrefab;
+    //[SerializeField] public Transform canvasTransform;
+    //[SerializeField] public TextMeshProUGUI scoreText;
 
     // ========================================================
     //                          START

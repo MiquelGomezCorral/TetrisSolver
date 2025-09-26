@@ -71,17 +71,15 @@ public class OptimizerManager : MonoBehaviour{
     //                          UPDATE
     // ========================================================
     //Thread mainComputationThread;
-    bool executed;
+    bool executed = true;
     void Update(){
         //if (mainComputationThread == null || mainComputationThread.IsAlive) return;
         if (executed) return;
 
         // =========================== EVALUATE ========================
-        Debug.Log("Starting new evlauation population " + generationI);
         StartEvaluationThread(poblation[(initialPoblation / 2)..], initialPoblation / 2);
 
         // =========================== SORT BEST ========================
-        Debug.Log("Sorting population " + generationI);
         SortPopulation();
 
         // =========================== PLAY MOVEMENT ========================
@@ -90,7 +88,6 @@ public class OptimizerManager : MonoBehaviour{
         //}
 
         // =========================== UPDATE GENERATION ========================
-        Debug.Log("Updating population " + generationI);
         updateGeneration();
 
     }
@@ -101,6 +98,7 @@ public class OptimizerManager : MonoBehaviour{
         //mainComputationThread = new Thread(() => evaluateGenotypes(slice));
         //mainComputationThread.Start();
         executed = true;
+
         evaluateGenotypes(slice, startIdx);
         executed = false;
     }
@@ -121,6 +119,7 @@ public class OptimizerManager : MonoBehaviour{
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
                     playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
+                gameMs[0].lockPiece();
                 gameMs[0].getNewRandomPiece();
             }
             scores[startIdx+genIdx] = gameMs[0].getScore();
@@ -170,7 +169,6 @@ public class OptimizerManager : MonoBehaviour{
         for (int i = half.Length; i < initialPoblation; i+=2) {
             Genotype parent1 = getRandomGenotype(sortedIdxs, probs);
             Genotype parent2 = getRandomGenotype(sortedIdxs, probs);
-
             newPoblation[i] = parent1.reproduce(parent2, mutationChance);
             if(i+1 < initialPoblation) // not exeding array
                 newPoblation[i+1] = parent2.reproduce(parent1, mutationChance);

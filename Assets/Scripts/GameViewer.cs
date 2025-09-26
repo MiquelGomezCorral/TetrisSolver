@@ -49,7 +49,6 @@ public class GameViewer : MonoBehaviour {
 
         // Other actions
         moved |= HandleKey(KeyCode.Space, () => {
-            gameM.moveCurrentPieceBootom(); 
             gameM.lockPiece(); 
         });
         moved |= HandleKey(KeyCode.R, () => resetGame());

@@ -133,22 +133,44 @@ public class OptimizerManager : MonoBehaviour{
     }
 
     IEnumerator playGenotype(Genotype genotype) {
-        gameMs[0].resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
+        GameManager gameM = gameMs[0];
+        gameM.resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
         gridV.resetGrid();
+
+        //Debug.Log("==============================");
+        //for (int i = 0; i < gameM.getGrid().GetLength(0); i++) {
+        //    string row = "";
+        //    for (int j = 0; j < gameM.getGrid().GetLength(1); j++) {
+        //        row += gameM.getGrid()[i, j].ToString() + " ";
+        //    }
+        //    Debug.Log(row);
+        //}
+
 
         // For each piece
         for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
             // For each movement in that piece
             for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
                 yield return new WaitForSeconds(timeDelay);
-                playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
+                playMovement(gameM, genotype.movement[pieceI, moveJ], moveJ, aleoType);
             }
-            gameMs[0].lockPiece();
-            gameMs[0].getNewRandomPiece();
+            gameM.lockPiece();
+            gameM.getNewRandomPiece();
 
-            updateGridViewer(gameMs[0]);
+            updateGridViewer(gameM);
         }
+
+        //Debug.Log("==============================");
+        //for (int i = 0; i < gameM.getGrid().GetLength(0); i++) {
+        //    string row = "";
+        //    for (int j = 0; j < gameM.getGrid().GetLength(1); j++) {
+        //        row += gameM.getGrid()[i, j].ToString() + " ";
+        //    }
+        //    Debug.Log(row);
+        //}
+
         simulating = false;
+
     }
 
 

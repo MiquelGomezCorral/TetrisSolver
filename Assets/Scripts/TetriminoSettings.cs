@@ -82,6 +82,15 @@ public class TetriminoSettings : MonoBehaviour {
     //                                  TEXTURES
     // ==============================================================================
     public static Sprite getTetriminoTexture(TetriminoEnum pieceType) {
+        // Ensure Instance exists (lazy-find) to avoid NullReferenceExceptions
+        if (Instance == null) {
+            Instance = FindObjectOfType<TetriminoSettings>();
+            if (Instance == null) {
+                Debug.LogError("TetriminoSettings.Instance is null. Please add a TetriminoSettings MonoBehaviour to the scene.");
+                return null;
+            }
+        }
+
         switch (pieceType) {
             case TetriminoEnum.I: return Instance.textureI;
             case TetriminoEnum.O: return Instance.textureO;
@@ -95,6 +104,15 @@ public class TetriminoSettings : MonoBehaviour {
         }
     }
     public static Sprite getTetriminoPieceTexture(TetriminoEnum pieceType) {
+        // Ensure Instance exists (lazy-find) to avoid NullReferenceExceptions
+        if (Instance == null) {
+            Instance = FindObjectOfType<TetriminoSettings>();
+            if (Instance == null) {
+                Debug.LogError("TetriminoSettings.Instance is null. Please add a TetriminoSettings MonoBehaviour to the scene.");
+                return null;
+            }
+        }
+
         switch (pieceType) {
             case TetriminoEnum.I: return Instance.texturePieceI;
             case TetriminoEnum.O: return Instance.texturePieceO;
@@ -253,7 +271,7 @@ public class TetriminoSettings : MonoBehaviour {
 
         // Suffle the bags with Fisher–Yates 
         for (int i = 0; i < newBag.Count; i++) {
-            int j = rng.Value.Next(0, newBag.Count); // 1..Count-1
+            int j = rng.Value.Next(0, newBag.Count); // 0..Count-1
             TetriminoEnum tmp = newBag[i];
             newBag[i] = newBag[j];
             newBag[j] = tmp;

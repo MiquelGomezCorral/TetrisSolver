@@ -20,6 +20,10 @@ public class PiecePlaceholder : MonoBehaviour {
         pieceType = piecetype;
 
         texture = TetriminoSettings.getTetriminoPieceTexture(pieceType);
+        if (texture == null) {
+            Debug.LogWarning($"PiecePlaceholder: texture for {pieceType} is null. Make sure TetriminoSettings instance has piece textures assigned.");
+            return;
+        }
 
         var sr = GetComponent<SpriteRenderer>();
         if (sr != null) sr.sprite = texture;

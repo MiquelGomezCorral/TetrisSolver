@@ -21,6 +21,10 @@ public class GameViewer : MonoBehaviour {
     void Start() {
         gameM = new GameManager();
         gridV = FindFirstObjectByType<GridViewer>();
+        if (gridV == null) {
+            Debug.LogError("GameViewer: No GridViewer found in scene. Please add a GridViewer GameObject.");
+            return;
+        }
         gridV.Init();
         updateGridViewe();
     }

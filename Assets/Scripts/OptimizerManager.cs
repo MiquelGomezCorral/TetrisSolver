@@ -28,6 +28,7 @@ public class OptimizerManager : MonoBehaviour{
     private GameManager[] gameMs;
 
     private GridViewer gridV; // Do to look for it every time
+    private System.Random rnd = new System.Random();
 
     // ========================================================
     //                          START
@@ -35,6 +36,9 @@ public class OptimizerManager : MonoBehaviour{
     void Start(){
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
+        if (gridV == null) {
+            Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
+        }
 
         // ============= Initialize GA variables ============= 
         Debug.Log("Initial poblation size: " + initialPoblation);
@@ -53,12 +57,13 @@ public class OptimizerManager : MonoBehaviour{
         }
 
         // Create a copy of the bag at that moment
+        // If TetriminoSettings instance is not present, produceRandomBag will still work (static data)
         bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag());
 
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores
         // Rest will be evaluated in the processNextGeneration  
-        StartEvaluationThread(poblation[..(initialPoblation / 2)]);
+        StartEvaluationThread(poblation[..(initialPoblation / 2)], 0);
     }
 
     // ========================================================
@@ -82,16 +87,16 @@ public class OptimizerManager : MonoBehaviour{
         updateGeneration();
 
         // =========================== EVALUATE ========================
-        StartEvaluationThread(poblation[(initialPoblation / 2)..]);
+        StartEvaluationThread(poblation[(initialPoblation / 2)..], initialPoblation / 2);
     }
     // ========================================================
     //                          THREDING
     // ========================================================
-    void StartEvaluationThread(Genotype[] slice) {
+    void StartEvaluationThread(Genotype[] slice, int startIdx) {
         //mainComputationThread = new Thread(() => evaluateGenotypes(slice));
         //mainComputationThread.Start();
         executed = true;
-        evaluateGenotypes(slice);
+        evaluateGenotypes(slice, startIdx);
     }
 
     
@@ -99,7 +104,7 @@ public class OptimizerManager : MonoBehaviour{
     //                          EVALUATE
     // ========================================================
 
-    void evaluateGenotypes(Genotype[] toEvaluatePoblation) {
+    void evaluateGenotypes(Genotype[] toEvaluatePoblation, int startIdx) {
         gameMs[0].resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
         for (int genIdx = 0; genIdx < toEvaluatePoblation.Length; genIdx++) {
             Genotype genotype = toEvaluatePoblation[genIdx];
@@ -112,7 +117,7 @@ public class OptimizerManager : MonoBehaviour{
                 }
                 gameMs[0].getNewRandomPiece();
             }
-            scores[genIdx] = gameMs[0].getScore();
+            scores[startIdx+genIdx] = gameMs[0].getScore();
 
             // Create a copy of the bag saved
             gameMs[0].resetGame(bagQueueSaved);
@@ -228,7 +233,7 @@ public class OptimizerManager : MonoBehaviour{
     }
 
     public Genotype getRandomGenotype(int[] indices, float[] probs) {
-        float random = UnityEngine.Random.Range(0f, 1f);
+        float random = (float)rnd.NextDouble();
         float sum = 0f;
         int i = -1;
 

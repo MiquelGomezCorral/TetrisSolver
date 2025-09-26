@@ -17,12 +17,23 @@ public class GridViewer : MonoBehaviour {
     public void Init() {
         width = TetriminoSettings.width; height = TetriminoSettings.height;
 
+        // Validate prefabs
+        if (cellPrefab == null) {
+            Debug.LogError("GridViewer: cellPrefab is not assigned. Please assign in the inspector.");
+            return;
+        }
+        if (swapPlaceholderPrefab == null) {
+            Debug.LogError("GridViewer: swapPlaceholderPrefab is not assigned. Please assign in the inspector.");
+            return;
+        }
+
         // ============== Initialize grid ==============
         gridCells = new Cell[width, height];
 
         sizeInUnits = new Vector2(
-            cellPrefab.texture.texture.width / cellPrefab.texture.pixelsPerUnit,
-            cellPrefab.texture.texture.height / cellPrefab.texture.pixelsPerUnit
+            // guard against null texture
+            (cellPrefab.texture != null && cellPrefab.texture.texture != null) ? cellPrefab.texture.texture.width / cellPrefab.texture.pixelsPerUnit : 1f,
+            (cellPrefab.texture != null && cellPrefab.texture.texture != null) ? cellPrefab.texture.texture.height / cellPrefab.texture.pixelsPerUnit : 1f
         );
         float offsetX = sizeInUnits.x * width / 2; // half the width of all the cells
         float offsetY = sizeInUnits.y * height / 2; // half the height of all the cells

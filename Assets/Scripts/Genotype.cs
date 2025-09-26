@@ -1,4 +1,6 @@
 
+using System.Threading;
+
 public enum AleoType {
     Simple, Double, SwapSimple, SwapDoble
 }
@@ -15,6 +17,7 @@ public class Genotype {
     AleoType aleoType;
     int nPieces;
 
+    private static ThreadLocal<System.Random> rng = new ThreadLocal<System.Random>(() => new System.Random());
     // ========================================================
     //                       CONSTRUCTOR
     // ========================================================
@@ -84,23 +87,24 @@ public class Genotype {
     //                       METHODS
     // ========================================================
     public int getRandomMovementInitial() {
-        return UnityEngine.Random.Range(movementInitialRagnes[0], movementInitialRagnes[1] + 1);
+        return rng.Value.Next(movementInitialRagnes[0], movementInitialRagnes[1] + 1);
+
     }
     public int getRandomMovement() {
-        return UnityEngine.Random.Range(movementRagnes[0], movementRagnes[1] + 1);
+        return rng.Value.Next(movementRagnes[0], movementRagnes[1] + 1);
     }
     public int getRandomRotate() {
-        return UnityEngine.Random.Range(rotateRanges[0], rotateRanges[1] + 1);
+        return rng.Value.Next(rotateRanges[0], rotateRanges[1] + 1);
     }
     public int getRandomSwap() {
-        return UnityEngine.Random.Range(swapRanges[0], swapRanges[1] + 1);
+        return rng.Value.Next(swapRanges[0], swapRanges[1] + 1);
     }
 
     public bool[,] GetRandomBooleans(int n, int m, float probabilityYes = 0.5f) {
         bool[,] matrix = new bool[n, m];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < m; j++) {
-                matrix[i, j] = UnityEngine.Random.value < probabilityYes;
+                matrix[i, j] = rng.Value.NextDouble() < probabilityYes;
             }
         }
         return matrix;
@@ -143,7 +147,7 @@ public class Genotype {
                 ) { // Rotatae: -1 or +1 if mutates, always in modulo
                     movement[i, pos] = (
                         movement[i, pos] +
-                        (UnityEngine.Random.value > 0.5f ? 1 : -1) +
+                        (rng.Value.NextDouble() > 0.5f ? 1 : -1) +
                         rotateRangesModulo
                     ) % rotateRangesModulo;
 
@@ -160,11 +164,11 @@ public class Genotype {
                     //} else if (movement[i, pos] >= movementInitialRagnes[1]) {
                     //    movement[i, pos] = movementInitialRagnes[1] - 1;  // move down from upper limit
                     //} else {
-                    //    movement[i, pos] += (UnityEngine.Random.value > 0.5f ? 1 : -1);
+                    //    movement[i, pos] += (rng.Value.NextDouble() > 0.5f ? 1 : -1);
                     //}
 
                     // GET ANY RANDOM VALUE
-                    movement[i, pos] = UnityEngine.Random.Range(movementInitialRagnes[0], movementInitialRagnes[1] + 1);
+                    movement[i, pos] = rng.Value.Next(movementInitialRagnes[0], movementInitialRagnes[1] + 1);
 
                 } else if (
                     (aleoType == AleoType.Double && (pos == 2)) ||
@@ -177,11 +181,11 @@ public class Genotype {
                     //} else if (movement[i, pos] >= movementRagnes[1]) {
                     //    movement[i, pos] = movementRagnes[1] - 1;  // move down from upper limit
                     //} else {
-                    //    movement[i, pos] += (UnityEngine.Random.value > 0.5f ? 1 : -1);
+                    //    movement[i, pos] += (rng.Value.NextDouble() > 0.5f ? 1 : -1);
                     //}
 
                     // GET ANY RANDOM VALUE
-                    movement[i, pos] = UnityEngine.Random.Range(movementRagnes[0], movementRagnes[1] + 1);
+                    movement[i, pos] = rng.Value.Next(movementRagnes[0], movementRagnes[1] + 1);
                 }
             }
         }

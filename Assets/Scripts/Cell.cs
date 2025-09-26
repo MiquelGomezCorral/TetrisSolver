@@ -20,6 +20,11 @@ public class Cell : MonoBehaviour {
         pieceType = piecetype;
 
         texture = TetriminoSettings.getTetriminoTexture(pieceType);
+        if (texture == null) {
+            // If texture couldn't be retrieved, log and keep previous sprite
+            Debug.LogWarning($"Cell: texture for {pieceType} is null. Make sure TetriminoSettings instance has textures assigned.");
+            return;
+        }
 
         var sr = GetComponent<SpriteRenderer>();
         if (sr != null) sr.sprite = texture;

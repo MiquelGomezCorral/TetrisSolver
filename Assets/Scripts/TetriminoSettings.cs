@@ -27,7 +27,7 @@ public enum ActionEnum {
 public class TetriminoSettings : MonoBehaviour {
     [SerializeField] public static int width = 10, height = 20;
 
-    public static int PerfectClearPoints = 2000;
+    public static int PerfectClearPoints = 20;
     public static TetriminoSettings Instance;
 
     public Sprite textureX, textureI, textureO, textureT, textureS, textureZ, textureJ, textureL;
@@ -237,28 +237,28 @@ public class TetriminoSettings : MonoBehaviour {
         if (lastAction == ActionEnum.MOVE) {
             switch (count) {
                 case 0: return score;
-                case 1: return score + 100;
-                case 2: return score + 300;
-                case 3: return score + 500;
+                case 1: return score + 1;
+                case 2: return score + 3;
+                case 3: return score + 5;
                 case 4: 
                 default:
-                    return score + 800;
+                    return score + 8;
             }
         }else if (lastAction == ActionEnum.T_SPIN) {
             switch (count) {
-                case 0: return score; //  + 400;  // DO NOT GIVE EXTRA FOR USELESS TSPINS
-                case 1: return score + 800;
-                case 2: return score + 1200;
+                case 0: return score; //  + 4;  // DO NOT GIVE EXTRA FOR USELESS TSPINS
+                case 1: return score + 8;
+                case 2: return score + 12;
                 case 3: 
                 default:
-                    return score + 1600;
+                    return score + 16;
             }
         } else {  // if (lastAction == ActionEnum.MINI_T_SPIN) {
             switch (count) {
-                case 0: return score; // + 100; // DO NOT GIVE EXTRA FOR USELESS TSPINS
+                case 0: return score; // + 1; // DO NOT GIVE EXTRA FOR USELESS TSPINS
                 case 1:
                 default:
-                    return score + 200;
+                    return score + 2;
             }
         }
     }

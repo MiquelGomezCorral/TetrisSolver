@@ -26,7 +26,7 @@ public class GameViewer : MonoBehaviour {
             return;
         }
         gridV.Init();
-        updateGridViewe();
+        updateGridViewer();
     }
 
     // ========================================================
@@ -55,7 +55,7 @@ public class GameViewer : MonoBehaviour {
         moved |= HandleKey(KeyCode.R, () => resetGame());
 
         if (moved) {
-            updateGridViewe();
+            updateGridViewer();
         }
     }
 
@@ -75,7 +75,7 @@ public class GameViewer : MonoBehaviour {
         gameM.resetGame();
     }
 
-    public void updateGridViewe() {
+    public void updateGridViewer() {
         gridV.updateGrid(gameM.getGrid());
         gridV.updateGridPositions(
             gameM.getPiecePositions(),

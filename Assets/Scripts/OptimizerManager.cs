@@ -39,6 +39,7 @@ public class OptimizerManager : MonoBehaviour{
         if (gridV == null) {
             Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
         }
+        
 
         // ============= Initialize GA variables ============= 
         Debug.Log("Initial poblation size: " + initialPoblation);
@@ -72,9 +73,10 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //Thread mainComputationThread;
     bool executed = true;
+    bool simulating = false;
     void Update(){
         //if (mainComputationThread == null || mainComputationThread.IsAlive) return;
-        if (executed) return;
+        if (executed || simulating) return;
 
         // =========================== EVALUATE ========================
         StartEvaluationThread(poblation[(initialPoblation / 2)..], initialPoblation / 2);
@@ -83,9 +85,10 @@ public class OptimizerManager : MonoBehaviour{
         SortPopulation();
 
         // =========================== PLAY MOVEMENT ========================
-        //if (generationI % showEvery == 0) {
-        //    StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
-        //}
+        if (generationI % showEvery == 0) {
+            simulating = true;
+            StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
+        }
 
         // =========================== UPDATE GENERATION ========================
         updateGeneration();
@@ -109,7 +112,7 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
 
     void evaluateGenotypes(Genotype[] toEvaluatePoblation, int startIdx) {
-        gameMs[0].resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
+        gameMs[0].resetGame(bagQueueSaved);
         for (int genIdx = 0; genIdx < toEvaluatePoblation.Length; genIdx++) {
             Genotype genotype = toEvaluatePoblation[genIdx];
 
@@ -130,23 +133,32 @@ public class OptimizerManager : MonoBehaviour{
     }
 
     IEnumerator playGenotype(Genotype genotype) {
+        gameMs[0].resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
+        gridV.resetGrid();
+
         // For each piece
         for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
             // For each movement in that piece
             for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
-                // Wait 0.2s before next movement
                 yield return new WaitForSeconds(timeDelay);
-
                 playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
             }
+            gameMs[0].lockPiece();
             gameMs[0].getNewRandomPiece();
+
+            updateGridViewer(gameMs[0]);
         }
-        Debug.Log("Best genotype scored " + " scored: " + gameMs[0].getScore());
+        simulating = false;
+    }
 
-        // Create a copy of the bag saved
-        gameMs[0].resetGame(new Queue<TetriminoEnum>(bagQueueSaved));
 
-        updateGeneration();
+    public void updateGridViewer(GameManager gameM) {
+        gridV.updateGrid(gameM.getGrid());
+        gridV.updateGridPositions(
+            gameM.getPiecePositions(),
+            gameM.getPieceType()
+        );
+        gridV.updateSwapPiece(gameM.getSwapPieceType());
     }
 
     // ========================================================

@@ -37,14 +37,14 @@ public class GameManager {
     // ========================================================
     //                          MOVEMENTS
     // ========================================================
-    public void moveCurrentPieceSide(DirectionEnum direction) {
-        currentPiece.movePieze(direction);
+    public bool moveCurrentPieceSide(DirectionEnum direction) {
+        return currentPiece.movePieze(direction);
     }
-    public void rotateCurrentPiece(RorateEnum direction) {
-        currentPiece.rotatePiece(direction);
+    public bool rotateCurrentPiece(RorateEnum direction) {
+        return currentPiece.rotatePiece(direction);
     }
-    public void moveCurrentPieceBootom() {
-        currentPiece.movePieceBootom();
+    public bool moveCurrentPieceBootom() {
+        return currentPiece.movePieceBootom();
     }
 
     public void lockPiece() {

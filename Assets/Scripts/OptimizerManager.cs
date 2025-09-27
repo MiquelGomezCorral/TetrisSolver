@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 public class OptimizerManager : MonoBehaviour{
+    [Header("Algorithm Parameters")]
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int initialPoblation = 200;
     [SerializeField] int nPieces = 10;
@@ -17,10 +18,15 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float timeDelay = 0.1f;
     [SerializeField] int showingIndex = 0;
     [SerializeField] int showEvery = 100;
+
+
+    [Header("Scoring Parameters")]
     [SerializeField] float softMaxTemp = 1.0f;
+    [SerializeField] float penalizationFactor = 1.0f;
+    [SerializeField] float gameScoreFactor = 1.0f;
 
     public Genotype[] poblation;
-    public int[] scores;
+    public float[] scores;
     public int[] sortedIdxs;
     public int generationI;
     Queue<TetriminoEnum> bagQueueSaved;
@@ -45,7 +51,7 @@ public class OptimizerManager : MonoBehaviour{
         // ============= Initialize GA variables ============= 
         Debug.Log("Initial poblation size: " + initialPoblation);
         generationI = 0;
-        scores = new int[initialPoblation];
+        scores = new float[initialPoblation];
         poblation = new Genotype[initialPoblation];
         for (int i = 0; i < initialPoblation; i++) {
             poblation[i] = new Genotype(aleoType, nPieces);
@@ -115,17 +121,19 @@ public class OptimizerManager : MonoBehaviour{
         gameMs[0].resetGame(bagQueueSaved);
         for (int genIdx = 0; genIdx < toEvaluatePoblation.Length; genIdx++) {
             Genotype genotype = toEvaluatePoblation[genIdx];
-
+            int penalization = 0;
             // For each piece
             for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
                 // For each movement in that piece
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
-                    playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
+                    penalization+=playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
                 gameMs[0].lockPiece();
             }
-            scores[startIdx+genIdx] = gameMs[0].getScore();
-
+            scores[startIdx+genIdx] = (
+                penalization * penalizationFactor + 
+                gameMs[0].getScore() * gameScoreFactor
+            );
 
             // Create a copy of the bag saved
             gameMs[0].resetGame(bagQueueSaved);
@@ -201,9 +209,11 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          METHODS
     // ========================================================
-    private void playMovement(GameManager gameM, int movement, int pos, AleoType aleoType) {
+    private int playMovement(GameManager gameM, int movement, int pos, AleoType aleoType) {
+        // Penalize 1 point per each invalid movement
+        int penalization = 0;
         if (pos == 0 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) {
-            if(movement == 1)
+            if(movement == 1) // no penalization for swap
                 gameM.swapCurrentPiece();
 
         } else if (
@@ -212,7 +222,8 @@ public class OptimizerManager : MonoBehaviour{
             (aleoType == AleoType.SwapSimple && (pos == 1)) ||
             (aleoType == AleoType.SwapDoble  && (pos == 1 || pos == 4)) 
         ) {
-             gameM.rotateCurrentPiece((RorateEnum)movement);
+            // if the rotation is not possible, penalize
+            penalization = gameM.rotateCurrentPiece((RorateEnum)movement) ? 0 : -1;
 
         } else if (
             (aleoType == AleoType.Simple     && (pos == 1)) ||
@@ -221,9 +232,11 @@ public class OptimizerManager : MonoBehaviour{
             (aleoType == AleoType.SwapDoble  && (pos == 2 || pos == 3))
         ) {
             DirectionEnum direction = (movement >= 0 ) ? DirectionEnum.RIGHT : DirectionEnum.LEFT;
-            for (int i = 0; i < Math.Abs(movement); i++) {
-                gameM.moveCurrentPieceSide(direction);
+            int movementsLeft = Math.Abs(movement);
+            while (movementsLeft > 0 && gameM.moveCurrentPieceSide(direction)) {
+                movementsLeft--;
             }
+            penalization = -movementsLeft; //penalize movements not done
         }
 
 
@@ -231,9 +244,11 @@ public class OptimizerManager : MonoBehaviour{
         if( (pos == 1 && aleoType == AleoType.Double) || (pos == 2 && aleoType == AleoType.SwapDoble)) {
             gameM.moveCurrentPieceBootom();
         }
+
+        return penalization;
     }
 
-    public float[] computeSoftMax(int[] scores,) {
+    public float[] computeSoftMax(float[] scores) {
         float[] result = new float[scores.Length];
 
         float divisor = 0f;

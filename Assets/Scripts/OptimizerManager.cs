@@ -15,8 +15,9 @@ public class OptimizerManager : MonoBehaviour{
 
     [SerializeField] float timePerSearch = 1.0f;
     [SerializeField] float timeDelay = 0.1f;
-    [SerializeField] public int showingIndex = 0;
-    [SerializeField] public int showEvery = 100;
+    [SerializeField] int showingIndex = 0;
+    [SerializeField] int showEvery = 100;
+    [SerializeField] float softMaxTemp = 1.0f;
 
     public Genotype[] poblation;
     public int[] scores;
@@ -232,12 +233,12 @@ public class OptimizerManager : MonoBehaviour{
         }
     }
 
-    public float[] computeSoftMax(int[] scores) {
+    public float[] computeSoftMax(int[] scores,) {
         float[] result = new float[scores.Length];
 
         float divisor = 0f;
         for (int i = 0;i < scores.Length;i++) {
-            result[i] = Mathf.Exp(scores[i]);
+            result[i] = Mathf.Exp(scores[i] / softMaxTemp);
             divisor += result[i];
         }
 

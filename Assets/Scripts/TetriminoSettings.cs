@@ -372,7 +372,7 @@ public class TetriminoSettings : MonoBehaviour {
             roughness += Mathf.Abs(maxHeigth[x] - maxHeigth[x + 1]);
         }
 
-        Debug.Log("Roughness: " + roughness);
+        //Debug.Log("Roughness: " + roughness);
         return roughness;
     }
     public static float computeConnectedHoles(TetriminoEnum[,] grid){

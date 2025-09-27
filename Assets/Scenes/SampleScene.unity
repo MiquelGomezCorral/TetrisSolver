@@ -429,15 +429,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cb5934f88e6989d4a9a8940178fa7b28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  executeComputation: 1
   aleoType: 3
-  initialPoblation: 1000
-  nPieces: 10
-  mutationChance: 0.025
+  initialPoblation: 10000
+  nPieces: 20
+  mutationChance: 0.2
   timePerSearch: 1
   timeDelay: 0
   showingIndex: 0
-  showEvery: 100
-  scores: 
+  showEvery: 500
+  softMaxTemp: 1
+  penalizationFactor: 1
+  gameScoreFactor: 1
+  generalHeuristicFactor: 1
+  BlocksHFactor: -1
+  WeightedBlocksHFactor: -1
+  ClearableLineHFactor: 1
+  RoughnessHFactor: -1
+  ConnectedHolesHFactor: 1
+  PitHolePercentHFactor: 1
+  ColHolesHFactor: 1
+  DeepestWellHFactor: 1
+  scores: []
   sortedIdxs: 
   generationI: 0
   threadCount: 0

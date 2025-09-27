@@ -178,8 +178,6 @@ public class GameManager {
     public float getHeuristicScore(
         float BlocksHFactor = 1.0f,
         float WeightedBlocksHFactor = 1.0f,
-        float LinesClearedHFactor = 1.0f,
-        float TetrisesHFactor = 1.0f,
         float ClearableLineHFactor = 1.0f,
         float RoughnessHFactor = 1.0f,
         float ConnectedHolesHFactor = 1.0f,
@@ -190,8 +188,6 @@ public class GameManager {
         return (
             TetriminoSettings.computeBlocks(getGrid()) * BlocksHFactor +
             TetriminoSettings.computeWeightedBlocks(getGrid()) * WeightedBlocksHFactor +
-            TetriminoSettings.computeLinesCleared(getGrid()) * LinesClearedHFactor +
-            TetriminoSettings.computeTetrises(getGrid()) * TetrisesHFactor +
             TetriminoSettings.computeClearableLine(getGrid()) * ClearableLineHFactor +
             TetriminoSettings.computeRoughness(getGrid()) * RoughnessHFactor +
             TetriminoSettings.computeConnectedHoles(getGrid()) * ConnectedHolesHFactor +

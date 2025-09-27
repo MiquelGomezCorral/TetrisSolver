@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
+using UnityEngine.UI;
 using UnityEngine.UIElements;
 
 // =================================================================
@@ -322,14 +324,36 @@ public class TetriminoSettings : MonoBehaviour {
         Debug.Log("WeightedBlocks: " + count);
         return count;
     }
-    public static float computeLinesCleared(TetriminoEnum[,] grid){
-        return 0;
-    }
-    public static float computeTetrises(TetriminoEnum[,] grid){
-        return 0;
-    }
     public static float computeClearableLine(TetriminoEnum[,] grid){
-        return 0;
+        // maximum number of lines clearable by a single “I” (straight) piece in the current board configuration
+        // Look for each column and get the highest block, then check the next four rows and compute how many are full
+
+        int[] counts = new int[grid.GetLength(0)];
+        for (int x = 0; x < grid.GetLength(0); x++) {
+            int highest = grid.GetLength(1)-1;
+            while (highest >= 0 && grid[x, highest] == TetriminoEnum.X) {
+                highest--;
+            } // Can go downto -1 but is okey
+            highest++;
+
+            // Too hight to fit and I piece
+            if (highest + 3 >= grid.GetLength(1)) continue;
+
+
+            // Check the four next rows
+            for (int yy = highest; yy < highest + 4 && yy < grid.GetLength(1); yy++) {
+                bool full = true;
+                for (int xx = 0; xx < grid.GetLength(0) && full; xx++) {
+                    if (xx == x) continue; // skip current column
+                    full &= grid[xx, yy] != TetriminoEnum.X;
+                }
+                counts[x] += full ? 1 : 0; //1 if full else 0
+            }
+        }
+
+        int max = counts.Max();
+        Debug.Log("ClearableLine: " + max);
+        return max;
     }
     public static float computeRoughness(TetriminoEnum[,] grid){
         return 0;

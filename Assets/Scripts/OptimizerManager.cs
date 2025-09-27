@@ -31,8 +31,6 @@ public class OptimizerManager : MonoBehaviour{
     [Header("Heuristic Parameters")]
     [SerializeField] float BlocksHFactor = 1.0f;
     [SerializeField] float WeightedBlocksHFactor = 1.0f;
-    [SerializeField] float LinesClearedHFactor = 1.0f;
-    [SerializeField] float TetrisesHFactor = 1.0f;
     [SerializeField] float ClearableLineHFactor = 1.0f;
     [SerializeField] float RoughnessHFactor = 1.0f;
     [SerializeField] float ConnectedHolesHFactor = 1.0f;
@@ -153,8 +151,6 @@ public class OptimizerManager : MonoBehaviour{
                 gameMs[0].getHeuristicScore(
                     BlocksHFactor,
                     WeightedBlocksHFactor,
-                    LinesClearedHFactor,
-                    TetrisesHFactor,
                     ClearableLineHFactor,
                     RoughnessHFactor,
                     ConnectedHolesHFactor,

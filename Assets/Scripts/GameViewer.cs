@@ -54,6 +54,7 @@ public class GameViewer : MonoBehaviour {
         moved |= HandleKey(KeyCode.R, () => resetGame());
 
         if (moved) {
+            Debug.Log("GameViewer: totalHeurisitcs = " + gameM.getHeuristicScore());
             updateGridViewer();
         }
     }

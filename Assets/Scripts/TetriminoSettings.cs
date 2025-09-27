@@ -292,7 +292,19 @@ public class TetriminoSettings : MonoBehaviour {
     //                                  HEURISTICS
     // ==============================================================================
     public static float computeBlocks(TetriminoEnum[,] grid) {
-        return 0;
+        int count = 0;
+        bool flag = true; // to check if there is at least one block
+        for (int y = 0; y < grid.GetLength(1) && flag; y++) {
+            flag = false;
+            for (int x = 0; x < grid.GetLength(0); x++) {
+                if (grid[x, y] != TetriminoEnum.X) {
+                    flag = true;
+                    count++;
+                }
+            }
+        }
+        Debug.Log("Blocks: " + count);
+        return count;
     }
     public static float computeWeightedBlocks(TetriminoEnum[,] grid){
         return 0;

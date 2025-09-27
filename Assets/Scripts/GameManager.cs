@@ -176,16 +176,16 @@ public class GameManager {
     //                      VALUE ACCESS
     // ========================================================
     public float getHeuristicScore(
-        float BlocksHFactor,
-        float WeightedBlocksHFactor,
-        float LinesClearedHFactor,
-        float TetrisesHFactor,
-        float ClearableLineHFactor,
-        float RoughnessHFactor,
-        float ConnectedHolesHFactor,
-        float PitHolePercentHFactor,
-        float ColHolesHFactor,
-        float DeepestWellHFactor
+        float BlocksHFactor = 1.0f,
+        float WeightedBlocksHFactor = 1.0f,
+        float LinesClearedHFactor = 1.0f,
+        float TetrisesHFactor = 1.0f,
+        float ClearableLineHFactor = 1.0f,
+        float RoughnessHFactor = 1.0f,
+        float ConnectedHolesHFactor = 1.0f,
+        float PitHolePercentHFactor = 1.0f,
+        float ColHolesHFactor = 1.0f,
+        float DeepestWellHFactor = 1.0f
     ) {
         return (
             TetriminoSettings.computeBlocks(getGrid()) * BlocksHFactor +

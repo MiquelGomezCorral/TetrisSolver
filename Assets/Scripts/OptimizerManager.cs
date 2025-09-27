@@ -10,6 +10,7 @@ using static Unity.Collections.AllocatorManager;
 
 public class OptimizerManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
+    [SerializeField] bool executeComputation = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int initialPoblation = 200;
     [SerializeField] int nPieces = 10;
@@ -55,6 +56,8 @@ public class OptimizerManager : MonoBehaviour{
     //                          START
     // ========================================================
     void Start(){
+        if (!executeComputation) 
+            return;
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
         if (gridV == null) {

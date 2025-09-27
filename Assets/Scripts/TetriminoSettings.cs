@@ -226,11 +226,37 @@ public class TetriminoSettings : MonoBehaviour {
     }
 
     // ==============================================================================
+    //                                   BAGS PIECE 
+    // ==============================================================================
+    public static List<TetriminoEnum> produceRandomBag(int numBags = 1) {
+        List<TetriminoEnum> result = new List<TetriminoEnum>();
+
+        for (int b = 0; b < numBags; b++) {
+            // Copy base bag
+            List<TetriminoEnum> newBag = new List<TetriminoEnum>(basePiecesBag);
+
+            // Shuffle only this bag
+            for (int i = 0; i < newBag.Count; i++) {
+                int j = rng.Value.Next(0, newBag.Count);
+                TetriminoEnum tmp = newBag[i];
+                newBag[i] = newBag[j];
+                newBag[j] = tmp;
+            }
+
+            // Append shuffled bag to result
+            result.AddRange(newBag);
+        }
+
+        return result;
+    }
+
+
+    // ==============================================================================
     //                                  SCORE
     // ==============================================================================
     public static int computeScore(int count, ActionEnum lastAction, bool PerfectClear) {
         if(count < 0 || count > 4) {
-            Debug.LogError("COUNT OF CLEARED LINE NOT VALID, UNCONSISTENT POINTS. Cleared lines:" + count);
+            Debug.LogError("COUNT OF CLEARED LINES NOT VALID, UNCONSISTENT POINTS. Cleared lines:" + count);
         }
 
         int score = PerfectClear ? PerfectClearPoints : 0;
@@ -262,30 +288,38 @@ public class TetriminoSettings : MonoBehaviour {
             }
         }
     }
-
     // ==============================================================================
-    //                                   BAGS PIECE 
+    //                                  HEURISTICS
     // ==============================================================================
-    public static List<TetriminoEnum> produceRandomBag(int numBags = 1) {
-        List<TetriminoEnum> result = new List<TetriminoEnum>();
-
-        for (int b = 0; b < numBags; b++) {
-            // Copy base bag
-            List<TetriminoEnum> newBag = new List<TetriminoEnum>(basePiecesBag);
-
-            // Shuffle only this bag
-            for (int i = 0; i < newBag.Count; i++) {
-                int j = rng.Value.Next(0, newBag.Count);
-                TetriminoEnum tmp = newBag[i];
-                newBag[i] = newBag[j];
-                newBag[j] = tmp;
-            }
-
-            // Append shuffled bag to result
-            result.AddRange(newBag);
-        }
-
-        return result;
+    public static float computeBlocks(TetriminoEnum[,] grid) {
+        return 0;
+    }
+    public static float computeWeightedBlocks(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computeLinesCleared(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computeTetrises(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computeClearableLine(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computeRoughness(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computeConnectedHoles(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computePitHolePercent(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computeColHoles(TetriminoEnum[,] grid){
+        return 0;
+    }
+    public static float computeDeepestWell(TetriminoEnum[,] grid){
+        return 0;
     }
 
 }

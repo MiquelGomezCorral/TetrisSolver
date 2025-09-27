@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -49,7 +50,7 @@ public class GameManager {
 
     public void lockPiece() {
         // Put piece down
-        moveCurrentPieceBootom(); 
+        moveCurrentPieceBootom();
         // Then lock it
         score += gridM.lockPiece(getPiecePositions(), currentPieceType, currentPiece.lastAction);
         getNewRandomPiece();
@@ -86,7 +87,7 @@ public class GameManager {
     // ========================================================
     public void resetGame(Queue<TetriminoEnum> bagQueueSaved = null) {
         // Reset bag
-        if (bagQueueSaved != null) 
+        if (bagQueueSaved != null)
             bagQueue = new Queue<TetriminoEnum>(bagQueueSaved);
         else
             bagQueue.Clear();
@@ -100,26 +101,6 @@ public class GameManager {
 
         // Reset socre
         score = 0;
-    }
-
-
-    // ========================================================
-    //                      VALUE ACCESS
-    // ========================================================
-    public TetriminoEnum[,] getGrid() {
-        return gridM.getGrid();
-    }
-    public int getScore() {
-        return score;
-    }
-    public TetriminoEnum getSwapPieceType() {
-        return swapPieceType;
-    }
-    public List<Vector2Int> getPiecePositions() {
-        return currentPiece.getAbsPositions();
-    }
-    public TetriminoEnum getPieceType() {
-        return currentPieceType;
     }
 
     // ========================================================
@@ -151,14 +132,14 @@ public class GameManager {
             bagQueue.Enqueue(newPiece);
     }
     public TetriminoEnum getNewRandomPiece(bool assignToCurrent = true) {
-        if (bagQueue.Count < 7) 
+        if (bagQueue.Count < 7)
             fillRandomBag();
 
-        if (assignToCurrent){
+        if (assignToCurrent) {
             currentPieceType = bagQueue.Dequeue();
             currentPiece.resetPeace(currentPieceType);
             return currentPieceType;
-        }else{
+        } else {
             return bagQueue.Dequeue();
         }
     }
@@ -171,5 +152,52 @@ public class GameManager {
             i++;
         }
         return nextPieces;
+    }
+
+    // ========================================================
+    //                      VALUE ACCESS
+    // ========================================================
+    public TetriminoEnum[,] getGrid() {
+        return gridM.getGrid();
+    }
+    public TetriminoEnum getSwapPieceType() {
+        return swapPieceType;
+    }
+    public List<Vector2Int> getPiecePositions() {
+        return currentPiece.getAbsPositions();
+    }
+    public TetriminoEnum getPieceType() {
+        return currentPieceType;
+    }
+    public int getScore() {
+        return score;
+    }
+    // ========================================================
+    //                      VALUE ACCESS
+    // ========================================================
+    public float getHeuristicScore(
+        float BlocksHFactor,
+        float WeightedBlocksHFactor,
+        float LinesClearedHFactor,
+        float TetrisesHFactor,
+        float ClearableLineHFactor,
+        float RoughnessHFactor,
+        float ConnectedHolesHFactor,
+        float PitHolePercentHFactor,
+        float ColHolesHFactor,
+        float DeepestWellHFactor
+    ) {
+        return (
+            TetriminoSettings.computeBlocks(getGrid()) * BlocksHFactor +
+            TetriminoSettings.computeWeightedBlocks(getGrid()) * WeightedBlocksHFactor +
+            TetriminoSettings.computeLinesCleared(getGrid()) * LinesClearedHFactor +
+            TetriminoSettings.computeTetrises(getGrid()) * TetrisesHFactor +
+            TetriminoSettings.computeClearableLine(getGrid()) * ClearableLineHFactor +
+            TetriminoSettings.computeRoughness(getGrid()) * RoughnessHFactor +
+            TetriminoSettings.computeConnectedHoles(getGrid()) * ConnectedHolesHFactor +
+            TetriminoSettings.computePitHolePercent(getGrid()) * PitHolePercentHFactor +
+            TetriminoSettings.computeColHoles(getGrid()) * ColHolesHFactor +
+            TetriminoSettings.computeDeepestWell(getGrid()) * DeepestWellHFactor
+        );
     }
 }

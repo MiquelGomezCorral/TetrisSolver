@@ -1,11 +1,12 @@
-using Unity.VisualScripting;
-using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
+using UnityEngine;
+using static Unity.Collections.AllocatorManager;
 
 public class OptimizerManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
@@ -24,6 +25,19 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float softMaxTemp = 1.0f;
     [SerializeField] float penalizationFactor = 1.0f;
     [SerializeField] float gameScoreFactor = 1.0f;
+    [SerializeField] float generalHeuristicFactor = 1.0f;
+
+    [Header("Heuristic Parameters")]
+    [SerializeField] float BlocksHFactor = 1.0f;
+    [SerializeField] float WeightedBlocksHFactor = 1.0f;
+    [SerializeField] float LinesClearedHFactor = 1.0f;
+    [SerializeField] float TetrisesHFactor = 1.0f;
+    [SerializeField] float ClearableLineHFactor = 1.0f;
+    [SerializeField] float RoughnessHFactor = 1.0f;
+    [SerializeField] float ConnectedHolesHFactor = 1.0f;
+    [SerializeField] float PitHolePercentHFactor = 1.0f;
+    [SerializeField] float ColHolesHFactor = 1.0f;
+    [SerializeField] float DeepestWellHFactor = 1.0f;
 
     public Genotype[] poblation;
     public float[] scores;
@@ -132,7 +146,19 @@ public class OptimizerManager : MonoBehaviour{
             }
             scores[startIdx+genIdx] = (
                 penalization * penalizationFactor + 
-                gameMs[0].getScore() * gameScoreFactor
+                gameMs[0].getScore() * gameScoreFactor + 
+                gameMs[0].getHeuristicScore(
+                    BlocksHFactor,
+                    WeightedBlocksHFactor,
+                    LinesClearedHFactor,
+                    TetrisesHFactor,
+                    ClearableLineHFactor,
+                    RoughnessHFactor,
+                    ConnectedHolesHFactor,
+                    PitHolePercentHFactor,
+                    ColHolesHFactor,
+                    DeepestWellHFactor
+                ) * generalHeuristicFactor
             );
 
             // Create a copy of the bag saved

@@ -305,7 +305,7 @@ public class TetriminoSettings : MonoBehaviour {
                 }
             }
         }
-        Debug.Log("Blocks: " + count);
+        //Debug.Log("Blocks: " + count);
         return count;
     }
     public static float computeWeightedBlocks(TetriminoEnum[,] grid){
@@ -321,7 +321,7 @@ public class TetriminoSettings : MonoBehaviour {
                 }
             }
         }
-        Debug.Log("WeightedBlocks: " + count);
+        //Debug.Log("WeightedBlocks: " + count);
         return count;
     }
     public static float computeClearableLine(TetriminoEnum[,] grid){
@@ -352,11 +352,28 @@ public class TetriminoSettings : MonoBehaviour {
         }
 
         int max = counts.Max();
-        Debug.Log("ClearableLine: " + max);
+        //Debug.Log("ClearableLine: " + max);
         return max;
     }
     public static float computeRoughness(TetriminoEnum[,] grid){
-        return 0;
+        // get the max height of each column and from left to righ
+        // compute the difference between each level
+
+        int[] maxHeigth = new int[grid.GetLength(0)];
+        for (int x = 0; x < grid.GetLength(0); x++) {
+            maxHeigth[x] = grid.GetLength(1) - 1;
+            while (maxHeigth[x] >= 0 && grid[x, maxHeigth[x]] == TetriminoEnum.X) {
+                maxHeigth[x]--;
+            } // Can go downto -1 but is okey
+            maxHeigth[x]++;
+        }
+        int roughness = 0;
+        for (int x = 0; x < grid.GetLength(0) - 1; x++) {
+            roughness += Mathf.Abs(maxHeigth[x] - maxHeigth[x + 1]);
+        }
+
+        Debug.Log("Roughness: " + roughness);
+        return roughness;
     }
     public static float computeConnectedHoles(TetriminoEnum[,] grid){
         return 0;

@@ -103,8 +103,10 @@ public class Genotype {
     public bool[,] GetRandomBooleans(int n, int m, float probabilityYes = 0.5f) {
         bool[,] matrix = new bool[n, m];
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < m; j++) {
-                matrix[i, j] = rng.Value.NextDouble() < probabilityYes;
+            // For each element, apply the probability
+            // If selected, get a random index and mutate it
+            if (rng.Value.NextDouble() < probabilityYes) {
+                matrix[i, rng.Value.Next(0, m)] = true;
             }
         }
         return matrix;

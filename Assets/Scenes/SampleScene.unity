@@ -432,9 +432,9 @@ MonoBehaviour:
   aleoType: 3
   initialPoblation: 1000
   nPieces: 10
-  mutationChance: 0.01
+  mutationChance: 0.025
   timePerSearch: 1
-  timeDelay: 0.1
+  timeDelay: 0
   showingIndex: 0
   showEvery: 100
   scores: 

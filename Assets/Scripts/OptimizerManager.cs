@@ -60,6 +60,8 @@ public class OptimizerManager : MonoBehaviour{
         public int threadIdx;
     }
 
+    bool executing = false;
+    bool simulating = false;
     // ============= Visualizaton and random =============
     private GridViewer gridV; // Do to look for it every time
     private System.Random rnd = new System.Random();
@@ -88,6 +90,7 @@ public class OptimizerManager : MonoBehaviour{
 
         // For parallel processing
         threadCount = Math.Max(Environment.ProcessorCount - 4, 1);
+        //threadCount = 8;
         gameMs = new GameManager[threadCount];
         workQueue = new BlockingCollection<WorkItem>();
         workerThreads = new Thread[threadCount];
@@ -108,7 +111,9 @@ public class OptimizerManager : MonoBehaviour{
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores
         // Rest will be evaluated in the processNextGeneration  
+        executing = true;
         StartEvaluationThread(0, initialPoblation / 2);
+        executing = false;
     }
 
 
@@ -121,33 +126,38 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          UPDATE
     // ========================================================
-    bool executing = false;
-    bool simulating = false;
-    void Update(){
-        if (executing || simulating) return;
 
+    void Update(){
+        // =========================== GA ========================
+        if (executing) return;
+        executing = true;
+        new Thread(GAStep).Start();
+       
+        // =========================== PLAY MOVEMENT ========================
+        if (!simulating && generationI % showEvery == 0 && generationI != 0) {
+            simulating = true;
+            StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
+        }
+    }
+
+   
+    private void GAStep() {
         // =========================== EVALUATE ========================
         StartEvaluationThread(initialPoblation / 2, initialPoblation);
 
         // =========================== SORT BEST ========================
         SortPopulation();
 
-        // =========================== PLAY MOVEMENT ========================
-        if (generationI % showEvery == 0) {
-            simulating = true;
-            StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
-        }
-
         // =========================== UPDATE GENERATION ========================
         updateGeneration();
 
+        executing = false;
     }
     // ========================================================
     //                          THREDING
     // ========================================================
     void StartEvaluationThread(int startIdx, int endIdx) {
         // Process from startIdx to endIdx (not included)
-        executing = true;
         int threadSliceLenght = (endIdx - startIdx) / threadCount;
         Interlocked.Exchange(ref activeThreads, 0);
 
@@ -165,19 +175,16 @@ public class OptimizerManager : MonoBehaviour{
             workQueue.Add(new WorkItem { startIdx = fromIdx, endIdx = toIdx, threadIdx = threadIdx });
         }
 
-        Thread watcher = new Thread(() => {
-            while (Volatile.Read(ref activeThreads) > 0) Thread.Sleep(8); // 8ms sleep for responsiveness and not to waste cpu
-            executing = false;
-        });
-        watcher.IsBackground = true;
-        watcher.Start();
+        while (Volatile.Read(ref activeThreads) > 0) {
+            Thread.Sleep(8); // 8ms sleep for responsiveness and not to waste cpu
+        }
     }
 
     private void WorkerThreadLoop(int threadIdx) {
         try {
             while (!shutdownRequested) {
                 WorkItem workItem;
-                if (workQueue.TryTake(out workItem, 100)) { // 100ms timeout
+                if (workQueue.TryTake(out workItem, 8)) { // 8ms timeout
                     evaluateGenotypes(workItem.startIdx, workItem.endIdx, workItem.threadIdx);
                 }
             }
@@ -190,7 +197,6 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          EVALUATE
     // ========================================================
-
     void evaluateGenotypes(int startIdx, int endIdx, int threadIdx) {
         // Process from startIdx to endIdx (not included) with gameManager threadIdx
         gameMs[threadIdx].resetGame(bagQueueSaved);
@@ -252,15 +258,6 @@ public class OptimizerManager : MonoBehaviour{
         simulating = false;
     }
 
-
-    public void updateGridViewer(GameManager gameM) {
-        gridV.updateGrid(gameM.getGrid());
-        gridV.updateGridPositions(
-            gameM.getPiecePositions(),
-            gameM.getPieceType()
-        );
-        gridV.updateSwapPiece(gameM.getSwapPieceType());
-    }
 
     // ========================================================
     //                            GA
@@ -369,5 +366,12 @@ public class OptimizerManager : MonoBehaviour{
         return poblation[indices[i]];
     }
 
-
+    public void updateGridViewer(GameManager gameM) {
+        gridV.updateGrid(gameM.getGrid());
+        gridV.updateGridPositions(
+            gameM.getPiecePositions(),
+            gameM.getPieceType()
+        );
+        gridV.updateSwapPiece(gameM.getSwapPieceType());
+    }
 }

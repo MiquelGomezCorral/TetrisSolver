@@ -431,7 +431,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   executeComputation: 1
   aleoType: 3
-  initialPoblation: 10000
+  initialPoblation: 20000
   nPieces: 10
   mutationChance: 0.2
   timePerSearch: 1

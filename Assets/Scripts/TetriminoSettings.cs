@@ -333,7 +333,7 @@ public class TetriminoSettings : MonoBehaviour {
             int highest = grid.GetLength(1)-1;
             while (highest >= 0 && grid[x, highest] == TetriminoEnum.X) {
                 highest--;
-            } // Can go downto -1 but is okey
+            } // Can go down to -1 but is okey
             highest++;
 
             // Too hight to fit and I piece
@@ -364,7 +364,7 @@ public class TetriminoSettings : MonoBehaviour {
             maxHeigth[x] = grid.GetLength(1) - 1;
             while (maxHeigth[x] >= 0 && grid[x, maxHeigth[x]] == TetriminoEnum.X) {
                 maxHeigth[x]--;
-            } // Can go downto -1 but is okey
+            } // Can go down to -1 but is okey
             maxHeigth[x]++;
         }
         int roughness = 0;
@@ -381,7 +381,7 @@ public class TetriminoSettings : MonoBehaviour {
         for (int x = 0; x < grid.GetLength(0); x++) {
             bool foundBlock = false;
             bool foundHole = false;
-            for (int y = grid.GetLength(1) - 1; y >= 0; y--) {
+            for (int y = grid.GetLength(1) - 1; y >= 0 && !foundHole; y--) {
                 if (grid[x, y] != TetriminoEnum.X) {
                     foundBlock = true;
                 } else if (foundBlock) {
@@ -417,7 +417,63 @@ public class TetriminoSettings : MonoBehaviour {
         return connectedHoles;
     }
     public static float computePitHolePercent(TetriminoEnum[,] grid){
-        return 0;
+        // Bad in terms of 'unfillable space'
+        float holes = 0f, pits = 0f;
+        int width = grid.GetLength(0), height = grid.GetLength(1);
+
+        // ============ Compute holes ============
+        for (int x = 0; x < width; x++) {
+            bool foundBlock = false;
+            for (int y = height - 1; y >= 0; y--) {
+                if (grid[x, y] != TetriminoEnum.X) {
+                    foundBlock = true;
+                } else if (foundBlock) {
+                    holes++;
+                }
+            }
+        }
+
+        // ============ Compute pits ============
+        for (int x = 0; x < width; x++) {
+            // fing the highest block
+            int highest = height - 1;
+            while (highest >= 0 && grid[x, highest] == TetriminoEnum.X) {
+                highest--;
+            } // Can go down to -1 but is okey
+            highest++;
+
+
+            bool isPit = false;
+            if (x == 0) { // leftmost column
+                isPit = (
+                    x + 1 < width // to avoid out of bounds
+                ) && (
+                    grid[x + 1, highest] != TetriminoEnum.X
+                );
+            } else if (x == width - 1) { // rightmost column
+                isPit = (
+                    x > 0 // to avoid out of bounds
+                ) && (
+                    grid[x - 1, highest] != TetriminoEnum.X
+                );
+            } else { // middle columns
+                isPit = (
+                    grid[x - 1, highest] != TetriminoEnum.X
+                ) && (
+                    grid[x + 1, highest] != TetriminoEnum.X
+                );
+            }
+
+            pits += isPit ? 1 : 0;
+        }
+
+
+        //Debug.Log("holes: " + holes);
+        //Debug.Log("pits: " + pits);
+        //Debug.Log("Ratio (holes == 0 ? 0 : pits / holes): " +  (holes == 0f) ? 0f : pits / holes);
+
+        holes += pits; // summ all in the denominator
+        return (holes == 0f) ? 0f : pits / holes;
     }
     public static float computeDeepestWell(TetriminoEnum[,] grid){
         return 0;

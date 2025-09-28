@@ -447,8 +447,8 @@ MonoBehaviour:
   ClearableLineHFactor: 1
   RoughnessHFactor: -1
   ColHolesHFactor: -1
-  ConnectedHolesHFactor: 1
-  PitHolePercentHFactor: 1
+  ConnectedHolesHFactor: -1
+  PitHolePercentHFactor: -1
   DeepestWellHFactor: 1
   scores: []
   sortedIdxs: 

@@ -335,6 +335,7 @@ public class TetriminoSettings : MonoBehaviour {
                 highest--;
             } // Can go down to -1 but is okey
             highest++;
+            highest = Mathf.Min(highest, height - 1);
 
             // Too hight to fit and I piece
             if (highest + 3 >= grid.GetLength(1)) continue;
@@ -441,12 +442,13 @@ public class TetriminoSettings : MonoBehaviour {
                 highest--;
             } // Can go down to -1 but is okey
             highest++;
+            highest = Mathf.Min(highest, height - 1);
 
 
             bool isPit = false;
             if (x == 0) { // leftmost column
                 isPit = (
-                    x + 1 < width // to avoid out of bounds
+                    x < width - 1// to avoid out of bounds
                 ) && (
                     grid[x + 1, highest] != TetriminoEnum.X
                 );

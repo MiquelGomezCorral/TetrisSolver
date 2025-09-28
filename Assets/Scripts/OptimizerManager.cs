@@ -22,21 +22,22 @@ public class OptimizerManager : MonoBehaviour{
 
 
     [Header("Scoring Parameters")]
-    [SerializeField] float softMaxTemp = 1.0f;
+    [SerializeField] float softMaxTempInitialTemp = 100;
     [SerializeField] float penalizationFactor = 1.0f;
-    [SerializeField] float gameScoreFactor = 1.0f;
+    [SerializeField] float gameScoreFactor = 10.0f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
 
     [Header("Heuristic Parameters")]
     [SerializeField] float BlocksHFactor = -1.0f;
     [SerializeField] float WeightedBlocksHFactor = -1.0f;
-    [SerializeField] float ClearableLineHFactor = 1.0f;
+    [SerializeField] float ClearableLineHFactor = 5.0f;
     [SerializeField] float RoughnessHFactor = -1.0f;
-    [SerializeField] float ColHolesHFactor = -1.0f;
-    [SerializeField] float ConnectedHolesHFactor = -1.0f;
-    [SerializeField] float PitHolePercentHFactor = -1.0f;
-    [SerializeField] float DeepestWellHFactor = -1.0f;
+    [SerializeField] float ColHolesHFactor = -10.0f;
+    [SerializeField] float ConnectedHolesHFactor = -10.0f;
+    [SerializeField] float PitHolePercentHFactor = -5.0f;
+    [SerializeField] float DeepestWellHFactor = -5.0f;
 
+    float softMaxTemp = 100;
     // ============= GA population =============
     public Genotype[] poblation;
     public float[] scores;
@@ -147,6 +148,9 @@ public class OptimizerManager : MonoBehaviour{
 
         // =========================== UPDATE GENERATION ========================
         updateGeneration();
+
+        // =========================== UPDATE TEMP ========================
+        softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
     }
 
     // ========================================================

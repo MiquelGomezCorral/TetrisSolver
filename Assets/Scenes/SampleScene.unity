@@ -437,19 +437,19 @@ MonoBehaviour:
   timePerSearch: 1
   timeDelay: 0.05
   showingIndex: 0
-  showEvery: 100
-  softMaxTemp: 1
+  showEvery: 15
+  softMaxTempInitialTemp: 1
   penalizationFactor: 1
-  gameScoreFactor: 1
+  gameScoreFactor: 10
   generalHeuristicFactor: 1
   BlocksHFactor: -1
   WeightedBlocksHFactor: -1
-  ClearableLineHFactor: 1
+  ClearableLineHFactor: 5
   RoughnessHFactor: -1
-  ColHolesHFactor: -1
-  ConnectedHolesHFactor: -1
-  PitHolePercentHFactor: -1
-  DeepestWellHFactor: -1
+  ColHolesHFactor: -10
+  ConnectedHolesHFactor: -10
+  PitHolePercentHFactor: -5
+  DeepestWellHFactor: -5
   scores: []
   sortedIdxs: 
   generationI: 0

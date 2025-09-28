@@ -33,9 +33,9 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float WeightedBlocksHFactor = -1.0f;
     [SerializeField] float ClearableLineHFactor = 1.0f;
     [SerializeField] float RoughnessHFactor = -1.0f;
+    [SerializeField] float ColHolesHFactor = -1.0f;
     [SerializeField] float ConnectedHolesHFactor = 1.0f;
     [SerializeField] float PitHolePercentHFactor = 1.0f;
-    [SerializeField] float ColHolesHFactor = 1.0f;
     [SerializeField] float DeepestWellHFactor = 1.0f;
 
     public Genotype[] poblation;
@@ -153,9 +153,9 @@ public class OptimizerManager : MonoBehaviour{
                     WeightedBlocksHFactor,
                     ClearableLineHFactor,
                     RoughnessHFactor,
+                    ColHolesHFactor,
                     ConnectedHolesHFactor,
                     PitHolePercentHFactor,
-                    ColHolesHFactor,
                     DeepestWellHFactor
                 ) * generalHeuristicFactor
             );

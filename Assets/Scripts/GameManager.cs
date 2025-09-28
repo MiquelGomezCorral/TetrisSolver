@@ -180,9 +180,9 @@ public class GameManager {
         float WeightedBlocksHFactor = 1.0f,
         float ClearableLineHFactor = 1.0f,
         float RoughnessHFactor = 1.0f,
+        float ColHolesHFactor = 1.0f,
         float ConnectedHolesHFactor = 1.0f,
         float PitHolePercentHFactor = 1.0f,
-        float ColHolesHFactor = 1.0f,
         float DeepestWellHFactor = 1.0f
     ) {
         return (
@@ -190,9 +190,9 @@ public class GameManager {
             TetriminoSettings.computeWeightedBlocks(getGrid()) * WeightedBlocksHFactor +
             TetriminoSettings.computeClearableLine(getGrid()) * ClearableLineHFactor +
             TetriminoSettings.computeRoughness(getGrid()) * RoughnessHFactor +
+            TetriminoSettings.computeColHoles(getGrid()) * ColHolesHFactor +
             TetriminoSettings.computeConnectedHoles(getGrid()) * ConnectedHolesHFactor +
             TetriminoSettings.computePitHolePercent(getGrid()) * PitHolePercentHFactor +
-            TetriminoSettings.computeColHoles(getGrid()) * ColHolesHFactor +
             TetriminoSettings.computeDeepestWell(getGrid()) * DeepestWellHFactor
         );
     }

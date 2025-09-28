@@ -375,13 +375,29 @@ public class TetriminoSettings : MonoBehaviour {
         //Debug.Log("Roughness: " + roughness);
         return roughness;
     }
+    public static float computeColHoles(TetriminoEnum[,] grid){
+        int colsWithHoles = 0;
+
+        for (int x = 0; x < grid.GetLength(0); x++) {
+            bool foundBlock = false;
+            bool foundHole = false;
+            for (int y = grid.GetLength(1) - 1; y >= 0; y--) {
+                if (grid[x, y] != TetriminoEnum.X) {
+                    foundBlock = true;
+                } else if (foundBlock) {
+                    foundHole = true;
+                }
+            }
+            if (foundHole) colsWithHoles++;
+        }
+
+        Debug.Log("ColHoles: " + colsWithHoles);
+        return colsWithHoles;
+    }
     public static float computeConnectedHoles(TetriminoEnum[,] grid){
         return 0;
     }
     public static float computePitHolePercent(TetriminoEnum[,] grid){
-        return 0;
-    }
-    public static float computeColHoles(TetriminoEnum[,] grid){
         return 0;
     }
     public static float computeDeepestWell(TetriminoEnum[,] grid){

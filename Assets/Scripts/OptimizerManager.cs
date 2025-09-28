@@ -11,7 +11,7 @@ public class OptimizerManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
     [SerializeField] bool executeComputation = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
-    [SerializeField] int initialPoblation = 200;
+    [SerializeField] int initialPoblation = 20000;
     [SerializeField] int nPieces = 10;
     [SerializeField] float mutationChance = 0.15f;
 
@@ -22,6 +22,7 @@ public class OptimizerManager : MonoBehaviour{
 
 
     [Header("Scoring Parameters")]
+    [SerializeField] float softMaxTemp = 100;
     [SerializeField] float softMaxTempInitialTemp = 100;
     [SerializeField] float penalizationFactor = 1.0f;
     [SerializeField] float gameScoreFactor = 10.0f;
@@ -34,10 +35,11 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float RoughnessHFactor = -1.0f;
     [SerializeField] float ColHolesHFactor = -10.0f;
     [SerializeField] float ConnectedHolesHFactor = -10.0f;
+    [SerializeField] float BlockAboveHolesHFactor = -1.0f;
     [SerializeField] float PitHolePercentHFactor = -5.0f;
     [SerializeField] float DeepestWellHFactor = -5.0f;
+    
 
-    float softMaxTemp = 100;
     // ============= GA population =============
     public Genotype[] poblation;
     public float[] scores;
@@ -91,6 +93,7 @@ public class OptimizerManager : MonoBehaviour{
         // Use fewer threads if population is small
         int maxUsefulThreads = Math.Max(initialPoblation / MIN_BATCH_SIZE, 1);
         threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
+        //threadCount = 1;
 
         Debug.Log($"Using {threadCount} threads for population of {initialPoblation}");
 
@@ -150,7 +153,8 @@ public class OptimizerManager : MonoBehaviour{
         updateGeneration();
 
         // =========================== UPDATE TEMP ========================
-        softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
+        //softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
+        softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / generationI);
     }
 
     // ========================================================
@@ -212,6 +216,7 @@ public class OptimizerManager : MonoBehaviour{
                 RoughnessHFactor,
                 ColHolesHFactor,
                 ConnectedHolesHFactor,
+                BlockAboveHolesHFactor,
                 PitHolePercentHFactor,
                 DeepestWellHFactor
             ) * generalHeuristicFactor
@@ -261,12 +266,12 @@ public class OptimizerManager : MonoBehaviour{
             newPoblation[i] = poblation[half[i]];
         }
 
-        for (int i = half.Length; i < initialPoblation; i+=2) {
+        for (int i = half.Length; i < initialPoblation; i++) {
             Genotype parent1 = getRandomGenotype(sortedIdxs, probs);
             Genotype parent2 = getRandomGenotype(sortedIdxs, probs);
             newPoblation[i] = parent1.reproduce(parent2, mutationChance);
             if(i+1 < initialPoblation) // not exeding array
-                newPoblation[i+1] = parent2.reproduce(parent1, mutationChance);
+                newPoblation[i+ 1] = parent2.reproduce(parent1, mutationChance);
         }
 
         poblation = newPoblation;

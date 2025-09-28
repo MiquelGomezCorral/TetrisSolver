@@ -176,18 +176,21 @@ public class GameManager {
         float RoughnessHFactor = 1.0f,
         float ColHolesHFactor = 1.0f,
         float ConnectedHolesHFactor = 1.0f,
+        float BlockAboveHolesHFactor = 1.0f,
         float PitHolePercentHFactor = 1.0f,
         float DeepestWellHFactor = 1.0f
     ) {
+        TetriminoEnum[,] grid = getGrid();
         return (
-            TetriminoSettings.computeBlocks(getGrid()) * BlocksHFactor +
-            TetriminoSettings.computeWeightedBlocks(getGrid()) * WeightedBlocksHFactor +
-            TetriminoSettings.computeClearableLine(getGrid()) * ClearableLineHFactor +
-            TetriminoSettings.computeRoughness(getGrid()) * RoughnessHFactor +
-            TetriminoSettings.computeColHoles(getGrid()) * ColHolesHFactor +
-            TetriminoSettings.computeConnectedHoles(getGrid()) * ConnectedHolesHFactor +
-            TetriminoSettings.computePitHolePercent(getGrid()) * PitHolePercentHFactor +
-            TetriminoSettings.computeDeepestWell(getGrid()) * DeepestWellHFactor
+            TetriminoSettings.computeBlocks(grid) * BlocksHFactor +
+            TetriminoSettings.computeWeightedBlocks(grid) * WeightedBlocksHFactor +
+            TetriminoSettings.computeClearableLine(grid) * ClearableLineHFactor +
+            TetriminoSettings.computeRoughness(grid) * RoughnessHFactor +
+            TetriminoSettings.computeColHoles(grid) * ColHolesHFactor +
+            TetriminoSettings.computeConnectedHoles(grid) * ConnectedHolesHFactor +
+            TetriminoSettings.computeBlockAboveHoles(grid) * BlockAboveHolesHFactor +
+            TetriminoSettings.computePitHolePercent(grid) * PitHolePercentHFactor +
+            TetriminoSettings.computeDeepestWell(grid) * DeepestWellHFactor
         );
     }
 }

@@ -15,6 +15,15 @@ public class GameViewer : MonoBehaviour {
     //[SerializeField] public Transform canvasTransform;
     //[SerializeField] public TextMeshProUGUI scoreText;
 
+
+    [SerializeField] float BlocksHFactor = -1.0f;
+    [SerializeField] float WeightedBlocksHFactor = -1.0f;
+    [SerializeField] float ClearableLineHFactor = 5.0f;
+    [SerializeField] float RoughnessHFactor = -1.0f;
+    [SerializeField] float ColHolesHFactor = -10.0f;
+    [SerializeField] float ConnectedHolesHFactor = -10.0f;
+    [SerializeField] float PitHolePercentHFactor = -5.0f;
+    [SerializeField] float DeepestWellHFactor = -5.0f;
     // ========================================================
     //                          START
     // ========================================================
@@ -54,7 +63,16 @@ public class GameViewer : MonoBehaviour {
         moved |= HandleKey(KeyCode.R, () => resetGame());
 
         if (moved) {
-            Debug.Log("GameViewer: totalHeurisitcs = " + gameM.getHeuristicScore());
+            Debug.Log("GameViewer: totalHeurisitcs = " + gameM.getHeuristicScore(
+                BlocksHFactor,
+                WeightedBlocksHFactor,
+                ClearableLineHFactor,
+                RoughnessHFactor,
+                ColHolesHFactor,
+                ConnectedHolesHFactor,
+                PitHolePercentHFactor,
+                DeepestWellHFactor
+            ));
             updateGridViewer();
         }
     }

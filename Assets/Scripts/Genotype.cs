@@ -119,7 +119,7 @@ public class Genotype {
 
         if (parent != null) {
             // Copy half of the pieces movement alternating
-            for (int i = 0; i < movement.GetLength(0) / 2; i++) {
+            for (int i = movement.GetLength(0) * 4 / 5; i < movement.GetLength(0); i++) {
                 for (int j = 0; j < movement.GetLength(1); j++) {
                     kid.movement[i, j] = parent.movement[i, j];
                 }

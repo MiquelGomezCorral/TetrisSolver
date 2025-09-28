@@ -347,7 +347,6 @@ public class TetriminoSettings : MonoBehaviour {
     public static float computeClearableLine(TetriminoEnum[,] grid){
         // maximum number of lines clearable by a single “I” (straight) piece in the current board configuration
         // Look for each column and get the highest block, then check the next four rows and compute how many are full
-
         int[] counts = new int[grid.GetLength(0)];
         for (int x = 0; x < grid.GetLength(0); x++) {
             int highest = grid.GetLength(1)-1;
@@ -437,6 +436,27 @@ public class TetriminoSettings : MonoBehaviour {
         //Debug.Log("ConnectedHoles: " + connectedHoles);
         return connectedHoles;
     }
+
+    public static float computeBlockAboveHoles(TetriminoEnum[,] grid) {
+        // Count number of connected holes en each column
+        int holesAbove = 0;
+
+        for (int x = 0; x < grid.GetLength(0); x++) {
+            int foundBlocks = 0;
+            for (int y = grid.GetLength(1) - 1; y >= 0; y--) {
+                if (grid[x, y] != TetriminoEnum.X) {
+                    foundBlocks ++;
+                } else if (foundBlocks > 0) {
+                    holesAbove += foundBlocks;
+                }
+            }
+        }
+
+        Debug.Log("BlockAboveHoles: " + holesAbove);
+        return holesAbove;
+    }
+
+
     public static float computePitHolePercent(TetriminoEnum[,] grid){
         // Bad in terms of 'unfillable space'
         float holes = 0f, pits = 0f;
@@ -489,12 +509,11 @@ public class TetriminoSettings : MonoBehaviour {
             pits += isPit ? 1 : 0;
         }
 
-
+        holes += pits; // summ all in the denominator
         //Debug.Log("holes: " + holes);
         //Debug.Log("pits: " + pits);
-        //Debug.Log("Ratio (holes == 0 ? 0 : pits / holes): " +  (holes == 0f) ? 0f : pits / holes);
+        //Debug.Log("Ratio (holes == 0 ? 0 : pits / holes): " + ((holes == 0f) ? 0f : pits / holes));
 
-        holes += pits; // summ all in the denominator
         return (holes == 0f) ? 0f : pits / holes;
     }
     public static float computeDeepestWell(TetriminoEnum[,] grid){

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class GridManager{
     public int width, height;
-    public Vector2Int startingPosition;
+    public GridPos startingPosition;
     private TetriminoEnum[,] gridTypes;
 
     // ========================================================
@@ -14,7 +14,7 @@ public class GridManager{
     public GridManager(int width, int height) { 
         this.width = width; this.height = height;
         // ============== Define pieces starting position ==============
-        startingPosition = new Vector2Int(
+        startingPosition = new GridPos(
             Mathf.Max(0, Mathf.FloorToInt(width / 2) - 1),
             height - 4
         );
@@ -44,16 +44,16 @@ public class GridManager{
         }
     }
 
-    public bool areValidPositions(List<Vector2Int> positions) {
+    public bool areValidPositions(GridPos[] positions) {
         //Efficient implementation without extra variales
-        foreach (Vector2Int pos in positions) {
+        foreach (GridPos pos in positions) {
             if (!isValidPosition(pos)) {
                 return false;
             }
         }
         return true;
     }
-    public bool isValidPosition(Vector2Int position) {
+    public bool isValidPosition(GridPos position) {
         return (
             position != null &&
             position.x < width && position.x >= 0 &&
@@ -62,8 +62,8 @@ public class GridManager{
         );
     }
 
-    public int lockPiece(List<Vector2Int> positions, TetriminoEnum pieceType, ActionEnum lastAction) {
-        foreach (Vector2Int pos in positions) {
+    public int lockPiece(GridPos[] positions, TetriminoEnum pieceType, ActionEnum lastAction) {
+        foreach (GridPos pos in positions) {
             gridTypes[pos.x, pos.y] = pieceType;
         }
 

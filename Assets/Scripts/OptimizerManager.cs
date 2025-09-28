@@ -45,26 +45,24 @@ public class OptimizerManager : MonoBehaviour{
     Queue<TetriminoEnum> bagQueueSaved;
 
     // ============= For parallel processing =============
+    // Batch size for work distribution
+    private const int MIN_BATCH_SIZE = 50; // Minimum work per thread to avoid overhead
     public int threadCount;
-    private int activeThreads = 0;
-    private GameManager[] gameMs;
+    private bool executing = false;
+    private bool simulating = false;
 
-    private Thread[] workerThreads;
-    private BlockingCollection<WorkItem> workQueue;
-    private bool shutdownRequested = false;
-
-    // Work item structure
-    private struct WorkItem {
-        public int startIdx;
-        public int endIdx;
-        public int threadIdx;
+    private class ThreadLocalData {
+        public GameManager gameManager;
     }
+    private ThreadLocal<GameManager> threadLocalGameManager = new ThreadLocal<GameManager>(() => new GameManager());
+    private ParallelOptions parallelOptions;
 
-    bool executing = false;
-    bool simulating = false;
     // ============= Visualizaton and random =============
     private GridViewer gridV; // Do to look for it every time
     private System.Random rnd = new System.Random();
+    private ThreadLocal<System.Random> threadRandom = new ThreadLocal<System.Random>(() =>
+        new System.Random(Guid.NewGuid().GetHashCode())
+    );
 
     // ========================================================
     //                          START
@@ -77,8 +75,6 @@ public class OptimizerManager : MonoBehaviour{
         if (gridV == null) {
             Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
         }
-        
-
         // ============= Initialize GA variables ============= 
         Debug.Log("Initial poblation size: " + initialPoblation);
         generationI = 0;
@@ -87,41 +83,38 @@ public class OptimizerManager : MonoBehaviour{
         for (int i = 0; i < initialPoblation; i++) {
             poblation[i] = new Genotype(aleoType, nPieces);
         }
-
-        // For parallel processing
-        threadCount = Math.Max(Environment.ProcessorCount - 4, 1);
-        //threadCount = 8;
-        gameMs = new GameManager[threadCount];
-        workQueue = new BlockingCollection<WorkItem>();
-        workerThreads = new Thread[threadCount];
-
-        for (int i = 0; i < threadCount; i++) {
-            gameMs[i] = new GameManager();
-
-            // Create persistent worker thread
-            int localThreadIdx = i; // capture for closure
-            workerThreads[i] = new Thread(() => WorkerThreadLoop(localThreadIdx));
-            workerThreads[i].IsBackground = true;
-            workerThreads[i].Start();
-        }
-
         // Get the bags for all the pieces
-        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag((nPieces + 1) / 7 )); 
+        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag((nPieces + 1) / 7 ));
+
+        // ============= Setup parallel processing ============= 
+        // Use fewer threads if population is small
+        int maxUsefulThreads = Math.Max(initialPoblation / MIN_BATCH_SIZE, 1);
+        threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
+
+        Debug.Log($"Using {threadCount} threads for population of {initialPoblation}");
+
+        // Setup parallel options
+        parallelOptions = new ParallelOptions {
+            MaxDegreeOfParallelism = threadCount
+        };
+
 
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores
         // Rest will be evaluated in the processNextGeneration  
         executing = true;
-        StartEvaluationThread(0, initialPoblation / 2);
-        executing = false;
+        Task.Run(() => {
+            EvaluatePopulation(0, initialPoblation / 2);
+            executing = false;
+        });
     }
 
 
     // remove threads on destroy
     void OnDestroy() {
-        shutdownRequested = true;
-        workQueue?.CompleteAdding();
-        workQueue?.Dispose();
+        threadRandom?.Dispose();
+        threadLocalGameManager?.Dispose();
+
     }
     // ========================================================
     //                          UPDATE
@@ -130,8 +123,12 @@ public class OptimizerManager : MonoBehaviour{
     void Update(){
         // =========================== GA ========================
         if (executing) return;
+
         executing = true;
-        new Thread(GAStep).Start();
+        Task.Run(() => {
+            GAStep();
+            executing = false;
+        });
        
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
@@ -143,103 +140,87 @@ public class OptimizerManager : MonoBehaviour{
    
     private void GAStep() {
         // =========================== EVALUATE ========================
-        StartEvaluationThread(initialPoblation / 2, initialPoblation);
+        EvaluatePopulation(initialPoblation / 2, initialPoblation);
 
         // =========================== SORT BEST ========================
         SortPopulation();
 
         // =========================== UPDATE GENERATION ========================
         updateGeneration();
-
-        executing = false;
     }
+
     // ========================================================
     //                          THREDING
     // ========================================================
-    void StartEvaluationThread(int startIdx, int endIdx) {
-        // Process from startIdx to endIdx (not included)
-        int threadSliceLenght = (endIdx - startIdx) / threadCount;
-        Interlocked.Exchange(ref activeThreads, 0);
+    void EvaluatePopulation(int startIdx, int endIdx) {
+        int totalWork = endIdx - startIdx;
+        int batchSize = Math.Max(MIN_BATCH_SIZE, totalWork / (threadCount * 4)); // smaller batches for better load balancing
 
-        for (int threadIdx = 0; threadIdx < threadCount; threadIdx++) {
-            // capture locals to avoid closure issues
-            int localThreadIdx = threadIdx;
-            int fromIdx = startIdx + threadIdx * threadSliceLenght;
-            // Compute next + give the reminder to the last thread
-            int toIdx = (threadIdx == threadCount - 1) ? endIdx : startIdx + (threadIdx + 1) * threadSliceLenght;
+        // Use Parallel.ForEach with partitioner for better load balancing
+        var partitioner = Partitioner.Create(startIdx, endIdx, batchSize);
 
-
-            if (fromIdx >= toIdx) continue; // nothing to do for this thread
-
-            Interlocked.Increment(ref activeThreads);
-            workQueue.Add(new WorkItem { startIdx = fromIdx, endIdx = toIdx, threadIdx = threadIdx });
-        }
-
-        while (Volatile.Read(ref activeThreads) > 0) {
-            Thread.Sleep(8); // 8ms sleep for responsiveness and not to waste cpu
-        }
-    }
-
-    private void WorkerThreadLoop(int threadIdx) {
         try {
-            while (!shutdownRequested) {
-                WorkItem workItem;
-                if (workQueue.TryTake(out workItem, 8)) { // 8ms timeout
-                    evaluateGenotypes(workItem.startIdx, workItem.endIdx, workItem.threadIdx);
+            Parallel.ForEach(partitioner, parallelOptions, (range) => {
+                try {
+                    var localGameM = threadLocalGameManager.Value;
+
+                    for (int genIdx = range.Item1; genIdx < range.Item2; genIdx++) {
+                        scores[genIdx] = EvaluateGenotype(
+                            poblation[genIdx],
+                            localGameM
+                        );
+                    }
+                } catch (Exception e) {
+                    Debug.LogError("Error in parallel thread: " + e.Message + "\n" + e.StackTrace);
+                    throw; // Re-throw to stop the parallel execution
                 }
-            }
-        } catch (InvalidOperationException) {
-            // Queue was disposed, thread should exit
+            });
+        } catch (Exception e) {
+            Debug.LogError("Parallel.ForEach failed: " + e.Message + "\n" + e.StackTrace);
         }
     }
-
 
     // ========================================================
     //                          EVALUATE
     // ========================================================
-    void evaluateGenotypes(int startIdx, int endIdx, int threadIdx) {
-        // Process from startIdx to endIdx (not included) with gameManager threadIdx
-        gameMs[threadIdx].resetGame(bagQueueSaved);
+    float EvaluateGenotype(Genotype genotype, GameManager gameM) {
+        // Reset with pre-copied queue
+        gameM.resetGame(bagQueueSaved);
 
-        for (int genIdx = startIdx; genIdx < endIdx; genIdx++) {
-            Genotype genotype = poblation[genIdx];
-            int penalization = 0;
+        int penalization = 0;
 
-            // For each piece
-            for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
-                // For each movement in that piece
-                for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
-                    // apply penalization for each invalid movement
-                    penalization += playMovement(gameMs[threadIdx], genotype.movement[pieceI, moveJ], moveJ, aleoType);
-                }
-                gameMs[threadIdx].lockPiece();
+        // For each piece
+        for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
+            // For each movement in that piece
+            for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
+                penalization += playMovement(gameM, genotype.movement[pieceI, moveJ], moveJ, aleoType);
             }
-
-            scores[genIdx] = (
-                penalization * penalizationFactor + 
-                gameMs[threadIdx].getScore() * gameScoreFactor + 
-                gameMs[threadIdx].getHeuristicScore(
-                    BlocksHFactor,
-                    WeightedBlocksHFactor,
-                    ClearableLineHFactor,
-                    RoughnessHFactor,
-                    ColHolesHFactor,
-                    ConnectedHolesHFactor,
-                    PitHolePercentHFactor,
-                    DeepestWellHFactor
-                ) * generalHeuristicFactor
-            );
-
-            // Create a copy of the bag saved
-            gameMs[threadIdx].resetGame(bagQueueSaved);
+            gameM.lockPiece();
         }
 
-        // signal thread finished
-        Interlocked.Decrement(ref activeThreads);
+        return (
+            penalization * penalizationFactor +
+            gameM.getScore() * gameScoreFactor +
+            gameM.getHeuristicScore(
+                BlocksHFactor,
+                WeightedBlocksHFactor,
+                ClearableLineHFactor,
+                RoughnessHFactor,
+                ColHolesHFactor,
+                ConnectedHolesHFactor,
+                PitHolePercentHFactor,
+                DeepestWellHFactor
+            ) * generalHeuristicFactor
+        );
     }
 
+
+
+    // ========================================================
+    //                      PLAY VISUALY
+    // ========================================================
     IEnumerator playGenotype(Genotype genotype) {
-        GameManager gameM = gameMs[1];
+        GameManager gameM = new GameManager();
         gameM.resetGame(bagQueueSaved);
         gridV.resetGrid();
 

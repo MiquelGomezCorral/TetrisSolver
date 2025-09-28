@@ -1,10 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using TMPro;
-using Unity.VisualScripting;
-using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 
 public class GameManager {
     // ========================================================
@@ -125,7 +119,7 @@ public class GameManager {
 
 
     public void fillRandomBag() {
-        List<TetriminoEnum> newBag = TetriminoSettings.produceRandomBag();
+        TetriminoEnum[] newBag = TetriminoSettings.produceRandomBag();
 
         // Enque new pieces
         foreach (TetriminoEnum newPiece in newBag)
@@ -143,12 +137,12 @@ public class GameManager {
             return bagQueue.Dequeue();
         }
     }
-    public List<TetriminoEnum> PeekNext(int n) {
-        List<TetriminoEnum> nextPieces = new List<TetriminoEnum>();
+    public TetriminoEnum[] PeekNext(int n) {
+        TetriminoEnum[] nextPieces = new TetriminoEnum[n];
         int i = 0;
         foreach (var piece in bagQueue) {
             if (i >= n) break;
-            nextPieces.Add(piece);
+            nextPieces[i] = piece;
             i++;
         }
         return nextPieces;
@@ -163,7 +157,7 @@ public class GameManager {
     public TetriminoEnum getSwapPieceType() {
         return swapPieceType;
     }
-    public List<Vector2Int> getPiecePositions() {
+    public GridPos[] getPiecePositions() {
         return currentPiece.getAbsPositions();
     }
     public TetriminoEnum getPieceType() {

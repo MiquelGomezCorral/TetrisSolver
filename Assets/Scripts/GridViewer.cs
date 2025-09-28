@@ -86,14 +86,14 @@ public class GridViewer : MonoBehaviour {
         }
     }
 
-    public void updateGridPositions(List<Vector2Int> positions, TetriminoEnum pieceType) {
+    public void updateGridPositions(GridPos[] positions, TetriminoEnum pieceType) {
         if (positions == null) return;
 
-        foreach (Vector2Int cell in positions) { 
+        foreach (GridPos cell in positions) { 
             gridCells[cell.x, cell.y].changeType(pieceType);
         }
     }
-    public void unRenderPiece(List<Vector2Int> positions) {
+    public void unRenderPiece(GridPos[] positions) {
         updateGridPositions(positions, TetriminoEnum.X);
     }
 

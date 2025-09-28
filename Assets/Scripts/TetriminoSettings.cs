@@ -1,14 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System;
 using System.Linq;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 
 // =================================================================
-//                              ENUMS
+//                              ENUMS & STRUCTS
 // =================================================================
 public enum TetriminoEnum { // X is empty
     X, I, O, T, S, Z, J, L
@@ -23,6 +21,26 @@ public enum ActionEnum {
     MOVE, T_SPIN, MINI_T_SPIN
 }
 
+public struct GridPos {
+    public int x;
+    public int y;
+    public GridPos(int x, int y) { this.x = x; this.y = y; }
+    public static GridPos operator +(GridPos a, GridPos b) {
+        return new GridPos(a.x + b.x, a.y + b.y);
+    }
+    public static GridPos operator -(GridPos a, GridPos b) {
+        return new GridPos(a.x - b.x, a.y - b.y);
+    }
+
+    // Equality (optional but useful)
+    public static bool operator ==(GridPos a, GridPos b) => a.x == b.x && a.y == b.y;
+    public static bool operator !=(GridPos a, GridPos b) => !(a == b);
+
+    public override bool Equals(object obj) =>
+        obj is GridPos other && this == other;
+
+    public override int GetHashCode() => (x, y).GetHashCode();
+}
 // =================================================================
 //                              SETTINGS
 // =================================================================
@@ -35,34 +53,35 @@ public class TetriminoSettings : MonoBehaviour {
     public Sprite textureX, textureI, textureO, textureT, textureS, textureZ, textureJ, textureL;
     public Sprite texturePieceX, texturePieceI, texturePieceO, texturePieceT, texturePieceS, texturePieceZ, texturePieceJ, texturePieceL;
 
-    public static readonly List<List<Vector2Int>> JLSTZ_OFFSET_DATA = new List<List<Vector2Int>> {
-         new List<Vector2Int> { Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero,              Vector2Int.zero },
-         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, 0),         Vector2Int.zero,              new Vector2Int(-1, 0) },
-         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, -1),        Vector2Int.zero,              new Vector2Int(-1, -1) },
-         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(0, 2),         Vector2Int.zero,              new Vector2Int(0, 2) },
-         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(1, 2),         Vector2Int.zero,              new Vector2Int(-1, 2) }
-    };
-    public static readonly List<List<Vector2Int>> I_OFFSET_DATA = new List<List<Vector2Int>> {
-         new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(-1, 0),        new Vector2Int(-1, 1),        new Vector2Int(0, 1) },
-         new List<Vector2Int> { new Vector2Int(-1, 0),        Vector2Int.zero,              new Vector2Int(1, 1),         new Vector2Int(0, 1) },
-         new List<Vector2Int> { new Vector2Int(2, 0),         Vector2Int.zero,              new Vector2Int(-2, 1),        new Vector2Int(0, 1) },
-         new List<Vector2Int> { new Vector2Int(-1, 0),        new Vector2Int(0, 1),         new Vector2Int(1, 0),         new Vector2Int(0, -1) },
-         new List<Vector2Int> { new Vector2Int(2, 0),         new Vector2Int(0, -2),        new Vector2Int(-2, 0),        new Vector2Int(0, 2) }
+    public static readonly GridPos[][] JLSTZ_OFFSET_DATA = new GridPos[][] {
+        new GridPos[] { new GridPos(0,0), new GridPos(0,0), new GridPos(0,0), new GridPos(0,0) },
+        new GridPos[] { new GridPos(0,0), new GridPos(1,0), new GridPos(0,0), new GridPos(-1,0) },
+        new GridPos[] { new GridPos(0,0), new GridPos(1,-1), new GridPos(0,0), new GridPos(-1,-1) },
+        new GridPos[] { new GridPos(0,0), new GridPos(0,2), new GridPos(0,0), new GridPos(0,2) },
+        new GridPos[] { new GridPos(0,0), new GridPos(1,2), new GridPos(0,0), new GridPos(-1,2) }
     };
 
-    public static readonly List<List<Vector2Int>> O_OFFSET_DATA = new List<List<Vector2Int>> {
-        new List<Vector2Int> { Vector2Int.zero,              new Vector2Int(0, -1),              new Vector2Int(-1, -1), new Vector2Int(-1, 0) }
+    public static readonly GridPos[][] I_OFFSET_DATA = new GridPos[][] {
+        new GridPos[] { new GridPos(0,0), new GridPos(-1,0), new GridPos(-1,1), new GridPos(0,1) },
+        new GridPos[] { new GridPos(-1,0), new GridPos(0,0), new GridPos(1,1), new GridPos(0,1) },
+        new GridPos[] { new GridPos(2,0), new GridPos(0,0), new GridPos(-2,1), new GridPos(0,1) },
+        new GridPos[] { new GridPos(-1,0), new GridPos(0,1), new GridPos(1,0), new GridPos(0,-1) },
+        new GridPos[] { new GridPos(2,0), new GridPos(0,-2), new GridPos(-2,0), new GridPos(0,2) }
     };
 
-    public static readonly List<Vector2Int> CLOCK_ROTATION = new List<Vector2Int> {
-        new Vector2Int(0, 1), new Vector2Int(-1, 0)
+    public static readonly GridPos[][] O_OFFSET_DATA = new GridPos[][] {
+        new GridPos[] { new GridPos(0,0), new GridPos(0,-1), new GridPos(-1,-1), new GridPos(-1,0) }
     };
 
-    public static readonly List<Vector2Int> ACLOCK_ROTATION = new List<Vector2Int> {
-        new Vector2Int(0, -1), new Vector2Int(1, 0)
+    public static readonly GridPos[] CLOCK_ROTATION = new GridPos[] {
+        new GridPos(0,1), new GridPos(-1,0)
     };
 
-    public static List<TetriminoEnum> basePiecesBag = new List<TetriminoEnum>{
+    public static readonly GridPos[] ACLOCK_ROTATION = new GridPos[] {
+        new GridPos(0,-1), new GridPos(1,0)
+    };
+
+    public static readonly TetriminoEnum[] BASE_PIECES_BAG = new TetriminoEnum[] {
         TetriminoEnum.I, TetriminoEnum.O, TetriminoEnum.T,
         TetriminoEnum.S, TetriminoEnum.Z, TetriminoEnum.J, TetriminoEnum.L
     };
@@ -79,19 +98,22 @@ public class TetriminoSettings : MonoBehaviour {
     }
 
    
-
+    public static bool ensureInstance() {
+        if (Instance == null) {
+            Instance = FindFirstObjectByType<TetriminoSettings>();
+            if (Instance == null) {
+                Debug.LogError("TetriminoSettings.Instance is null. Please add a TetriminoSettings MonoBehaviour to the scene.");
+                return false;
+            }
+        }
+        return true;
+    }
     // ==============================================================================
     //                                  TEXTURES
     // ==============================================================================
     public static Sprite getTetriminoTexture(TetriminoEnum pieceType) {
         // Ensure Instance exists (lazy-find) to avoid NullReferenceExceptions
-        if (Instance == null) {
-            Instance = FindObjectOfType<TetriminoSettings>();
-            if (Instance == null) {
-                Debug.LogError("TetriminoSettings.Instance is null. Please add a TetriminoSettings MonoBehaviour to the scene.");
-                return null;
-            }
-        }
+        if (!ensureInstance()) { return null; }
 
         switch (pieceType) {
             case TetriminoEnum.I: return Instance.textureI;
@@ -107,13 +129,7 @@ public class TetriminoSettings : MonoBehaviour {
     }
     public static Sprite getTetriminoPieceTexture(TetriminoEnum pieceType) {
         // Ensure Instance exists (lazy-find) to avoid NullReferenceExceptions
-        if (Instance == null) {
-            Instance = FindObjectOfType<TetriminoSettings>();
-            if (Instance == null) {
-                Debug.LogError("TetriminoSettings.Instance is null. Please add a TetriminoSettings MonoBehaviour to the scene.");
-                return null;
-            }
-        }
+        if (!ensureInstance()) { return null; }
 
         switch (pieceType) {
             case TetriminoEnum.I: return Instance.texturePieceI;
@@ -127,67 +143,68 @@ public class TetriminoSettings : MonoBehaviour {
             default: return Instance.texturePieceX;
         }
     }
-    
+
 
     // ==============================================================================
     //                                  SPAWN POINTS
     // ==============================================================================
-    public static List<Vector2Int> getTetriminoPositions(TetriminoEnum pieceType) {
+    public static GridPos[] getTetriminoPositions(TetriminoEnum pieceType) {
         switch (pieceType) {
             case TetriminoEnum.I:
-                return new List<Vector2Int> {
-                    new Vector2Int(0,0),
-                    new Vector2Int(-1,0),
-                    new Vector2Int(1,0),
-                    new Vector2Int(2,0)
-                };
+                return new GridPos[] {
+                new GridPos(0,0),
+                new GridPos(-1,0),
+                new GridPos(1,0),
+                new GridPos(2,0)
+            };
             case TetriminoEnum.O:
-                return new List<Vector2Int> {
-                    new Vector2Int(0,0),
-                    new Vector2Int(1,0),
-                    new Vector2Int(0,1),
-                    new Vector2Int(1,1)
-                };
+                return new GridPos[] {
+                new GridPos(0,0),
+                new GridPos(1,0),
+                new GridPos(0,1),
+                new GridPos(1,1)
+            };
             case TetriminoEnum.T:
-                return new List<Vector2Int> {
-                    new Vector2Int(0,0),
-                    new Vector2Int(-1,0),
-                    new Vector2Int(1,0),
-                    new Vector2Int(0,1)
-                };
+                return new GridPos[] {
+                new GridPos(0,0),
+                new GridPos(-1,0),
+                new GridPos(1,0),
+                new GridPos(0,1)
+            };
             case TetriminoEnum.S:
-                return new List<Vector2Int> {
-                    new Vector2Int(0,0),
-                    new Vector2Int(-1,0),
-                    new Vector2Int(0,1),
-                    new Vector2Int(1,1)
-                };
+                return new GridPos[] {
+                new GridPos(0,0),
+                new GridPos(-1,0),
+                new GridPos(0,1),
+                new GridPos(1,1)
+            };
             case TetriminoEnum.Z:
-                return new List<Vector2Int> {
-                    new Vector2Int(0,0),
-                    new Vector2Int(1,0),
-                    new Vector2Int(0,1),
-                    new Vector2Int(-1,1)
-                };
+                return new GridPos[] {
+                new GridPos(0,0),
+                new GridPos(1,0),
+                new GridPos(0,1),
+                new GridPos(-1,1)
+            };
             case TetriminoEnum.J:
-                return new List<Vector2Int> {
-                    new Vector2Int(0,0),
-                    new Vector2Int(-1,0),
-                    new Vector2Int(1,0),
-                    new Vector2Int(-1,1)
-                };
+                return new GridPos[] {
+                new GridPos(0,0),
+                new GridPos(-1,0),
+                new GridPos(1,0),
+                new GridPos(-1,1)
+            };
             case TetriminoEnum.L:
-                return new List<Vector2Int> {
-                    new Vector2Int(0,0),
-                    new Vector2Int(-1,0),
-                    new Vector2Int(1,0),
-                    new Vector2Int(1,1)
-                };
+                return new GridPos[] {
+                new GridPos(0,0),
+                new GridPos(-1,0),
+                new GridPos(1,0),
+                new GridPos(1,1)
+            };
             case TetriminoEnum.X:
             default:
                 return null;
         }
     }
+
 
     // ==============================================================================
     //                                  ROTATION
@@ -206,7 +223,7 @@ public class TetriminoSettings : MonoBehaviour {
 
         return (DirectionEnum)dir;
     }
-    public static List<List<Vector2Int>> getTetriminoOffsets(TetriminoEnum pieceType) {
+    public static GridPos[][] getTetriminoOffsets(TetriminoEnum pieceType) {
         switch (pieceType) {
             case TetriminoEnum.O:
                 return O_OFFSET_DATA;
@@ -216,7 +233,7 @@ public class TetriminoSettings : MonoBehaviour {
                 return JLSTZ_OFFSET_DATA;
         }
     }
-    public static List<Vector2Int> getRotationMatrix(RorateEnum direction) {
+    public static GridPos[] getRotationMatrix(RorateEnum direction) {
         switch (direction) {
             case RorateEnum.CLOCK:
                 return CLOCK_ROTATION;
@@ -230,23 +247,26 @@ public class TetriminoSettings : MonoBehaviour {
     // ==============================================================================
     //                                   BAGS PIECE 
     // ==============================================================================
-    public static List<TetriminoEnum> produceRandomBag(int numBags = 1) {
-        List<TetriminoEnum> result = new List<TetriminoEnum>();
+    public static TetriminoEnum[] produceRandomBag(int numBags = 1) {
+        int baseLen = BASE_PIECES_BAG.Length;
+        TetriminoEnum[] result = new TetriminoEnum[baseLen * numBags];
 
         for (int b = 0; b < numBags; b++) {
-            // Copy base bag
-            List<TetriminoEnum> newBag = new List<TetriminoEnum>(basePiecesBag);
+            // Copy base bag into a temp array
+            TetriminoEnum[] bag = new TetriminoEnum[baseLen];
+            Array.Copy(BASE_PIECES_BAG, bag, baseLen);
 
-            // Shuffle only this bag
-            for (int i = 0; i < newBag.Count; i++) {
-                int j = rng.Value.Next(0, newBag.Count);
-                TetriminoEnum tmp = newBag[i];
-                newBag[i] = newBag[j];
-                newBag[j] = tmp;
+            // Fisher–Yates shuffle
+            var localRng = rng.Value;
+            for (int i = baseLen - 1; i > 0; i--) {
+                int j = localRng.Next(i + 1);
+                TetriminoEnum tmp = bag[i];
+                bag[i] = bag[j];
+                bag[j] = tmp;
             }
 
             // Append shuffled bag to result
-            result.AddRange(newBag);
+            Array.Copy(bag, 0, result, b * baseLen, baseLen);
         }
 
         return result;

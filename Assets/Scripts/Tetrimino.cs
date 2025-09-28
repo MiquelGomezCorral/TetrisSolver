@@ -6,8 +6,8 @@ public class Tetrimino {
 
     public TetriminoEnum pieceType;
     public DirectionEnum pieceOrientation;
-    public List<Vector2Int> positionsList;
-    public Vector2Int position;
+    public GridPos[] positionsList;
+    public GridPos position;
     public ActionEnum lastAction = ActionEnum.MOVE;
 
 
@@ -32,7 +32,7 @@ public class Tetrimino {
     }
 
     public void lockPeace() {
-        List<Vector2Int> absPositions = getAbsPositions();
+        GridPos[] absPositions = getAbsPositions();
         movePieceBootom();
 
         // Get the absolute positions and fix those cells
@@ -43,32 +43,35 @@ public class Tetrimino {
     // ========================================================
     //                          METHODS
     // ========================================================
-    public List<Vector2Int> getAbsPositions() {
-        List<Vector2Int> absPositions = new List<Vector2Int>(positionsList);
-        for (int i = 0; i < positionsList.Count; i++)
-            absPositions[i] += position;
+    public GridPos[] getAbsPositions() {
+        GridPos[] absPositions = new GridPos[positionsList.Length];
+        for (int i = 0; i < positionsList.Length; i++)
+            absPositions[i] = new GridPos(
+                positionsList[i].x+position.x,
+                positionsList[i].y+position.y
+            );
 
         return absPositions;
     }
 
     public bool movePieze(DirectionEnum direction) {
-        Vector2Int delta = direction switch {
-            DirectionEnum.LEFT => Vector2Int.left,
-            DirectionEnum.RIGHT => Vector2Int.right,
-            DirectionEnum.UP => Vector2Int.up,
-            DirectionEnum.DOWN => Vector2Int.down,
-            _ => Vector2Int.zero
+        GridPos delta = direction switch {
+            DirectionEnum.LEFT => new GridPos(-1, 0),
+            DirectionEnum.RIGHT => new GridPos(1, 0),
+            DirectionEnum.UP => new GridPos(0, 1),
+            DirectionEnum.DOWN => new GridPos(0, -1),
+            _ => new GridPos(0, 0)
         };
-        Vector2Int newPos = position + delta;
 
-        // Efficiently cheking all the pieces
-        foreach (Vector2Int pos in positionsList) {
+        GridPos newPos = position + delta;
+
+        // Check all cells of the piece
+        foreach (GridPos pos in positionsList) {
             if (!gridM.isValidPosition(newPos + pos))
                 return false;
         }
-        position = newPos;
 
-        // last action was a movement
+        position = newPos;
         lastAction = ActionEnum.MOVE;
         return true;
     }
@@ -112,29 +115,32 @@ public class Tetrimino {
 
     private bool rotate(RorateEnum direction) {
         DirectionEnum newDirection = TetriminoSettings.getNewDirection(pieceOrientation, direction);
-        List<List<Vector2Int>> offSetTable = TetriminoSettings.getTetriminoOffsets(pieceType);
-        List<Vector2Int> rotationMatrix = TetriminoSettings.getRotationMatrix(direction);
+        GridPos[][] offSetTable = TetriminoSettings.getTetriminoOffsets(pieceType);
+        GridPos[] rotationMatrix = TetriminoSettings.getRotationMatrix(direction);
 
         bool rotationSuccess = false;
-        List<Vector2Int> newPositions = this.positionsList;
-        Vector2Int newOffSet = Vector2Int.zero;
-        foreach (List<Vector2Int> offSetTest in offSetTable) {
+        GridPos[] newPositions = null;
+        GridPos newOffSet = new GridPos(0, 0);
+
+        foreach (GridPos[] offSetTest in offSetTable) {
             rotationSuccess = true;
-            newPositions = new List<Vector2Int>();
+            newPositions = new GridPos[positionsList.Length];
 
             // compute offset: current - new
-            Vector2Int offSet = offSetTest[(int)pieceOrientation] - offSetTest[(int)newDirection];
-            foreach (Vector2Int pos in positionsList) {
-                // compute new position 
-                Vector2Int rotatedPos = rotateVector(pos, rotationMatrix) + offSet;
-                Vector2Int absPos = rotatedPos + position;
+            GridPos offSet = offSetTest[(int)pieceOrientation] - offSetTest[(int)newDirection];
+
+            for (int i = 0; i < positionsList.Length; i++) {
+                GridPos rotatedPos = rotateVector(positionsList[i], rotationMatrix) + offSet;
+                GridPos absPos = rotatedPos + position;
 
                 if (!gridM.isValidPosition(absPos)) {
-                    rotationSuccess = false; break;
+                    rotationSuccess = false;
+                    break;
                 }
 
-                newPositions.Add(rotatedPos);
+                newPositions[i] = rotatedPos;
             }
+
             if (rotationSuccess) {
                 newOffSet = offSet;
                 break;
@@ -144,41 +150,37 @@ public class Tetrimino {
         if (rotationSuccess) {
             normalizePositionList(newPositions, newOffSet);
             pieceOrientation = newDirection;
-
             checkTSpin();
         }
-        return rotationSuccess;
 
+        return rotationSuccess;
     }
 
-    private Vector2Int rotateVector(Vector2Int pos, List<Vector2Int> rotationMatrix) {
-        return new Vector2Int(
+    private GridPos rotateVector(GridPos pos, GridPos[] rotationMatrix) {
+        return new GridPos(
             rotationMatrix[0].x * pos.x + rotationMatrix[0].y * pos.y,
             rotationMatrix[1].x * pos.x + rotationMatrix[1].y * pos.y
         );
     }
 
-
-    private void normalizePositionList(List<Vector2Int> positions, Vector2Int offSet) {
-        List<Vector2Int> newPositions = new List<Vector2Int>();
-        foreach (Vector2Int pos in positions) {
-            newPositions.Add(pos - offSet);
+    private void normalizePositionList(GridPos[] newPositions, GridPos offSet) {
+        for (int i = 0; i < newPositions.Length; i++) {
+            newPositions[i] -= offSet;
         }
 
         position += offSet;
         positionsList = newPositions;
     }
 
-
     private void checkTSpin() {
         if (pieceType != TetriminoEnum.T) return;
 
-        bool A = !gridM.isValidPosition(position + new Vector2Int(-1, 1)); // occupiedUpLeft
-        bool B = !gridM.isValidPosition(position + new Vector2Int(1, 1)); // occupiedUpRight
-        bool C = !gridM.isValidPosition(position + new Vector2Int(-1, -1)); // occupiedDownLeft
-        bool D = !gridM.isValidPosition(position + new Vector2Int(1, -1)); // occupiedDownRight
+        bool A = !gridM.isValidPosition(position + new GridPos(-1, 1));  // up-left
+        bool B = !gridM.isValidPosition(position + new GridPos(1, 1));   // up-right
+        bool C = !gridM.isValidPosition(position + new GridPos(-1, -1)); // down-left
+        bool D = !gridM.isValidPosition(position + new GridPos(1, -1));  // down-right
 
-        // Rotate for the check as many times as the orientation says UP 0, Right 1, Down 2, Left 3
+        // Rotate adjacency mask based on orientation
         for (int i = 0; i < (int)pieceOrientation; i++) {
             bool auxA = A;
             A = C;
@@ -192,4 +194,5 @@ public class Tetrimino {
         else if (C && D && (A || B))
             lastAction = ActionEnum.MINI_T_SPIN;
     }
+
 }

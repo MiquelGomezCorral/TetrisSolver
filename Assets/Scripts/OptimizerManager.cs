@@ -34,7 +34,7 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float ClearableLineHFactor = 1.0f;
     [SerializeField] float RoughnessHFactor = -1.0f;
     [SerializeField] float ColHolesHFactor = -1.0f;
-    [SerializeField] float ConnectedHolesHFactor = 1.0f;
+    [SerializeField] float ConnectedHolesHFactor = -1.0f;
     [SerializeField] float PitHolePercentHFactor = 1.0f;
     [SerializeField] float DeepestWellHFactor = 1.0f;
 

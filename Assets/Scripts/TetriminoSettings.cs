@@ -391,11 +391,30 @@ public class TetriminoSettings : MonoBehaviour {
             if (foundHole) colsWithHoles++;
         }
 
-        Debug.Log("ColHoles: " + colsWithHoles);
+        //Debug.Log("ColHoles: " + colsWithHoles);
         return colsWithHoles;
     }
     public static float computeConnectedHoles(TetriminoEnum[,] grid){
-        return 0;
+        // Count number of connected holes en each column
+        int connectedHoles = 0;
+
+        for (int x = 0; x < grid.GetLength(0); x++) {
+            bool foundBlock = false;
+            bool foundHole = false;
+            for (int y = grid.GetLength(1) - 1; y >= 0; y--) {
+                if (grid[x, y] != TetriminoEnum.X) {
+                    foundBlock = true;
+                    foundHole = false;
+                } else if (foundBlock && !foundHole) {
+                    foundHole = true;
+                } else if (foundHole) {
+                    connectedHoles++;
+                }
+            }
+        }
+
+        Debug.Log("ConnectedHoles: " + connectedHoles);
+        return connectedHoles;
     }
     public static float computePitHolePercent(TetriminoEnum[,] grid){
         return 0;

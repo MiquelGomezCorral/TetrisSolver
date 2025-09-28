@@ -1,12 +1,11 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
-using static Unity.Collections.AllocatorManager;
 
 public class OptimizerManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
@@ -38,15 +37,30 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float PitHolePercentHFactor = -1.0f;
     [SerializeField] float DeepestWellHFactor = -1.0f;
 
+    // ============= GA population =============
     public Genotype[] poblation;
     public float[] scores;
     public int[] sortedIdxs;
     public int generationI;
     Queue<TetriminoEnum> bagQueueSaved;
 
+    // ============= For parallel processing =============
     public int threadCount;
+    private int activeThreads = 0;
     private GameManager[] gameMs;
 
+    private Thread[] workerThreads;
+    private BlockingCollection<WorkItem> workQueue;
+    private bool shutdownRequested = false;
+
+    // Work item structure
+    private struct WorkItem {
+        public int startIdx;
+        public int endIdx;
+        public int threadIdx;
+    }
+
+    // ============= Visualizaton and random =============
     private GridViewer gridV; // Do to look for it every time
     private System.Random rnd = new System.Random();
 
@@ -75,8 +89,17 @@ public class OptimizerManager : MonoBehaviour{
         // For parallel processing
         threadCount = Math.Max(Environment.ProcessorCount - 4, 1);
         gameMs = new GameManager[threadCount];
-        for(int i = 0; i < threadCount; i++) {
+        workQueue = new BlockingCollection<WorkItem>();
+        workerThreads = new Thread[threadCount];
+
+        for (int i = 0; i < threadCount; i++) {
             gameMs[i] = new GameManager();
+
+            // Create persistent worker thread
+            int localThreadIdx = i; // capture for closure
+            workerThreads[i] = new Thread(() => WorkerThreadLoop(localThreadIdx));
+            workerThreads[i].IsBackground = true;
+            workerThreads[i].Start();
         }
 
         // Get the bags for all the pieces
@@ -85,21 +108,26 @@ public class OptimizerManager : MonoBehaviour{
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores
         // Rest will be evaluated in the processNextGeneration  
-        StartEvaluationThread(poblation[..(initialPoblation / 2)], 0);
+        StartEvaluationThread(0, initialPoblation / 2);
     }
 
+
+    // remove threads on destroy
+    void OnDestroy() {
+        shutdownRequested = true;
+        workQueue?.CompleteAdding();
+        workQueue?.Dispose();
+    }
     // ========================================================
     //                          UPDATE
     // ========================================================
-    //Thread mainComputationThread;
-    bool executed = true;
+    bool executing = false;
     bool simulating = false;
     void Update(){
-        //if (mainComputationThread == null || mainComputationThread.IsAlive) return;
-        if (executed || simulating) return;
+        if (executing || simulating) return;
 
         // =========================== EVALUATE ========================
-        StartEvaluationThread(poblation[(initialPoblation / 2)..], initialPoblation / 2);
+        StartEvaluationThread(initialPoblation / 2, initialPoblation);
 
         // =========================== SORT BEST ========================
         SortPopulation();
@@ -117,13 +145,45 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          THREDING
     // ========================================================
-    void StartEvaluationThread(Genotype[] slice, int startIdx) {
-        //mainComputationThread = new Thread(() => evaluateGenotypes(slice));
-        //mainComputationThread.Start();
-        executed = true;
+    void StartEvaluationThread(int startIdx, int endIdx) {
+        // Process from startIdx to endIdx (not included)
+        executing = true;
+        int threadSliceLenght = (endIdx - startIdx) / threadCount;
+        Interlocked.Exchange(ref activeThreads, 0);
 
-        evaluateGenotypes(slice, startIdx);
-        executed = false;
+        for (int threadIdx = 0; threadIdx < threadCount; threadIdx++) {
+            // capture locals to avoid closure issues
+            int localThreadIdx = threadIdx;
+            int fromIdx = startIdx + threadIdx * threadSliceLenght;
+            // Compute next + give the reminder to the last thread
+            int toIdx = (threadIdx == threadCount - 1) ? endIdx : startIdx + (threadIdx + 1) * threadSliceLenght;
+
+
+            if (fromIdx >= toIdx) continue; // nothing to do for this thread
+
+            Interlocked.Increment(ref activeThreads);
+            workQueue.Add(new WorkItem { startIdx = fromIdx, endIdx = toIdx, threadIdx = threadIdx });
+        }
+
+        Thread watcher = new Thread(() => {
+            while (Volatile.Read(ref activeThreads) > 0) Thread.Sleep(8); // 8ms sleep for responsiveness and not to waste cpu
+            executing = false;
+        });
+        watcher.IsBackground = true;
+        watcher.Start();
+    }
+
+    private void WorkerThreadLoop(int threadIdx) {
+        try {
+            while (!shutdownRequested) {
+                WorkItem workItem;
+                if (workQueue.TryTake(out workItem, 100)) { // 100ms timeout
+                    evaluateGenotypes(workItem.startIdx, workItem.endIdx, workItem.threadIdx);
+                }
+            }
+        } catch (InvalidOperationException) {
+            // Queue was disposed, thread should exit
+        }
     }
 
 
@@ -131,23 +191,28 @@ public class OptimizerManager : MonoBehaviour{
     //                          EVALUATE
     // ========================================================
 
-    void evaluateGenotypes(Genotype[] toEvaluatePoblation, int startIdx) {
-        gameMs[0].resetGame(bagQueueSaved);
-        for (int genIdx = 0; genIdx < toEvaluatePoblation.Length; genIdx++) {
-            Genotype genotype = toEvaluatePoblation[genIdx];
+    void evaluateGenotypes(int startIdx, int endIdx, int threadIdx) {
+        // Process from startIdx to endIdx (not included) with gameManager threadIdx
+        gameMs[threadIdx].resetGame(bagQueueSaved);
+
+        for (int genIdx = startIdx; genIdx < endIdx; genIdx++) {
+            Genotype genotype = poblation[genIdx];
             int penalization = 0;
+
             // For each piece
             for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
                 // For each movement in that piece
                 for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
-                    penalization+=playMovement(gameMs[0], genotype.movement[pieceI, moveJ], moveJ, aleoType);
+                    // apply penalization for each invalid movement
+                    penalization += playMovement(gameMs[threadIdx], genotype.movement[pieceI, moveJ], moveJ, aleoType);
                 }
-                gameMs[0].lockPiece();
+                gameMs[threadIdx].lockPiece();
             }
-            scores[startIdx+genIdx] = (
+
+            scores[genIdx] = (
                 penalization * penalizationFactor + 
-                gameMs[0].getScore() * gameScoreFactor + 
-                gameMs[0].getHeuristicScore(
+                gameMs[threadIdx].getScore() * gameScoreFactor + 
+                gameMs[threadIdx].getHeuristicScore(
                     BlocksHFactor,
                     WeightedBlocksHFactor,
                     ClearableLineHFactor,
@@ -160,8 +225,11 @@ public class OptimizerManager : MonoBehaviour{
             );
 
             // Create a copy of the bag saved
-            gameMs[0].resetGame(bagQueueSaved);
+            gameMs[threadIdx].resetGame(bagQueueSaved);
         }
+
+        // signal thread finished
+        Interlocked.Decrement(ref activeThreads);
     }
 
     IEnumerator playGenotype(Genotype genotype) {

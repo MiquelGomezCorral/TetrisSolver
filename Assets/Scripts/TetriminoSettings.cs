@@ -413,7 +413,7 @@ public class TetriminoSettings : MonoBehaviour {
             }
         }
 
-        Debug.Log("ConnectedHoles: " + connectedHoles);
+        //Debug.Log("ConnectedHoles: " + connectedHoles);
         return connectedHoles;
     }
     public static float computePitHolePercent(TetriminoEnum[,] grid){
@@ -476,7 +476,18 @@ public class TetriminoSettings : MonoBehaviour {
         return (holes == 0f) ? 0f : pits / holes;
     }
     public static float computeDeepestWell(TetriminoEnum[,] grid){
-        return 0;
+        // Lowest non-holes and non-filled cell 
+        int[] maxHeigth = new int[grid.GetLength(0)];
+        for (int x = 0; x < grid.GetLength(0); x++) {
+            maxHeigth[x] = grid.GetLength(1) - 1;
+            while (maxHeigth[x] >= 0 && grid[x, maxHeigth[x]] == TetriminoEnum.X) {
+                maxHeigth[x]--;
+            } // Can go down to -1 but is okey
+            maxHeigth[x]++;
+        }
+
+        //Debug.Log("DeepestWell: " + maxHeigth.Min());
+        return maxHeigth.Min();
     }
 
 }

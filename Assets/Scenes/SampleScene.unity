@@ -449,7 +449,7 @@ MonoBehaviour:
   ColHolesHFactor: -1
   ConnectedHolesHFactor: -1
   PitHolePercentHFactor: -1
-  DeepestWellHFactor: 1
+  DeepestWellHFactor: -1
   scores: []
   sortedIdxs: 
   generationI: 0

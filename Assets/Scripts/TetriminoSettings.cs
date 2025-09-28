@@ -452,7 +452,7 @@ public class TetriminoSettings : MonoBehaviour {
             }
         }
 
-        Debug.Log("BlockAboveHoles: " + holesAbove);
+        //Debug.Log("BlockAboveHoles: " + holesAbove);
         return holesAbove;
     }
 

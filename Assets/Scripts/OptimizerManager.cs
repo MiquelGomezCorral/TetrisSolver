@@ -18,26 +18,26 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] float timePerSearch = 1.0f;
     [SerializeField] float timeDelay = 0.1f;
     [SerializeField] int showingIndex = 0;
-    [SerializeField] int showEvery = 100;
+    [SerializeField] int showEvery = 25;
 
 
     [Header("Scoring Parameters")]
-    [SerializeField] float softMaxTemp = 100;
-    [SerializeField] float softMaxTempInitialTemp = 100;
+    [SerializeField] float softMaxTemp = 1000;
+    [SerializeField] float softMaxTempInitialTemp = 1000;
     [SerializeField] float penalizationFactor = 1.0f;
-    [SerializeField] float gameScoreFactor = 10.0f;
+    [SerializeField] float gameScoreFactor = 7.5f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
 
     [Header("Heuristic Parameters")]
     [SerializeField] float BlocksHFactor = -1.0f;
     [SerializeField] float WeightedBlocksHFactor = -1.0f;
-    [SerializeField] float ClearableLineHFactor = 5.0f;
+    [SerializeField] float ClearableLineHFactor = 1.0f;
     [SerializeField] float RoughnessHFactor = -1.0f;
-    [SerializeField] float ColHolesHFactor = -10.0f;
-    [SerializeField] float ConnectedHolesHFactor = -10.0f;
+    [SerializeField] float ColHolesHFactor = -1.0f;
+    [SerializeField] float ConnectedHolesHFactor = -1.0f;
     [SerializeField] float BlockAboveHolesHFactor = -1.0f;
-    [SerializeField] float PitHolePercentHFactor = -5.0f;
-    [SerializeField] float DeepestWellHFactor = -5.0f;
+    [SerializeField] float PitHolePercentHFactor = -1.0f;
+    [SerializeField] float DeepestWellHFactor = -1.0f;
     
 
     // ============= GA population =============
@@ -54,9 +54,6 @@ public class OptimizerManager : MonoBehaviour{
     private bool executing = false;
     private bool simulating = false;
 
-    private class ThreadLocalData {
-        public GameManager gameManager;
-    }
     private ThreadLocal<GameManager> threadLocalGameManager = new ThreadLocal<GameManager>(() => new GameManager());
     private ParallelOptions parallelOptions;
 
@@ -71,7 +68,8 @@ public class OptimizerManager : MonoBehaviour{
     //                          START
     // ========================================================
     void Start(){
-        if (!executeComputation) 
+        Debug.Log("AAAAAAA Initial poblation size: " + initialPoblation);
+        if (!executeComputation)
             return;
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
@@ -93,7 +91,6 @@ public class OptimizerManager : MonoBehaviour{
         // Use fewer threads if population is small
         int maxUsefulThreads = Math.Max(initialPoblation / MIN_BATCH_SIZE, 1);
         threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
-        //threadCount = 1;
 
         Debug.Log($"Using {threadCount} threads for population of {initialPoblation}");
 
@@ -125,20 +122,21 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
 
     void Update(){
-        // =========================== GA ========================
         if (executing) return;
+        // =========================== PLAY MOVEMENT ========================
+        if (!simulating && generationI % showEvery == 0 && generationI != 0) {
+            simulating = true;
+            StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
+        }
 
+        // =========================== GA ========================
         executing = true;
         Task.Run(() => {
             GAStep();
             executing = false;
         });
        
-        // =========================== PLAY MOVEMENT ========================
-        if (!simulating && generationI % showEvery == 0 && generationI != 0) {
-            simulating = true;
-            StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
-        }
+        threadCount = 1;
     }
 
    

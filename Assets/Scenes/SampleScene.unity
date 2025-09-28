@@ -360,6 +360,77 @@ MonoBehaviour:
   ConnectedHolesHFactor: -10
   PitHolePercentHFactor: -5
   DeepestWellHFactor: -5
+--- !u!1 &959671564
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 959671566}
+  - component: {fileID: 959671565}
+  m_Layer: 0
+  m_Name: OptManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &959671565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 959671564}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb5934f88e6989d4a9a8940178fa7b28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  executeComputation: 1
+  aleoType: 3
+  initialPoblation: 20000
+  nPieces: 10
+  mutationChance: 0.15
+  timePerSearch: 1
+  timeDelay: 0.1
+  showingIndex: 0
+  showEvery: 50
+  softMaxTemp: 1000
+  softMaxTempInitialTemp: 1000
+  penalizationFactor: 1
+  gameScoreFactor: 2.5
+  generalHeuristicFactor: 1
+  BlocksHFactor: -1
+  WeightedBlocksHFactor: -1
+  ClearableLineHFactor: 1
+  RoughnessHFactor: -1
+  ColHolesHFactor: -1
+  ConnectedHolesHFactor: -1
+  BlockAboveHolesHFactor: -1
+  PitHolePercentHFactor: -1
+  DeepestWellHFactor: -1
+  scores: []
+  sortedIdxs: 
+  generationI: 0
+  threadCount: 0
+--- !u!4 &959671566
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 959671564}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.5458925, y: 3.5163507, z: -0.09189407}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1705091938
 GameObject:
   m_ObjectHideFlags: 0
@@ -408,76 +479,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1836297804
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1836297806}
-  - component: {fileID: 1836297805}
-  m_Layer: 0
-  m_Name: OptManger
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1836297805
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1836297804}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb5934f88e6989d4a9a8940178fa7b28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  executeComputation: 1
-  aleoType: 3
-  initialPoblation: 20000
-  nPieces: 10
-  mutationChance: 0.15
-  timePerSearch: 1
-  timeDelay: 0.1
-  showingIndex: 0
-  showEvery: 100
-  softMaxTemp: 100
-  softMaxTempInitialTemp: 100
-  penalizationFactor: 1
-  gameScoreFactor: 5
-  generalHeuristicFactor: 1
-  BlocksHFactor: -1
-  WeightedBlocksHFactor: -1
-  ClearableLineHFactor: 1
-  RoughnessHFactor: -1
-  ColHolesHFactor: -1
-  ConnectedHolesHFactor: -1
-  PitHolePercentHFactor: -1
-  DeepestWellHFactor: -1
-  scores: []
-  sortedIdxs: 
-  generationI: 0
-  threadCount: 0
---- !u!4 &1836297806
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1836297804}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.5458925, y: 3.5163507, z: -0.09189407}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -486,4 +487,4 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 1705091940}
   - {fileID: 611936572}
-  - {fileID: 1836297806}
+  - {fileID: 959671566}

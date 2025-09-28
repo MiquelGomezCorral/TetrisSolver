@@ -79,19 +79,20 @@ public class GameManager {
     // ========================================================
     //                          METHODS
     // ========================================================
-    public void resetGame(Queue<TetriminoEnum> bagQueueSaved = null) {
+    public void resetGame(Queue<TetriminoEnum> bagQueueSaved = null, TetriminoEnum[,] newGridState = null) {
         // Reset bag
         if (bagQueueSaved != null)
             bagQueue = new Queue<TetriminoEnum>(bagQueueSaved);
         else
             bagQueue.Clear();
 
+
         // Get get new piece
         getNewRandomPiece();
         swapPieceType = TetriminoEnum.X;
 
         // Reset grid
-        gridM.resetGrid();
+        gridM.resetGrid(newGridState);
 
         // Reset socre
         score = 0;

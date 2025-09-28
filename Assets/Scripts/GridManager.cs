@@ -36,10 +36,13 @@ public class GridManager{
         return res;
     }
 
-    public void resetGrid() {
+    public void resetGrid(TetriminoEnum[,] newGridState = null) {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                gridTypes[x, y] = TetriminoEnum.X;
+                if (newGridState == null)
+                    gridTypes[x, y] = TetriminoEnum.X;
+                else
+                    gridTypes[x, y] = newGridState[x, y];
             }
         }
     }

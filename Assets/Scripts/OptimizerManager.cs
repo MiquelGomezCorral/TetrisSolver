@@ -15,7 +15,7 @@ public class OptimizerManager : MonoBehaviour{
     [SerializeField] int nPieces = 10;
     [SerializeField] float mutationChance = 0.15f;
 
-    [SerializeField] float timePerSearch = 1.0f;
+    [SerializeField] int maxGenerations = 200;
     [SerializeField] float timeDelay = 0.1f;
     [SerializeField] int showingIndex = 0;
     [SerializeField] int showEvery = 25;
@@ -46,6 +46,7 @@ public class OptimizerManager : MonoBehaviour{
     public int[] sortedIdxs;
     public int generationI;
     Queue<TetriminoEnum> bagQueueSaved;
+    TetriminoEnum[,] currentState;
 
     // ============= For parallel processing =============
     // Batch size for work distribution
@@ -78,14 +79,7 @@ public class OptimizerManager : MonoBehaviour{
         }
         // ============= Initialize GA variables ============= 
         Debug.Log("Initial poblation size: " + initialPoblation);
-        generationI = 0;
-        scores = new float[initialPoblation];
-        poblation = new Genotype[initialPoblation];
-        for (int i = 0; i < initialPoblation; i++) {
-            poblation[i] = new Genotype(aleoType, nPieces);
-        }
-        // Get the bags for all the pieces
-        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag((nPieces + 1) / 7 ));
+        startPoblation();
 
         // ============= Setup parallel processing ============= 
         // Use fewer threads if population is small
@@ -120,9 +114,8 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          UPDATE
     // ========================================================
-
     void Update(){
-        if (executing) return;
+        if (executing || simulating) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
             simulating = true;
@@ -130,6 +123,21 @@ public class OptimizerManager : MonoBehaviour{
         }
 
         // =========================== GA ========================
+        if (generationI >= maxGenerations) {
+            Debug.Log($"Restarting poblation to play");
+            currentState = getPlayedState(poblation[sortedIdxs[0]]);
+            startPoblation();
+
+            // Re-evaluate the fisrt half of the genotypes to have some scores
+            executing = true;
+            Task.Run(() => {
+                EvaluatePopulation(0, initialPoblation / 2);
+                executing = false;
+            });
+
+            return;
+        }
+
         executing = true;
         Task.Run(() => {
             GAStep();
@@ -191,7 +199,7 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     float EvaluateGenotype(Genotype genotype, GameManager gameM) {
         // Reset with pre-copied queue
-        gameM.resetGame(bagQueueSaved);
+        gameM.resetGame(bagQueueSaved, currentState);
 
         int penalization = 0;
 
@@ -221,6 +229,18 @@ public class OptimizerManager : MonoBehaviour{
         );
     }
 
+    TetriminoEnum[,] getPlayedState(Genotype genotype) {
+        GameManager gameM = new GameManager();
+        for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
+            // For each movement in that piece
+            for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
+                playMovement(gameM, genotype.movement[pieceI, moveJ], moveJ, aleoType);
+            }
+            gameM.lockPiece();
+        }
+
+        return gameM.getGrid();
+    }
 
 
     // ========================================================
@@ -228,7 +248,7 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     IEnumerator playGenotype(Genotype genotype) {
         GameManager gameM = new GameManager();
-        gameM.resetGame(bagQueueSaved);
+        gameM.resetGame(bagQueueSaved, currentState);
         gridV.resetGrid();
 
         // For each piece
@@ -250,6 +270,16 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                            GA
     // ========================================================
+    void startPoblation() {
+        generationI = 0;
+        scores = new float[initialPoblation];
+        poblation = new Genotype[initialPoblation];
+        for (int i = 0; i < initialPoblation; i++) {
+            poblation[i] = new Genotype(aleoType, nPieces);
+        }
+        generatePlayingBags();
+
+    }
     void updateGeneration() {
         // Reproduce new poblation with all the members, yet replace the worst half
         float[] probs = computeSoftMax(
@@ -286,6 +316,9 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          METHODS
     // ========================================================
+    private void generatePlayingBags() {
+        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag((nPieces + 1) / 7));
+    }
     private int playMovement(GameManager gameM, int movement, int pos, AleoType aleoType) {
         // Penalize 1 point per each invalid movement
         int penalization = 0;

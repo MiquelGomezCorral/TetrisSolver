@@ -79,9 +79,8 @@ public class OptimizerManager : MonoBehaviour{
             gameMs[i] = new GameManager();
         }
 
-        // Create a copy of the bag at that moment
-        // If TetriminoSettings instance is not present, produceRandomBag will still work (static data)
-        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag(3));
+        // Get the bags for all the pieces
+        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag((nPieces + 1) / 7 )); 
 
         // ============= START ============= 
         // Evaluate the fisrt half of the genotypes to have some scores

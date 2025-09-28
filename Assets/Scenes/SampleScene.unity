@@ -432,7 +432,7 @@ MonoBehaviour:
   executeComputation: 1
   aleoType: 3
   initialPoblation: 5000
-  nPieces: 100
+  nPieces: 4
   mutationChance: 0.2
   timePerSearch: 1
   timeDelay: 0.05

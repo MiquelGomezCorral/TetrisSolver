@@ -84,7 +84,8 @@ public class OptimizerManager : MonoBehaviour{
         // ============= Setup parallel processing ============= 
         // Use fewer threads if population is small
         int maxUsefulThreads = Math.Max(initialPoblation / MIN_BATCH_SIZE, 1);
-        threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
+        //threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
+        threadCount = 1;
 
         Debug.Log($"Using {threadCount} threads for population of {initialPoblation}");
 
@@ -144,7 +145,7 @@ public class OptimizerManager : MonoBehaviour{
             executing = false;
         });
        
-        threadCount = 1;
+        //threadCount = 1;
     }
 
    
@@ -288,21 +289,27 @@ public class OptimizerManager : MonoBehaviour{
         int[] half = sortedIdxs[..(initialPoblation / 2)];
 
         Genotype[] newPoblation = new Genotype[initialPoblation];
+        float[] newScores = new float[initialPoblation];
 
-        // Keep the first half of the best, reproduce the rest
+        // Keep the first half of the best (copy individuals and their scores)
         for (int i = 0; i < half.Length; i++) {
             newPoblation[i] = poblation[half[i]];
+            newScores[i] = scores[half[i]];
         }
 
-        for (int i = half.Length; i < initialPoblation; i++) {
+        for (int i = half.Length; i < initialPoblation; i+=2) {
             Genotype parent1 = getRandomGenotype(sortedIdxs, probs);
             Genotype parent2 = getRandomGenotype(sortedIdxs, probs);
             newPoblation[i] = parent1.reproduce(parent2, mutationChance);
-            if(i+1 < initialPoblation) // not exeding array
+            newScores[i] = 0f;
+
+            if (i+1 < initialPoblation) // not exeding array
                 newPoblation[i+ 1] = parent2.reproduce(parent1, mutationChance);
+                newScores[i + 1] = 0f;
         }
 
         poblation = newPoblation;
+        scores = newScores;
         generationI++;
     }
 

@@ -72,7 +72,7 @@ public class GameViewer : MonoBehaviour {
                 ConnectedHolesHFactor,
                 PitHolePercentHFactor,
                 DeepestWellHFactor
-            ));
+            )+"\n=============================================================\n");
             updateGridViewer();
         }
     }

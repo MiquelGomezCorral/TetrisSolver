@@ -46,6 +46,8 @@ public struct GridPos {
 // =================================================================
 public class TetriminoSettings : MonoBehaviour {
     [SerializeField] public static int width = 10, height = 20;
+    [SerializeField] public static bool debugHeuristics = false;
+    [SerializeField] public static int seed = 42;
 
     public static int PerfectClearPoints = 20;
     public static TetriminoSettings Instance;
@@ -88,7 +90,7 @@ public class TetriminoSettings : MonoBehaviour {
 
 
     // For random Processed
-    private static ThreadLocal<System.Random> rng = new ThreadLocal<System.Random>(() => new System.Random());
+    private static ThreadLocal<System.Random> rng = new ThreadLocal<System.Random>(() => new System.Random(seed)); // Fixed seed for deterministic behavior
     // ========================================================
     //                          AWAKE
     // ========================================================
@@ -316,16 +318,21 @@ public class TetriminoSettings : MonoBehaviour {
     public static float computeBlocks(TetriminoEnum[,] grid) {
         int count = 0;
         bool flag = true; // to check if there is at least one block
-        for (int y = 0; y < grid.GetLength(1) && flag; y++) {
+        for (int y = 0; y < grid.GetLength(1) && flag; y++)
+        {
             flag = false;
-            for (int x = 0; x < grid.GetLength(0); x++) {
-                if (grid[x, y] != TetriminoEnum.X) {
+            for (int x = 0; x < grid.GetLength(0); x++)
+            {
+                if (grid[x, y] != TetriminoEnum.X)
+                {
                     flag = true;
                     count++;
                 }
             }
         }
-        //Debug.Log("Blocks: " + count);
+        
+        if(debugHeuristics)
+            Debug.Log("Blocks: " + count);
         return count;
     }
     public static float computeWeightedBlocks(TetriminoEnum[,] grid){
@@ -341,7 +348,8 @@ public class TetriminoSettings : MonoBehaviour {
                 }
             }
         }
-        //Debug.Log("WeightedBlocks: " + count);
+        if(debugHeuristics)
+            Debug.Log("WeightedBlocks: " + count);
         return count;
     }
     public static float computeClearableLine(TetriminoEnum[,] grid){
@@ -372,7 +380,8 @@ public class TetriminoSettings : MonoBehaviour {
         }
 
         int max = counts.Max();
-        //Debug.Log("ClearableLine: " + max);
+        if(debugHeuristics)
+            Debug.Log("ClearableLine: " + max);
         return max;
     }
     public static float computeRoughness(TetriminoEnum[,] grid){
@@ -392,7 +401,8 @@ public class TetriminoSettings : MonoBehaviour {
             roughness += Mathf.Abs(maxHeigth[x] - maxHeigth[x + 1]);
         }
 
-        //Debug.Log("Roughness: " + roughness);
+        if(debugHeuristics)
+            Debug.Log("Roughness: " + roughness);
         return roughness;
     }
     public static float computeColHoles(TetriminoEnum[,] grid){
@@ -411,7 +421,8 @@ public class TetriminoSettings : MonoBehaviour {
             if (foundHole) colsWithHoles++;
         }
 
-        //Debug.Log("ColHoles: " + colsWithHoles);
+        if(debugHeuristics)
+            Debug.Log("ColHoles: " + colsWithHoles);
         return colsWithHoles;
     }
     public static float computeConnectedHoles(TetriminoEnum[,] grid){
@@ -433,7 +444,8 @@ public class TetriminoSettings : MonoBehaviour {
             }
         }
 
-        //Debug.Log("ConnectedHoles: " + connectedHoles);
+        if(debugHeuristics)
+            Debug.Log("ConnectedHoles: " + connectedHoles);
         return connectedHoles;
     }
 
@@ -452,7 +464,8 @@ public class TetriminoSettings : MonoBehaviour {
             }
         }
 
-        //Debug.Log("BlockAboveHoles: " + holesAbove);
+        if(debugHeuristics)
+            Debug.Log("BlockAboveHoles: " + holesAbove);
         return holesAbove;
     }
 
@@ -510,9 +523,11 @@ public class TetriminoSettings : MonoBehaviour {
         }
 
         holes += pits; // summ all in the denominator
-        //Debug.Log("holes: " + holes);
-        //Debug.Log("pits: " + pits);
-        //Debug.Log("Ratio (holes == 0 ? 0 : pits / holes): " + ((holes == 0f) ? 0f : pits / holes));
+        if (debugHeuristics){
+            Debug.Log("pits: " + pits);
+            Debug.Log("holes: " + holes);
+            Debug.Log("Ratio (holes == 0 ? 0 : pits / holes): " + ((holes == 0f) ? 0f : pits / holes));
+        }
 
         return (holes == 0f) ? 0f : pits / holes;
     }
@@ -527,7 +542,8 @@ public class TetriminoSettings : MonoBehaviour {
             maxHeigth[x]++;
         }
 
-        //Debug.Log("DeepestWell: " + maxHeigth.Min());
+        if(debugHeuristics)
+            Debug.Log("DeepestWell: " + maxHeigth.Min());
         return maxHeigth.Min();
     }
 

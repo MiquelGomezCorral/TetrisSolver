@@ -60,16 +60,16 @@ public class OptimizerManager : MonoBehaviour{
 
     // ============= Visualizaton and random =============
     private GridViewer gridV; // Do to look for it every time
-    private System.Random rnd = new System.Random();
+    private System.Random rnd = new System.Random(TetriminoSettings.seed);
     private ThreadLocal<System.Random> threadRandom = new ThreadLocal<System.Random>(() =>
-        new System.Random(Guid.NewGuid().GetHashCode())
+        new System.Random(TetriminoSettings.seed)
     );
 
     // ========================================================
     //                          START
     // ========================================================
     void Start(){
-        Debug.Log("AAAAAAA Initial poblation size: " + initialPoblation);
+        Debug.Log("Initial poblation size: " + initialPoblation);
         if (!executeComputation)
             return;
         // ============= Grid viewer to show results ============= 
@@ -119,13 +119,16 @@ public class OptimizerManager : MonoBehaviour{
         if (executing || simulating) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
+            Debug.Log($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
             simulating = true;
+
+            EvaluateGenotype(poblation[sortedIdxs[showingIndex]], new GameManager(), true);
             StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
         }
 
         // =========================== GA ========================
         if (generationI >= maxGenerations) {
-            Debug.Log($"Restarting poblation to play");
+            Debug.Log($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
             currentState = getPlayedState(poblation[sortedIdxs[0]]);
             startPoblation();
 
@@ -198,19 +201,74 @@ public class OptimizerManager : MonoBehaviour{
     // ========================================================
     //                          EVALUATE
     // ========================================================
-    float EvaluateGenotype(Genotype genotype, GameManager gameM) {
+    float EvaluateGenotype(Genotype genotype, GameManager gameM, bool logHeuristics = false) {
         // Reset with pre-copied queue
         gameM.resetGame(bagQueueSaved, currentState);
 
         int penalization = 0;
 
         // For each piece
-        for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++) {
+        for (int pieceI = 0; pieceI < genotype.movement.GetLength(0); pieceI++){
             // For each movement in that piece
-            for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++) {
+            for (int moveJ = 0; moveJ < genotype.movement.GetLength(1); moveJ++){
                 penalization += playMovement(gameM, genotype.movement[pieceI, moveJ], moveJ, aleoType);
             }
             gameM.lockPiece();
+        }
+        
+
+
+
+        if (logHeuristics){
+            Debug.Log("penalization: " + penalization + " * " + penalizationFactor + " = " + (penalization * penalizationFactor));
+            Debug.Log("Score: " + gameM.getScore() + " * " + gameScoreFactor + " = " + (gameM.getScore() * gameScoreFactor));
+            Debug.Log("Blocks: " + TetriminoSettings.computeBlocks(gameM.getGrid()) + " * " + BlocksHFactor + " = " + (TetriminoSettings.computeBlocks(gameM.getGrid()) * BlocksHFactor));
+            Debug.Log("WeightedBlocks: " + TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) + " * " + WeightedBlocksHFactor + " = " + (TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) * WeightedBlocksHFactor));
+            Debug.Log("ClearableLines: " + TetriminoSettings.computeClearableLine(gameM.getGrid()) + " * " + ClearableLineHFactor + " = " + (TetriminoSettings.computeClearableLine(gameM.getGrid()) * ClearableLineHFactor));
+            Debug.Log("Roughness: " + TetriminoSettings.computeRoughness(gameM.getGrid()) + " * " + RoughnessHFactor + " = " + (TetriminoSettings.computeRoughness(gameM.getGrid()) * RoughnessHFactor));
+            Debug.Log("ColHoles: " + TetriminoSettings.computeColHoles(gameM.getGrid()) + " * " + ColHolesHFactor + " = " + (TetriminoSettings.computeColHoles(gameM.getGrid()) * ColHolesHFactor));
+            Debug.Log("ConnectedHoles: " + TetriminoSettings.computeConnectedHoles(gameM.getGrid()) + " * " + ConnectedHolesHFactor + " = " + (TetriminoSettings.computeConnectedHoles(gameM.getGrid()) * ConnectedHolesHFactor));
+            Debug.Log("BlockAboveHoles: " + TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) + " * " + BlockAboveHolesHFactor + " = " + (TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) * BlockAboveHolesHFactor));
+            Debug.Log("PitHolePercent: " + TetriminoSettings.computePitHolePercent(gameM.getGrid()) + " * " + PitHolePercentHFactor + " = " + (TetriminoSettings.computePitHolePercent(gameM.getGrid()) * PitHolePercentHFactor));
+            Debug.Log("DeepestWell: " + TetriminoSettings.computeDeepestWell(gameM.getGrid()) + " * " + DeepestWellHFactor + " = " + (TetriminoSettings.computeDeepestWell(gameM.getGrid()) * DeepestWellHFactor));
+            Debug.Log("getHeuristicScore: " + (
+                gameM.getHeuristicScore(
+                    BlocksHFactor,
+                    WeightedBlocksHFactor,
+                    ClearableLineHFactor,
+                    RoughnessHFactor,
+                    ColHolesHFactor,
+                    ConnectedHolesHFactor,
+                    BlockAboveHolesHFactor,
+                    PitHolePercentHFactor,
+                    DeepestWellHFactor
+                ) + " * " + generalHeuristicFactor + " = " + (gameM.getHeuristicScore(
+                    BlocksHFactor,
+                    WeightedBlocksHFactor,
+                    ClearableLineHFactor,
+                    RoughnessHFactor,
+                    ColHolesHFactor,
+                    ConnectedHolesHFactor,
+                    BlockAboveHolesHFactor,
+                    PitHolePercentHFactor,
+                    DeepestWellHFactor
+                ) * generalHeuristicFactor
+            )));
+            Debug.Log("Total: " + (
+                penalization * penalizationFactor +
+                gameM.getScore() * gameScoreFactor +
+                gameM.getHeuristicScore(
+                    BlocksHFactor,
+                    WeightedBlocksHFactor,
+                    ClearableLineHFactor,
+                    RoughnessHFactor,
+                    ColHolesHFactor,
+                    ConnectedHolesHFactor,
+                    BlockAboveHolesHFactor,
+                    PitHolePercentHFactor,
+                    DeepestWellHFactor
+                ) * generalHeuristicFactor
+            ));
         }
 
         return (
@@ -324,7 +382,10 @@ public class OptimizerManager : MonoBehaviour{
     //                          METHODS
     // ========================================================
     private void generatePlayingBags() {
-        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag((nPieces + 1) / 7));
+        // Generate enough bags to ensure we never run out during evaluation
+        // Each piece potentially needs multiple movements, so be generous
+        int bagsNeeded = Math.Max(3, (nPieces + 6) / 7); // At least 3 bags, or enough for nPieces
+        bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag(bagsNeeded));
     }
     private int playMovement(GameManager gameM, int movement, int pos, AleoType aleoType) {
         // Penalize 1 point per each invalid movement

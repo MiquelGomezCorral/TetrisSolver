@@ -17,7 +17,7 @@ public class Genotype {
     AleoType aleoType;
     int nPieces;
 
-    private static ThreadLocal<System.Random> rng = new ThreadLocal<System.Random>(() => new System.Random());
+    private static ThreadLocal<System.Random> rng = new ThreadLocal<System.Random>(() => new System.Random(TetriminoSettings.seed));
     // ========================================================
     //                       CONSTRUCTOR
     // ========================================================

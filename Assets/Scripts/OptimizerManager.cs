@@ -61,9 +61,6 @@ public class OptimizerManager : MonoBehaviour{
     // ============= Visualizaton and random =============
     private GridViewer gridV; // Do to look for it every time
     private System.Random rnd = new System.Random(TetriminoSettings.seed);
-    private ThreadLocal<System.Random> threadRandom = new ThreadLocal<System.Random>(() =>
-        new System.Random(TetriminoSettings.seed)
-    );
 
     // ========================================================
     //                          START
@@ -108,7 +105,6 @@ public class OptimizerManager : MonoBehaviour{
 
     // remove threads on destroy
     void OnDestroy() {
-        threadRandom?.Dispose();
         threadLocalGameManager?.Dispose();
 
     }

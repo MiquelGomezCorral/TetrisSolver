@@ -318,22 +318,24 @@ public class SimulatedAnneling : MonoBehaviour{
     void startPoblation(){
         generationI = 0;
         bestGenotype = new Genotype(aleoType, nPieces);
+        
+        // ================= TABU LIST =================
         tabuSet = new HashSet<Genotype>();
         tabuQueue = new Queue<Genotype>();
         AddToTabuList(bestGenotype);
 
+        // ================= LIST OF MOVEMENTS =================
         allMovements = bestGenotype.generateAllMovements();
-
         possibleMovements = 0;
         for (int i = 0; i < allMovements.Length; i++){
             possibleMovements += allMovements[i].Length;
         }
         possibleMovements *= nPieces; // each piece can use any movement 
-
-        Debug.Log($"Possible movements: {possibleMovements} ({allMovements.Length} types for each {nPieces} pieces)");
+        maxPatience = possibleMovements;
         movementIndex = rnd.Next(possibleMovements);
+        Debug.Log($"Possible movements: {possibleMovements} ({allMovements.Length} types for each {nPieces} pieces)");
 
-        score = float.MinValue;
+        // ================= BAG OF PIECES =================
         generatePlayingBags();
     }
     
@@ -352,7 +354,6 @@ public class SimulatedAnneling : MonoBehaviour{
             score = neighborScore;
 
             movementIndex = rnd.Next(possibleMovements);
-
         }else{ // keep trying with the next movement
             Debug.Log($"Gen: {generationI} \n - Rejected: {score} | {neighborScore} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
             movementIndex = (movementIndex + 1) % possibleMovements;
@@ -401,6 +402,8 @@ public class SimulatedAnneling : MonoBehaviour{
             Genotype oldest = tabuQueue.Dequeue();
             tabuSet.Remove(oldest);
         }
+        
+        Debug.Log($"Tabu List Size: {tabuSet.Count}");
     }
 
     // ========================================================

@@ -254,4 +254,54 @@ public class Genotype {
         return kid;
     }
 
+    // ========================================================
+    //                       EQUALITY
+    // ========================================================
+    public override bool Equals(object obj) {
+        if (obj == null || GetType() != obj.GetType()) return false;
+        
+        Genotype other = (Genotype)obj;
+        
+        // Quick checks first
+        if (aleoType != other.aleoType || nPieces != other.nPieces) return false;
+        if (movement.GetLength(0) != other.movement.GetLength(0) || 
+            movement.GetLength(1) != other.movement.GetLength(1)) return false;
+        
+        // Compare movement arrays
+        for (int i = 0; i < movement.GetLength(0); i++) {
+            for (int j = 0; j < movement.GetLength(1); j++) {
+                if (movement[i, j] != other.movement[i, j]) return false;
+            }
+        }
+        
+        return true;
+    }
+
+    public override int GetHashCode() {
+        unchecked {
+            int hash = 17;
+            hash = hash * 23 + aleoType.GetHashCode();
+            hash = hash * 23 + nPieces.GetHashCode();
+            
+            // Include movement array in hash
+            for (int i = 0; i < movement.GetLength(0); i++) {
+                for (int j = 0; j < movement.GetLength(1); j++) {
+                    hash = hash * 23 + movement[i, j].GetHashCode();
+                }
+            }
+            
+            return hash;
+        }
+    }
+
+    public static bool operator ==(Genotype left, Genotype right) {
+        if (ReferenceEquals(left, right)) return true;
+        if (left is null || right is null) return false;
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Genotype left, Genotype right) {
+        return !(left == right);
+    }
+
 }

@@ -25,6 +25,9 @@ public class SimulatedAnneling : MonoBehaviour{
     [SerializeField] float updateTempFactor = 0.0005f;
     [SerializeField] int maxPatience = 50;
     [SerializeField] int patience = 0;
+    [SerializeField] int tabuSize = 10000; // Reduced size for better performance
+    private HashSet<Genotype> tabuSet;
+    private Queue<Genotype> tabuQueue; // To track insertion order for removal
     [SerializeField] float penalizationFactor = 1.0f;
     [SerializeField] float gameScoreFactor = 1.0f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
@@ -153,17 +156,15 @@ public class SimulatedAnneling : MonoBehaviour{
     private void SAStep() {
         // =========================== GET NEIGHBOR ========================
         Genotype neighbor = generateNeighbor(bestGenotype);
+        
         // =========================== SORT BEST ========================
         float neighborScore = EvaluateSample(neighbor);
+
         // =========================== UPDATE GENERATION ========================
-        bool updated = updateGeneration(neighbor, neighborScore);
-        if(updated){ // we have selected one, so we need to change the movement
-            movementIndex = rnd.Next(possibleMovements);
-        }else{ // keep trying with the next movement
-            movementIndex = (movementIndex + 1) % possibleMovements;
-        }
+        bool update = updateGeneration(neighbor, neighborScore);
+
         // =========================== UPDATE TEMP ========================
-        patience = updated ? 0 : patience + 1;
+        patience = update ? 0 : patience + 1;
 
         if (patience < maxPatience){ // If we have patience, keep going down
             Temperature = Mathf.Max(0.1f, Temperature * (1 - updateTempFactor));
@@ -314,11 +315,15 @@ public class SimulatedAnneling : MonoBehaviour{
     // ========================================================
     //                            SA
     // ========================================================
-    void startPoblation() {
+    void startPoblation(){
         generationI = 0;
         bestGenotype = new Genotype(aleoType, nPieces);
+        tabuSet = new HashSet<Genotype>();
+        tabuQueue = new Queue<Genotype>();
+        AddToTabuList(bestGenotype);
 
         allMovements = bestGenotype.generateAllMovements();
+
         possibleMovements = 0;
         for (int i = 0; i < allMovements.Length; i++){
             possibleMovements += allMovements[i].Length;
@@ -331,41 +336,72 @@ public class SimulatedAnneling : MonoBehaviour{
         score = float.MinValue;
         generatePlayingBags();
     }
+    
     bool updateGeneration(Genotype neighbor, float neighborScore){
-        float deltaFitness = neighborScore - score - 1; // To avoid getting the same score
+        float deltaFitness = neighborScore - score ;
         float prob = Mathf.Min(1, Mathf.Exp(deltaFitness / Temperature));
         float random = (float)rnd.NextDouble();
-        bool update = random < prob;
+        bool update = random < prob && deltaFitness != 0; // To avoid getting the same score
 
-        if (update){
+        if(update){ // we have selected one, so we need to change the movement
+            // Add NEW genotype to tabu list (prevent revisiting)
+            Debug.Log($"Gen: {generationI} \n - Updateed: {score} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            AddToTabuList(neighbor);
+            
             bestGenotype = neighbor;
             score = neighborScore;
-            Debug.Log($"Gen: {generationI} \n - Updateed: {score} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
-        }else{
+
+            movementIndex = rnd.Next(possibleMovements);
+
+        }else{ // keep trying with the next movement
             Debug.Log($"Gen: {generationI} \n - Rejected: {score} | {neighborScore} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            movementIndex = (movementIndex + 1) % possibleMovements;
         }
 
         generationI++;
         return update;
     }
-    
-    Genotype generateNeighbor(Genotype genotype) {
+
+    Genotype generateNeighbor(Genotype genotype){
+        Genotype neighbor = getGenotypeFromIndex(genotype, movementIndex);
+        while (tabuSet.Contains(neighbor)){
+            movementIndex = (movementIndex + 1) % possibleMovements;
+            neighbor = getGenotypeFromIndex(genotype, movementIndex);
+        }
+
+        return neighbor;
+    }
+
+    Genotype getGenotypeFromIndex(Genotype baseGenotype, int idx) {
         // Create a neighbor by mutating the current best genotype
-        int pieceIndex = movementIndex % nPieces;
-        int moveTypeIndex = (movementIndex / nPieces) % allMovements.Length;
-        int valueIndex = movementIndex / (nPieces * allMovements.Length);
+        int pieceIndex = idx % nPieces;
+        int moveTypeIndex = (idx / nPieces) % allMovements.Length;
+        int valueIndex = idx / (nPieces * allMovements.Length);
         
         // Ensure valueIndex is within bounds
         valueIndex = valueIndex % allMovements[moveTypeIndex].Length;
 
-        return genotype.mutateAtCopy(
+        return baseGenotype.mutateAtCopy(
             pieceIndex,
             moveTypeIndex,
             allMovements[moveTypeIndex][valueIndex]
         );
     }
 
-
+    // ========================================================
+    //                      TABU LIST MANAGEMENT
+    // ========================================================
+    private void AddToTabuList(Genotype genotype) {
+        // Add to both set (for fast lookup) and queue (for order tracking)
+        tabuSet.Add(genotype);
+        tabuQueue.Enqueue(genotype);
+        
+        // Remove oldest if size exceeded
+        while (tabuQueue.Count > tabuSize) {
+            Genotype oldest = tabuQueue.Dequeue();
+            tabuSet.Remove(oldest);
+        }
+    }
 
     // ========================================================
     //                          METHODS

@@ -517,7 +517,7 @@ MonoBehaviour:
   Temperature: 100
   InitialTemperature: 100
   updateTempFactor: 0.0005
-  maxPatience: 100
+  maxPatience: 10
   patience: 0
   penalizationFactor: 1
   gameScoreFactor: 1

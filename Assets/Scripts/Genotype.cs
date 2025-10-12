@@ -88,7 +88,6 @@ public class Genotype {
     // ========================================================
     public int getRandomMovementInitial() {
         return rng.Value.Next(movementInitialRagnes[0], movementInitialRagnes[1] + 1);
-
     }
     public int getRandomMovement() {
         return rng.Value.Next(movementRagnes[0], movementRagnes[1] + 1);
@@ -100,16 +99,62 @@ public class Genotype {
         return rng.Value.Next(swapRanges[0], swapRanges[1] + 1);
     }
 
-    public bool[,] GetRandomBooleans(int n, int m, float probabilityYes = 0.5f) {
+    public bool[,] GetRandomBooleans(int n, int m, float probabilityYes = 0.5f){
         bool[,] matrix = new bool[n, m];
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+        {
             // For each element, apply the probability
             // If selected, get a random index and mutate it
-            if (rng.Value.NextDouble() < probabilityYes) {
+            if (rng.Value.NextDouble() < probabilityYes)
+            {
                 matrix[i, rng.Value.Next(0, m)] = true;
             }
         }
         return matrix;
+    }
+
+    public int[] getRangeList(int start, int end) {
+        int[] res = new int[end - start + 1];
+        for (int i = start; i <= end; i++) {
+            res[i - start] = i;
+        }
+        return res;
+    }
+    
+    public int[][] generateAllMovements(){
+        int[][] allMovements = new int[movement.GetLength(1)][];
+        int[] initMoves = getRangeList(movementInitialRagnes[0], movementInitialRagnes[1]);
+        int[] moves     = getRangeList(movementRagnes[0], movementRagnes[1]);
+        int[] rotations = getRangeList(rotateRanges[0], rotateRanges[1]);
+        int[] swaps     = getRangeList(swapRanges[0], swapRanges[1]);
+        switch (aleoType){
+            case AleoType.Simple:
+                allMovements[0] = initMoves;
+                allMovements[1] = rotations;
+                break;
+
+            case AleoType.Double:
+                allMovements[0] = initMoves;
+                allMovements[1] = rotations;
+                allMovements[2] = moves;
+                allMovements[3] = rotations;
+                break;
+
+            case AleoType.SwapSimple:
+                allMovements[0] = swaps;
+                allMovements[1] = initMoves;
+                allMovements[2] = rotations;
+                break;
+            case AleoType.SwapDoble:
+                allMovements[0] = swaps;
+                allMovements[1] = initMoves;
+                allMovements[2] = rotations;
+                allMovements[3] = moves;
+                allMovements[4] = rotations;
+                break;
+        }
+        
+        return allMovements;
     }
     // ========================================================
     //                         GSA
@@ -130,35 +175,43 @@ public class Genotype {
         return kid;
     }
 
-    public void mutate(float chance) {
+    public void mutate(float chance)
+    {
         bool[,] mutates = GetRandomBooleans(movement.GetLength(0), movement.GetLength(1), chance);
-        for (int i = 0; i < movement.GetLength(0); i++) {
-            for (int pos = 0; pos < movement.GetLength(1); pos++) {
+        for (int i = 0; i < movement.GetLength(0); i++)
+        {
+            for (int pos = 0; pos < movement.GetLength(1); pos++)
+            {
                 if (!mutates[i, pos]) continue;
 
-                if (pos == 0 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble)) {
+                if (pos == 0 && (aleoType == AleoType.SwapSimple || aleoType == AleoType.SwapDoble))
+                {
                     // Swap: XOR -> stay the same if mutates is true, change if is false.
                     // Since we use a 1 it will always change
                     movement[i, pos] ^= 1;
 
-                } else if (
+                }
+                else if (
                     (aleoType == AleoType.Simple && (pos == 0)) ||
                     (aleoType == AleoType.Double && (pos == 0 || pos == 3)) ||
                     (aleoType == AleoType.SwapSimple && (pos == 1)) ||
                     (aleoType == AleoType.SwapDoble && (pos == 1 || pos == 4))
-                ) { // Rotatae: -1 or +1 if mutates, always in modulo
+                )
+                { // Rotatae: -1 or +1 if mutates, always in modulo
                     movement[i, pos] = (
                         movement[i, pos] +
                         (rng.Value.NextDouble() > 0.5f ? 1 : -1) +
                         rotateRangesModulo
                     ) % rotateRangesModulo;
 
-                } else if (
+                }
+                else if (
                     (aleoType == AleoType.Simple && (pos == 1)) ||
                     (aleoType == AleoType.Double && (pos == 1)) ||
                     (aleoType == AleoType.SwapSimple && (pos == 2)) ||
                     (aleoType == AleoType.SwapDoble && (pos == 2))
-                ) { // Move intitial
+                )
+                { // Move intitial
 
                     // JUST ONE LEFT OR RIGHT
                     //if (movement[i, pos] <= movementInitialRagnes[0]) {
@@ -172,10 +225,12 @@ public class Genotype {
                     // GET ANY RANDOM VALUE
                     movement[i, pos] = rng.Value.Next(movementInitialRagnes[0], movementInitialRagnes[1] + 1);
 
-                } else if (
+                }
+                else if (
                     (aleoType == AleoType.Double && (pos == 2)) ||
                     (aleoType == AleoType.SwapDoble && (pos == 3))
-                ) { // Move middle
+                )
+                { // Move middle
 
                     // JUST ONE LEFT OR RIGHT
                     //if (movement[i, pos] <= movementRagnes[0]) {
@@ -191,6 +246,12 @@ public class Genotype {
                 }
             }
         }
+    }
+
+    public Genotype mutateAtCopy(int pieceIndex, int moveTypeIndex, int newValue){
+        Genotype kid = DeepCopy();
+        kid.movement[pieceIndex, moveTypeIndex] = newValue;
+        return kid;
     }
 
 }

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-public class OptimizerManager : MonoBehaviour{
+public class GAManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
     [SerializeField] bool executeComputation = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
@@ -22,10 +22,10 @@ public class OptimizerManager : MonoBehaviour{
 
 
     [Header("Scoring Parameters")]
-    [SerializeField] float softMaxTemp = 1000;
-    [SerializeField] float softMaxTempInitialTemp = 1000;
+    [SerializeField] float softMaxTemp = 100;
+    [SerializeField] float softMaxTempInitialTemp = 100;
     [SerializeField] float penalizationFactor = 1.0f;
-    [SerializeField] float gameScoreFactor = 7.5f;
+    [SerializeField] float gameScoreFactor = 1.0f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
 
     [Header("Heuristic Parameters")]
@@ -66,9 +66,9 @@ public class OptimizerManager : MonoBehaviour{
     //                          START
     // ========================================================
     void Start(){
-        Debug.Log("Initial poblation size: " + initialPoblation);
         if (!executeComputation)
             return;
+        Debug.Log("Initial poblation size: " + initialPoblation);
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
         if (gridV == null) {

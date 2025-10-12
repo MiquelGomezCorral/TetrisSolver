@@ -118,7 +118,7 @@ public class OptimizerManager : MonoBehaviour{
             Debug.Log($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
             simulating = true;
 
-            EvaluateGenotype(poblation[sortedIdxs[showingIndex]], new GameManager(), true);
+            // EvaluateGenotype(poblation[sortedIdxs[showingIndex]], new GameManager(), true);
             StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
         }
 
@@ -159,8 +159,8 @@ public class OptimizerManager : MonoBehaviour{
         updateGeneration();
 
         // =========================== UPDATE TEMP ========================
-        //softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
-        softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / generationI);
+        softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
+        // softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / generationI);
     }
 
     // ========================================================
@@ -352,9 +352,11 @@ public class OptimizerManager : MonoBehaviour{
         }
 
         for (int i = half.Length; i < initialPoblation; i+=2) {
+        // for (int i = half.Length; i < initialPoblation; i++) {
             Genotype parent1 = getRandomGenotype(sortedIdxs, probs);
             Genotype parent2 = getRandomGenotype(sortedIdxs, probs);
             newPoblation[i] = parent1.reproduce(parent2, mutationChance);
+            newPoblation[i] = parent1.reproduce(null, mutationChance);
             newScores[i] = 0f;
 
             if (i+1 < initialPoblation) // not exeding array

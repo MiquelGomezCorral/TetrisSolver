@@ -47,7 +47,7 @@ public struct GridPos {
 public class TetriminoSettings : MonoBehaviour {
     [SerializeField] public static int width = 10, height = 20;
     [SerializeField] public static bool debugHeuristics = false;
-    [SerializeField] public static int seed = 1;
+    [SerializeField] public static int seed = 42;
 
     public static int PerfectClearPoints = 20;
     public static TetriminoSettings Instance;

@@ -319,10 +319,6 @@ public class SimulatedAnneling : MonoBehaviour{
         generationI = 0;
         bestGenotype = new Genotype(aleoType, nPieces);
         
-        // ================= TABU LIST =================
-        tabuSet = new HashSet<Genotype>();
-        tabuQueue = new Queue<Genotype>();
-        AddToTabuList(bestGenotype);
 
         // ================= LIST OF MOVEMENTS =================
         allMovements = bestGenotype.generateAllMovements();
@@ -331,9 +327,15 @@ public class SimulatedAnneling : MonoBehaviour{
             possibleMovements += allMovements[i].Length;
         }
         possibleMovements *= nPieces; // each piece can use any movement 
-        maxPatience = possibleMovements;
         movementIndex = rnd.Next(possibleMovements);
         Debug.Log($"Possible movements: {possibleMovements} ({allMovements.Length} types for each {nPieces} pieces)");
+
+        maxPatience = possibleMovements;
+        tabuSize = possibleMovements * 4;
+        // ================= TABU LIST =================
+        tabuSet = new HashSet<Genotype>();
+        tabuQueue = new Queue<Genotype>();
+        AddToTabuList(bestGenotype);
 
         // ================= BAG OF PIECES =================
         generatePlayingBags();

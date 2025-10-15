@@ -304,4 +304,81 @@ public class Genotype {
         return !(left == right);
     }
 
+    // ========================================================
+    //                       STRING REPRESENTATION
+    // ========================================================
+    public override string ToString() {
+        System.Text.StringBuilder sb = new System.Text.StringBuilder();
+        
+        // Header with genotype info
+        sb.AppendLine($"Genotype [{aleoType}] - {nPieces} pieces:");
+        sb.AppendLine($"Movement Matrix [{movement.GetLength(0)}x{movement.GetLength(1)}]:");
+        
+        // Column headers (movement types)
+        sb.Append("Piece |");
+        for (int j = 0; j < movement.GetLength(1); j++) {
+            sb.Append($" {GetMovementTypeName(j),8} |");
+        }
+        sb.AppendLine();
+        
+        // Separator line
+        sb.Append("------|");
+        for (int j = 0; j < movement.GetLength(1); j++) {
+            sb.Append("----------|");
+        }
+        sb.AppendLine();
+        
+        // Movement data rows
+        for (int i = 0; i < movement.GetLength(0); i++) {
+            sb.Append($" {i,4} |");
+            for (int j = 0; j < movement.GetLength(1); j++) {
+                sb.Append($" {movement[i, j],8} |");
+            }
+            sb.AppendLine();
+        }
+        
+        return sb.ToString();
+    }
+    
+    private string GetMovementTypeName(int position) {
+        switch (aleoType) {
+            case AleoType.Simple:
+                return position switch {
+                    0 => "Rotate",
+                    1 => "Move",
+                    _ => $"Pos{position}"
+                };
+            
+            case AleoType.Double:
+                return position switch {
+                    0 => "Rotate1",
+                    1 => "Move1",
+                    2 => "Move2",
+                    3 => "Rotate2",
+                    _ => $"Pos{position}"
+                };
+            
+            case AleoType.SwapSimple:
+                return position switch {
+                    0 => "Swap",
+                    1 => "Rotate",
+                    2 => "Move",
+                    _ => $"Pos{position}"
+                };
+            
+            case AleoType.SwapDoble:
+                return position switch {
+                    0 => "Swap",
+                    1 => "Rotate1",
+                    2 => "Move1",
+                    3 => "Move2",
+                    4 => "Rotate2",
+                    _ => $"Pos{position}"
+                };
+            
+            default:
+                return $"Pos{position}";
+        }
+    }
+
 }

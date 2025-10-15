@@ -49,6 +49,9 @@ public class GAManager : MonoBehaviour{
     Queue<TetriminoEnum> bagQueueSaved;
     TetriminoEnum[,] currentState;
 
+    // ============= SA integration =============
+    SimulatedAnneling saManager;
+    public Genotype bestGenotype;
     // ============= Logging =============
     FileLogger fileLogger;
 
@@ -58,6 +61,7 @@ public class GAManager : MonoBehaviour{
     public int threadCount;
     private bool executing = false;
     private bool simulating = false;
+    private bool optimizatingSA = false;
 
     private ThreadLocal<GameManager> threadLocalGameManager = new ThreadLocal<GameManager>(() => new GameManager());
     private ParallelOptions parallelOptions;
@@ -84,8 +88,7 @@ public class GAManager : MonoBehaviour{
         }
 
 
-       logGA("Initial poblation size: " + initialPoblation);
-        
+        logGA($"Initial poblation size: {initialPoblation}");
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
         if (gridV == null) {
@@ -136,14 +139,25 @@ public class GAManager : MonoBehaviour{
     //                          UPDATE
     // ========================================================
     void Update(){
-        if (executing || simulating) return;
+        if (optimizatingSA){
+            if (saManager.finished){
+                optimizatingSA = false;
+                bestGenotype = saManager.bestGenotype;
+                logGA($"SA finished after {saManager.generationI} generations. Best score {saManager.score} Genotype:\n{bestGenotype}");
+                Destroy(saManager);
+            }
+        }
+        if (executing || simulating || optimizatingSA) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
            logGA($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
             simulating = true;
-
             // EvaluateGenotype(poblation[sortedIdxs[showingIndex]], new GameManager(), true);
             StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
+
+            optimizatingSA = true;
+            saManager = gameObject.AddComponent<SimulatedAnneling>();
+            saManager.Initialize(maxGenerations, poblation[sortedIdxs[showingIndex]]);
         }
 
         // =========================== GA ========================
@@ -408,6 +422,13 @@ public class GAManager : MonoBehaviour{
         // Each piece potentially needs multiple movements, so be generous
         int bagsNeeded = Math.Max(3, (nPieces + 6) / 7); // At least 3 bags, or enough for nPieces
         bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag(bagsNeeded));
+
+        // Bag pieces log
+        string bagPieces = "Bag pieces: ";
+        foreach (var piece in bagQueueSaved) {
+            bagPieces += piece.ToString() + " ";
+        }
+        logGA(bagPieces);
     }
     private int playMovement(GameManager gameM, int movement, int pos, AleoType aleoType) {
         // Penalize 1 point per each invalid movement

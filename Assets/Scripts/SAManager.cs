@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
 
 public class SimulatedAnneling : MonoBehaviour{
@@ -26,11 +27,11 @@ public class SimulatedAnneling : MonoBehaviour{
     [SerializeField] float updateTempFactor = 0.0005f;
     [SerializeField] int maxPatience = 50;
     [SerializeField] int patience = 0;
-    [SerializeField] int tabuSize = 10000; // Reduced size for better performance
+    [SerializeField] int tabuSize = 10000; 
     private HashSet<Genotype> tabuSet;
     private Queue<Genotype> tabuQueue; // To track insertion order for removal
     [SerializeField] float penalizationFactor = 1.0f;
-    [SerializeField] float gameScoreFactor = 1.0f;
+    [SerializeField] float gameScoreFactor = 2.5f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
 
     [Header("Heuristic Parameters")]
@@ -61,6 +62,7 @@ public class SimulatedAnneling : MonoBehaviour{
     // Batch size for work distribution
     private const int MIN_BATCH_SIZE = 50; // Minimum work per thread to avoid overhead
     public int threadCount;
+    public bool finished = false;
     private bool executing = false;
     private bool simulating = false;
 
@@ -75,8 +77,13 @@ public class SimulatedAnneling : MonoBehaviour{
     //                          START
     // ========================================================
     void Start(){
-        if (!executeComputation)
+        Initialize(maxGenerations);
+    }
+
+    public void Initialize(int maxGenerations, Genotype initialGenotype = null) {
+        if (!executeComputation){
             return;
+        }
         if (logExecution){
             fileLogger = new FileLogger(
                 $"SA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
@@ -88,7 +95,9 @@ public class SimulatedAnneling : MonoBehaviour{
                 $"-Tabu_{tabuSize}"
             );
         }
-        logSA($"Starting Simulated Annealing with {nPieces} pieces of type {aleoType}");
+        this.maxGenerations = maxGenerations;
+
+        logSA($"Starting Simulated Annealing with {nPieces} pieces of type {aleoType} for a max of {maxGenerations} generations");
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
         if (gridV == null) {
@@ -96,7 +105,7 @@ public class SimulatedAnneling : MonoBehaviour{
         }
         // ============= Initialize GA variables ============= 
         logSA("Initial genotype");
-        startPoblation();
+        startPoblation(initialGenotype);
 
         // ============= Setup parallel processing ============= 
         // Use fewer threads if population is small
@@ -125,7 +134,8 @@ public class SimulatedAnneling : MonoBehaviour{
     // remove threads on destroy
     void OnDestroy(){
         threadLocalGameManager?.Dispose();
-
+        logSA("SA Manager destroyed.");
+        logSA($"Best score {score} Genotype:\n{bestGenotype}");
     }
     void logSA(string message) {
         if (logExecution && fileLogger != null){
@@ -138,6 +148,9 @@ public class SimulatedAnneling : MonoBehaviour{
     //                          UPDATE
     // ========================================================
     void Update(){
+        if (generationI >= maxGenerations){
+            finished = true;
+        }
         if (executing || simulating) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
@@ -336,9 +349,9 @@ public class SimulatedAnneling : MonoBehaviour{
     // ========================================================
     //                            SA
     // ========================================================
-    void startPoblation(){
+    void startPoblation(Genotype initialGenotype = null) {
         generationI = 0;
-        bestGenotype = new Genotype(aleoType, nPieces);
+        bestGenotype = initialGenotype ?? new Genotype(aleoType, nPieces);
         
 
         // ================= LIST OF MOVEMENTS =================
@@ -370,7 +383,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
         if(update){ // we have selected one, so we need to change the movement
             // Add NEW genotype to tabu list (prevent revisiting)
-            logSA($"Gen: {generationI} - Updated: {score} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI} - Updated: {score} (temp: {Temperature}, delta: {deltaFitness}, prob: {prob}, rand: {random})");
             AddToTabuList(neighbor);
             
             bestGenotype = neighbor;
@@ -378,7 +391,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
             movementIndex = rnd.Next(possibleMovements);
         }else{ // keep trying with the next movement
-            logSA($"Gen: {generationI} - Rejected: {score} | {neighborScore} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI} - Rejected: {score} | {neighborScore} (temp: {Temperature}, delta: {deltaFitness}, prob: {prob}, rand: {random})");
             movementIndex = (movementIndex + 1) % possibleMovements;
         }
 

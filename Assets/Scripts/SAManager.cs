@@ -11,6 +11,7 @@ using UnityEngine;
 public class SimulatedAnneling : MonoBehaviour{
     [Header("Algorithm Parameters")]
     [SerializeField] bool executeComputation = true;
+    [SerializeField] bool logExecution = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int nPieces = 10;
 
@@ -53,6 +54,8 @@ public class SimulatedAnneling : MonoBehaviour{
     public int generationI;
     Queue<TetriminoEnum> bagQueueSaved;
     TetriminoEnum[,] currentState;
+    // ============= Logging =============
+    FileLogger fileLogger;
 
     // ============= For parallel processing =============
     // Batch size for work distribution
@@ -74,14 +77,25 @@ public class SimulatedAnneling : MonoBehaviour{
     void Start(){
         if (!executeComputation)
             return;
-        Debug.Log($"Starting Simulated Annealing with {nPieces} pieces of type {aleoType}");
+        if (logExecution){
+            fileLogger = new FileLogger(
+                $"GA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
+                $"-Aleo_{aleoType}" +
+                $"-Pieces_{nPieces}" +
+                $"InitialTemp_{InitialTemperature}" +
+                $"MaxTemp_{Temperature}" +
+                $"-Patience_{maxPatience}" +
+                $"-Tabu_{tabuSize}"
+            );
+        }
+        logSA($"Starting Simulated Annealing with {nPieces} pieces of type {aleoType}");
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
         if (gridV == null) {
             Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
         }
         // ============= Initialize GA variables ============= 
-        Debug.Log("Initial genotype");
+        logSA("Initial genotype");
         startPoblation();
 
         // ============= Setup parallel processing ============= 
@@ -90,7 +104,7 @@ public class SimulatedAnneling : MonoBehaviour{
         //threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
         // threadCount = 1;
 
-        // Debug.Log($"Using {threadCount} threads for population of {initialPoblation}");
+        // logSA($"Using {threadCount} threads for population of {initialPoblation}");
 
         // Setup parallel options
         parallelOptions = new ParallelOptions {
@@ -109,10 +123,17 @@ public class SimulatedAnneling : MonoBehaviour{
 
 
     // remove threads on destroy
-    void OnDestroy() {
+    void OnDestroy(){
         threadLocalGameManager?.Dispose();
 
     }
+    void logSA(string message) {
+        if (logExecution && fileLogger != null){
+            fileLogger.Log(message);
+        }
+       Debug.Log(message);
+    }
+    
     // ========================================================
     //                          UPDATE
     // ========================================================
@@ -120,7 +141,7 @@ public class SimulatedAnneling : MonoBehaviour{
         if (executing || simulating) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
-            Debug.Log($"================== PALYING ===================\n Score {score}:");
+            logSA($"================== PALYING ===================\n Score {score}:");
             simulating = true;
 
             // EvaluateGenotype(bestGenotype new GameManager(), true);
@@ -129,7 +150,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
         // =========================== GA ========================
         if (generationI >= maxGenerations) {
-            Debug.Log($"================== FINISHED ===================\n Score {score}:");
+            logSA($"================== FINISHED ===================\n Score {score}:");
             currentState = getPlayedState(bestGenotype);
             startPoblation();
 
@@ -206,18 +227,18 @@ public class SimulatedAnneling : MonoBehaviour{
         }
         
         if (logHeuristics){
-            Debug.Log("penalization: " + penalization + " * " + penalizationFactor + " = " + (penalization * penalizationFactor));
-            Debug.Log("Score: " + gameM.getScore() + " * " + gameScoreFactor + " = " + (gameM.getScore() * gameScoreFactor));
-            Debug.Log("Blocks: " + TetriminoSettings.computeBlocks(gameM.getGrid()) + " * " + BlocksHFactor + " = " + (TetriminoSettings.computeBlocks(gameM.getGrid()) * BlocksHFactor));
-            Debug.Log("WeightedBlocks: " + TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) + " * " + WeightedBlocksHFactor + " = " + (TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) * WeightedBlocksHFactor));
-            Debug.Log("ClearableLines: " + TetriminoSettings.computeClearableLine(gameM.getGrid()) + " * " + ClearableLineHFactor + " = " + (TetriminoSettings.computeClearableLine(gameM.getGrid()) * ClearableLineHFactor));
-            Debug.Log("Roughness: " + TetriminoSettings.computeRoughness(gameM.getGrid()) + " * " + RoughnessHFactor + " = " + (TetriminoSettings.computeRoughness(gameM.getGrid()) * RoughnessHFactor));
-            Debug.Log("ColHoles: " + TetriminoSettings.computeColHoles(gameM.getGrid()) + " * " + ColHolesHFactor + " = " + (TetriminoSettings.computeColHoles(gameM.getGrid()) * ColHolesHFactor));
-            Debug.Log("ConnectedHoles: " + TetriminoSettings.computeConnectedHoles(gameM.getGrid()) + " * " + ConnectedHolesHFactor + " = " + (TetriminoSettings.computeConnectedHoles(gameM.getGrid()) * ConnectedHolesHFactor));
-            Debug.Log("BlockAboveHoles: " + TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) + " * " + BlockAboveHolesHFactor + " = " + (TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) * BlockAboveHolesHFactor));
-            Debug.Log("PitHolePercent: " + TetriminoSettings.computePitHolePercent(gameM.getGrid()) + " * " + PitHolePercentHFactor + " = " + (TetriminoSettings.computePitHolePercent(gameM.getGrid()) * PitHolePercentHFactor));
-            Debug.Log("DeepestWell: " + TetriminoSettings.computeDeepestWell(gameM.getGrid()) + " * " + DeepestWellHFactor + " = " + (TetriminoSettings.computeDeepestWell(gameM.getGrid()) * DeepestWellHFactor));
-            Debug.Log("getHeuristicScore: " + (
+            logSA("penalization: " + penalization + " * " + penalizationFactor + " = " + (penalization * penalizationFactor));
+            logSA("Score: " + gameM.getScore() + " * " + gameScoreFactor + " = " + (gameM.getScore() * gameScoreFactor));
+            logSA("Blocks: " + TetriminoSettings.computeBlocks(gameM.getGrid()) + " * " + BlocksHFactor + " = " + (TetriminoSettings.computeBlocks(gameM.getGrid()) * BlocksHFactor));
+            logSA("WeightedBlocks: " + TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) + " * " + WeightedBlocksHFactor + " = " + (TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) * WeightedBlocksHFactor));
+            logSA("ClearableLines: " + TetriminoSettings.computeClearableLine(gameM.getGrid()) + " * " + ClearableLineHFactor + " = " + (TetriminoSettings.computeClearableLine(gameM.getGrid()) * ClearableLineHFactor));
+            logSA("Roughness: " + TetriminoSettings.computeRoughness(gameM.getGrid()) + " * " + RoughnessHFactor + " = " + (TetriminoSettings.computeRoughness(gameM.getGrid()) * RoughnessHFactor));
+            logSA("ColHoles: " + TetriminoSettings.computeColHoles(gameM.getGrid()) + " * " + ColHolesHFactor + " = " + (TetriminoSettings.computeColHoles(gameM.getGrid()) * ColHolesHFactor));
+            logSA("ConnectedHoles: " + TetriminoSettings.computeConnectedHoles(gameM.getGrid()) + " * " + ConnectedHolesHFactor + " = " + (TetriminoSettings.computeConnectedHoles(gameM.getGrid()) * ConnectedHolesHFactor));
+            logSA("BlockAboveHoles: " + TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) + " * " + BlockAboveHolesHFactor + " = " + (TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) * BlockAboveHolesHFactor));
+            logSA("PitHolePercent: " + TetriminoSettings.computePitHolePercent(gameM.getGrid()) + " * " + PitHolePercentHFactor + " = " + (TetriminoSettings.computePitHolePercent(gameM.getGrid()) * PitHolePercentHFactor));
+            logSA("DeepestWell: " + TetriminoSettings.computeDeepestWell(gameM.getGrid()) + " * " + DeepestWellHFactor + " = " + (TetriminoSettings.computeDeepestWell(gameM.getGrid()) * DeepestWellHFactor));
+            logSA("getHeuristicScore: " + (
                 gameM.getHeuristicScore(
                     BlocksHFactor,
                     WeightedBlocksHFactor,
@@ -240,7 +261,7 @@ public class SimulatedAnneling : MonoBehaviour{
                     DeepestWellHFactor
                 ) * generalHeuristicFactor
             )));
-            Debug.Log("Total: " + (
+            logSA("Total: " + (
                 penalization * penalizationFactor +
                 gameM.getScore() * gameScoreFactor +
                 gameM.getHeuristicScore(
@@ -328,7 +349,7 @@ public class SimulatedAnneling : MonoBehaviour{
         }
         possibleMovements *= nPieces; // each piece can use any movement 
         movementIndex = rnd.Next(possibleMovements);
-        Debug.Log($"Possible movements: {possibleMovements} ({allMovements.Length} types for each {nPieces} pieces)");
+        logSA($"Possible movements: {possibleMovements} ({allMovements.Length} types for each {nPieces} pieces)");
 
         maxPatience = possibleMovements;
         tabuSize = possibleMovements * 4;
@@ -349,7 +370,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
         if(update){ // we have selected one, so we need to change the movement
             // Add NEW genotype to tabu list (prevent revisiting)
-            Debug.Log($"Gen: {generationI} \n - Updateed: {score} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI} \n - Updateed: {score} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
             AddToTabuList(neighbor);
             
             bestGenotype = neighbor;
@@ -357,7 +378,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
             movementIndex = rnd.Next(possibleMovements);
         }else{ // keep trying with the next movement
-            Debug.Log($"Gen: {generationI} \n - Rejected: {score} | {neighborScore} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI} \n - Rejected: {score} | {neighborScore} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
             movementIndex = (movementIndex + 1) % possibleMovements;
         }
 
@@ -405,7 +426,7 @@ public class SimulatedAnneling : MonoBehaviour{
             tabuSet.Remove(oldest);
         }
         
-        Debug.Log($"Tabu List Size: {tabuSet.Count}");
+        logSA($"Tabu List Size: {tabuSet.Count}");
     }
 
     // ========================================================

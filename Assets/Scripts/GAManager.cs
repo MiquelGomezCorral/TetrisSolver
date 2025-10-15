@@ -10,6 +10,7 @@ using UnityEngine;
 public class GAManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
     [SerializeField] bool executeComputation = true;
+    [SerializeField] bool logExecution = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int initialPoblation = 20000;
     [SerializeField] int nPieces = 10;
@@ -48,6 +49,9 @@ public class GAManager : MonoBehaviour{
     Queue<TetriminoEnum> bagQueueSaved;
     TetriminoEnum[,] currentState;
 
+    // ============= Logging =============
+    FileLogger fileLogger;
+
     // ============= For parallel processing =============
     // Batch size for work distribution
     private const int MIN_BATCH_SIZE = 50; // Minimum work per thread to avoid overhead
@@ -68,14 +72,27 @@ public class GAManager : MonoBehaviour{
     void Start(){
         if (!executeComputation)
             return;
-        Debug.Log("Initial poblation size: " + initialPoblation);
+        if (logExecution){
+            fileLogger = new FileLogger(
+                $"GA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
+                $"-Aleo_{aleoType}" +
+                $"-Pop_{initialPoblation}" +
+                $"-Mut_{mutationChance}" +
+                $"-Pieces_{nPieces}" +
+                $"-Seed_{TetriminoSettings.seed}"
+            );
+        }
+
+
+       logGA("Initial poblation size: " + initialPoblation);
+        
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
         if (gridV == null) {
             Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
         }
         // ============= Initialize GA variables ============= 
-        Debug.Log("Initial poblation size: " + initialPoblation);
+       logGA("Initial poblation size: " + initialPoblation);
         startPoblation();
 
         // ============= Setup parallel processing ============= 
@@ -84,7 +101,7 @@ public class GAManager : MonoBehaviour{
         //threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
         threadCount = 1;
 
-        Debug.Log($"Using {threadCount} threads for population of {initialPoblation}");
+       logGA($"Using {threadCount} threads for population of {initialPoblation}");
 
         // Setup parallel options
         parallelOptions = new ParallelOptions {
@@ -104,9 +121,16 @@ public class GAManager : MonoBehaviour{
 
 
     // remove threads on destroy
-    void OnDestroy() {
+    void OnDestroy(){
         threadLocalGameManager?.Dispose();
 
+    }
+    
+    void logGA(string message) {
+        if (logExecution && fileLogger != null){
+            fileLogger.Log(message);
+        }
+       Debug.Log(message);
     }
     // ========================================================
     //                          UPDATE
@@ -115,7 +139,7 @@ public class GAManager : MonoBehaviour{
         if (executing || simulating) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
-            Debug.Log($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
+           logGA($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
             simulating = true;
 
             // EvaluateGenotype(poblation[sortedIdxs[showingIndex]], new GameManager(), true);
@@ -124,7 +148,7 @@ public class GAManager : MonoBehaviour{
 
         // =========================== GA ========================
         if (generationI >= maxGenerations) {
-            Debug.Log($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
+           logGA($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
             currentState = getPlayedState(poblation[sortedIdxs[0]]);
             startPoblation();
 
@@ -216,18 +240,18 @@ public class GAManager : MonoBehaviour{
 
 
         if (logHeuristics){
-            Debug.Log("penalization: " + penalization + " * " + penalizationFactor + " = " + (penalization * penalizationFactor));
-            Debug.Log("Score: " + gameM.getScore() + " * " + gameScoreFactor + " = " + (gameM.getScore() * gameScoreFactor));
-            Debug.Log("Blocks: " + TetriminoSettings.computeBlocks(gameM.getGrid()) + " * " + BlocksHFactor + " = " + (TetriminoSettings.computeBlocks(gameM.getGrid()) * BlocksHFactor));
-            Debug.Log("WeightedBlocks: " + TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) + " * " + WeightedBlocksHFactor + " = " + (TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) * WeightedBlocksHFactor));
-            Debug.Log("ClearableLines: " + TetriminoSettings.computeClearableLine(gameM.getGrid()) + " * " + ClearableLineHFactor + " = " + (TetriminoSettings.computeClearableLine(gameM.getGrid()) * ClearableLineHFactor));
-            Debug.Log("Roughness: " + TetriminoSettings.computeRoughness(gameM.getGrid()) + " * " + RoughnessHFactor + " = " + (TetriminoSettings.computeRoughness(gameM.getGrid()) * RoughnessHFactor));
-            Debug.Log("ColHoles: " + TetriminoSettings.computeColHoles(gameM.getGrid()) + " * " + ColHolesHFactor + " = " + (TetriminoSettings.computeColHoles(gameM.getGrid()) * ColHolesHFactor));
-            Debug.Log("ConnectedHoles: " + TetriminoSettings.computeConnectedHoles(gameM.getGrid()) + " * " + ConnectedHolesHFactor + " = " + (TetriminoSettings.computeConnectedHoles(gameM.getGrid()) * ConnectedHolesHFactor));
-            Debug.Log("BlockAboveHoles: " + TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) + " * " + BlockAboveHolesHFactor + " = " + (TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) * BlockAboveHolesHFactor));
-            Debug.Log("PitHolePercent: " + TetriminoSettings.computePitHolePercent(gameM.getGrid()) + " * " + PitHolePercentHFactor + " = " + (TetriminoSettings.computePitHolePercent(gameM.getGrid()) * PitHolePercentHFactor));
-            Debug.Log("DeepestWell: " + TetriminoSettings.computeDeepestWell(gameM.getGrid()) + " * " + DeepestWellHFactor + " = " + (TetriminoSettings.computeDeepestWell(gameM.getGrid()) * DeepestWellHFactor));
-            Debug.Log("getHeuristicScore: " + (
+           logGA("penalization: " + penalization + " * " + penalizationFactor + " = " + (penalization * penalizationFactor));
+           logGA("Score: " + gameM.getScore() + " * " + gameScoreFactor + " = " + (gameM.getScore() * gameScoreFactor));
+           logGA("Blocks: " + TetriminoSettings.computeBlocks(gameM.getGrid()) + " * " + BlocksHFactor + " = " + (TetriminoSettings.computeBlocks(gameM.getGrid()) * BlocksHFactor));
+           logGA("WeightedBlocks: " + TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) + " * " + WeightedBlocksHFactor + " = " + (TetriminoSettings.computeWeightedBlocks(gameM.getGrid()) * WeightedBlocksHFactor));
+           logGA("ClearableLines: " + TetriminoSettings.computeClearableLine(gameM.getGrid()) + " * " + ClearableLineHFactor + " = " + (TetriminoSettings.computeClearableLine(gameM.getGrid()) * ClearableLineHFactor));
+           logGA("Roughness: " + TetriminoSettings.computeRoughness(gameM.getGrid()) + " * " + RoughnessHFactor + " = " + (TetriminoSettings.computeRoughness(gameM.getGrid()) * RoughnessHFactor));
+           logGA("ColHoles: " + TetriminoSettings.computeColHoles(gameM.getGrid()) + " * " + ColHolesHFactor + " = " + (TetriminoSettings.computeColHoles(gameM.getGrid()) * ColHolesHFactor));
+           logGA("ConnectedHoles: " + TetriminoSettings.computeConnectedHoles(gameM.getGrid()) + " * " + ConnectedHolesHFactor + " = " + (TetriminoSettings.computeConnectedHoles(gameM.getGrid()) * ConnectedHolesHFactor));
+           logGA("BlockAboveHoles: " + TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) + " * " + BlockAboveHolesHFactor + " = " + (TetriminoSettings.computeBlockAboveHoles(gameM.getGrid()) * BlockAboveHolesHFactor));
+           logGA("PitHolePercent: " + TetriminoSettings.computePitHolePercent(gameM.getGrid()) + " * " + PitHolePercentHFactor + " = " + (TetriminoSettings.computePitHolePercent(gameM.getGrid()) * PitHolePercentHFactor));
+           logGA("DeepestWell: " + TetriminoSettings.computeDeepestWell(gameM.getGrid()) + " * " + DeepestWellHFactor + " = " + (TetriminoSettings.computeDeepestWell(gameM.getGrid()) * DeepestWellHFactor));
+           logGA("getHeuristicScore: " + (
                 gameM.getHeuristicScore(
                     BlocksHFactor,
                     WeightedBlocksHFactor,
@@ -250,7 +274,7 @@ public class GAManager : MonoBehaviour{
                     DeepestWellHFactor
                 ) * generalHeuristicFactor
             )));
-            Debug.Log("Total: " + (
+           logGA("Total: " + (
                 penalization * penalizationFactor +
                 gameM.getScore() * gameScoreFactor +
                 gameM.getHeuristicScore(
@@ -373,7 +397,7 @@ public class GAManager : MonoBehaviour{
         sortedIdxs = Enumerable.Range(0, scores.Length).ToArray();
         Array.Sort(sortedIdxs, (a, b) => scores[b].CompareTo(scores[a]));
 
-        Debug.Log("Generation : " + generationI + " scored " + scores[sortedIdxs[showingIndex]]);
+       logGA("Generation : " + generationI + " scored " + scores[sortedIdxs[showingIndex]]);
     }
 
     // ========================================================

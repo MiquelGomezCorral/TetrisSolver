@@ -10,6 +10,7 @@ public class FileLogger{
             Directory.CreateDirectory(folderPath);
 
         filePath = Path.Combine(folderPath, fileName + ".log");
+        Debug.Log($"================================\nLogging to: {filePath}");
     }
 
     public void Log(string message){

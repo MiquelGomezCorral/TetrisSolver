@@ -79,7 +79,7 @@ public class SimulatedAnneling : MonoBehaviour{
             return;
         if (logExecution){
             fileLogger = new FileLogger(
-                $"GA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
+                $"SA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
                 $"-Aleo_{aleoType}" +
                 $"-Pieces_{nPieces}" +
                 $"InitialTemp_{InitialTemperature}" +
@@ -370,7 +370,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
         if(update){ // we have selected one, so we need to change the movement
             // Add NEW genotype to tabu list (prevent revisiting)
-            logSA($"Gen: {generationI} \n - Updateed: {score} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI} - Updated: {score} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
             AddToTabuList(neighbor);
             
             bestGenotype = neighbor;
@@ -378,7 +378,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
             movementIndex = rnd.Next(possibleMovements);
         }else{ // keep trying with the next movement
-            logSA($"Gen: {generationI} \n - Rejected: {score} | {neighborScore} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI} - Rejected: {score} | {neighborScore} (delta: {deltaFitness}, prob: {prob}, rand: {random})");
             movementIndex = (movementIndex + 1) % possibleMovements;
         }
 
@@ -426,7 +426,7 @@ public class SimulatedAnneling : MonoBehaviour{
             tabuSet.Remove(oldest);
         }
         
-        logSA($"Tabu List Size: {tabuSet.Count}");
+        // logSA($"Tabu List Size: {tabuSet.Count}");
     }
 
     // ========================================================

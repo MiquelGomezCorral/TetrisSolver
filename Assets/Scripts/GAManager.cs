@@ -15,6 +15,7 @@ public class GAManager : MonoBehaviour{
     [SerializeField] float mutationChance = 0.15f;
 
     [SerializeField] int maxGenerations = 3000;
+    [SerializeField] int maxPatience = 400;
     [SerializeField] float timeDelay = 0.1f;
     [SerializeField] int showingIndex = 0;
     [SerializeField] int showEvery = 25;
@@ -24,17 +25,17 @@ public class GAManager : MonoBehaviour{
     [SerializeField] float softMaxTemp = 100;
     [SerializeField] float softMaxTempInitialTemp = 100;
     [SerializeField] float penalizationFactor = 1.0f;
-    [SerializeField] float gameScoreFactor = 1.0f;
+    [SerializeField] float gameScoreFactor = 2.5f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
 
     [Header("Heuristic Parameters")]
     [SerializeField] float BlocksHFactor = -1.0f;
-    [SerializeField] float WeightedBlocksHFactor = -1.0f;
+    [SerializeField] float WeightedBlocksHFactor = -0.75f;
     [SerializeField] float ClearableLineHFactor = 1.0f;
     [SerializeField] float RoughnessHFactor = -1.0f;
-    [SerializeField] float ColHolesHFactor = -1.0f;
-    [SerializeField] float ConnectedHolesHFactor = -1.0f;
-    [SerializeField] float BlockAboveHolesHFactor = -1.0f;
+    [SerializeField] float ColHolesHFactor = -2.0f;
+    [SerializeField] float ConnectedHolesHFactor = -2.0f;
+    [SerializeField] float BlockAboveHolesHFactor = -2.0f;
     [SerializeField] float PitHolePercentHFactor = -1.0f;
     [SerializeField] float DeepestWellHFactor = -1.0f;
     
@@ -44,6 +45,8 @@ public class GAManager : MonoBehaviour{
     public float[] scores;
     public int[] sortedIdxs;
     public int generationI;
+    public int patienceI = 0;
+    public float lastBest = float.MinValue;
     Queue<TetriminoEnum> bagQueueSaved;
     TetriminoEnum[,] currentState;
 
@@ -56,8 +59,8 @@ public class GAManager : MonoBehaviour{
     // ============= EXPERIMENTS =============
     public int experimentI = 0;
     public AleoType[] aleoTypes = new AleoType[] {
-        // AleoType.Simple,
-        // AleoType.Double,
+        AleoType.Simple,
+        AleoType.Double,
         AleoType.SwapSimple,
         AleoType.SwapDoble
     };
@@ -104,6 +107,9 @@ public class GAManager : MonoBehaviour{
 
         // ============= Initialize GA variables ============= 
         startPoblation();
+        patienceI = 0;
+        generationI = 0;
+        lastBest = float.MinValue;
 
         // ============= START ============= 
         // Evaluate the first half of the genotypes to have some scores
@@ -161,6 +167,7 @@ public class GAManager : MonoBehaviour{
     //                          UPDATE
     // ========================================================
     void Update(){
+        // =========================== LOCAL OPTIMIZATION ========================
         if (optimizingSA){
             if (saManager.finished){
                 optimizingSA = false;
@@ -171,7 +178,9 @@ public class GAManager : MonoBehaviour{
                 Destroy(saManager);
             }
         }
+        // =========================== Cooking... ========================
         if (simulating || optimizingSA) return;
+
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
            logGA($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
@@ -190,20 +199,16 @@ public class GAManager : MonoBehaviour{
             }
         }
 
-        // =========================== GA ========================
+        // =========================== GA NEXT EXPERIMENT ========================
         if (generationI >= maxGenerations) {
             logGA($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
             // currentState = getPlayedState(poblation[sortedIdxs[0]]);
-            selectParametersFromList();
-            initLogger();
-            startPoblation();
-
-            // Re-evaluate the first half of the genotypes to have some scores
-            EvaluatePopulation(0, initialPoblation / 2);
+            startComputation();
 
             return;
         }
 
+        // =========================== GA NEXT STEP ========================
         GAStep();
     }
 
@@ -217,10 +222,25 @@ public class GAManager : MonoBehaviour{
 
         // =========================== UPDATE GENERATION ========================
         updateGeneration();
+        generationI++;
 
         // =========================== UPDATE TEMP ========================
         softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
         // softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / generationI);
+
+        // =========================== EARLY STOPPING ========================
+        if (scores[sortedIdxs[0]] > lastBest) {
+            lastBest = scores[sortedIdxs[0]];
+            patienceI = 0;
+        } else {
+            patienceI++;
+            if (patienceI >= maxPatience) {
+                logGA($"Early stopping at generation {generationI} due to no improvement in {maxPatience} generations.");
+                // currentState = getPlayedState(poblation[sortedIdxs[0]]);
+                generationI = maxGenerations; // to trigger next experiment
+            }
+        }
+
     }
 
     // ========================================================
@@ -402,7 +422,6 @@ public class GAManager : MonoBehaviour{
 
         poblation = newPoblation;
         scores = newScores;
-        generationI++;
     }
 
     void SortPopulation() {

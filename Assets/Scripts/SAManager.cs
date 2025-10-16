@@ -80,7 +80,7 @@ public class SimulatedAnneling : MonoBehaviour{
         Initialize(maxGenerations);
     }
 
-    public void Initialize(int maxGenerations, Genotype initialGenotype = null) {
+    public void Initialize(int maxGenerations, Genotype initialGenotype = null, AleoType newAleoType = AleoType.None) {
         if (!executeComputation){
             return;
         }
@@ -105,6 +105,9 @@ public class SimulatedAnneling : MonoBehaviour{
         }
         // ============= Initialize GA variables ============= 
         logSA("Initial genotype");
+        if (newAleoType != AleoType.None){
+            aleoType = newAleoType;
+        }
         startPoblation(initialGenotype);
 
         // ============= Setup parallel processing ============= 

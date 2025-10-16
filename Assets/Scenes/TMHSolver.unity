@@ -390,16 +390,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   executeComputation: 1
+  logExecution: 1
   aleoType: 3
   initialPoblation: 20000
   nPieces: 28
   mutationChance: 0.15
-  maxGenerations: 10000
+  maxGenerations: 100000
   timeDelay: 0
   showingIndex: 0
-  showEvery: 15
-  softMaxTemp: 1000
-  softMaxTempInitialTemp: 1000
+  showEvery: 25
+  softMaxTemp: 100
+  softMaxTempInitialTemp: 100
   penalizationFactor: 1
   gameScoreFactor: 2.5
   generalHeuristicFactor: 1
@@ -509,8 +510,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimulatedAnneling
   executeComputation: 0
-  aleoType: 3
-  nPieces: 21
+  logExecution: 1
+  aleoType: 0
+  nPieces: 14
   maxGenerations: 10000000
   timeDelay: 0
   showEvery: 1000
@@ -519,7 +521,7 @@ MonoBehaviour:
   updateTempFactor: 0.0005
   maxPatience: 10
   patience: 0
-  tabuSize: 10000
+  tabuSize: 100
   penalizationFactor: 1
   gameScoreFactor: 1
   generalHeuristicFactor: 1
@@ -537,6 +539,7 @@ MonoBehaviour:
   possibleMovements: 0
   generationI: 0
   threadCount: 0
+  finished: 0
 --- !u!4 &1899521603
 Transform:
   m_ObjectHideFlags: 0

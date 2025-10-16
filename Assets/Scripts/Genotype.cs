@@ -2,7 +2,7 @@
 using System.Threading;
 
 public enum AleoType {
-    Simple, Double, SwapSimple, SwapDoble
+    Simple, Double, SwapSimple, SwapDoble, None
 }
 
 

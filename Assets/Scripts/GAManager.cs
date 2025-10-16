@@ -10,6 +10,7 @@ using UnityEngine;
 public class GAManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
     [SerializeField] bool executeComputation = true;
+    [SerializeField] bool optimizeWithSA = true;
     [SerializeField] bool logExecution = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int initialPoblation = 20000;
@@ -61,7 +62,7 @@ public class GAManager : MonoBehaviour{
     public int threadCount;
     private bool executing = false;
     private bool simulating = false;
-    private bool optimizatingSA = false;
+    private bool optimizingSA = false;
 
     private ThreadLocal<GameManager> threadLocalGameManager = new ThreadLocal<GameManager>(() => new GameManager());
     private ParallelOptions parallelOptions;
@@ -139,15 +140,15 @@ public class GAManager : MonoBehaviour{
     //                          UPDATE
     // ========================================================
     void Update(){
-        if (optimizatingSA){
+        if (optimizingSA){
             if (saManager.finished){
-                optimizatingSA = false;
+                optimizingSA = false;
                 bestGenotype = saManager.bestGenotype;
                 logGA($"SA finished after {saManager.generationI} generations. Best score {saManager.score} Genotype:\n{bestGenotype}");
                 Destroy(saManager);
             }
         }
-        if (executing || simulating || optimizatingSA) return;
+        if (executing || simulating || optimizingSA) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
            logGA($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
@@ -155,9 +156,15 @@ public class GAManager : MonoBehaviour{
             // EvaluateGenotype(poblation[sortedIdxs[showingIndex]], new GameManager(), true);
             StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));
 
-            optimizatingSA = true;
-            saManager = gameObject.AddComponent<SimulatedAnneling>();
-            saManager.Initialize(maxGenerations, poblation[sortedIdxs[showingIndex]]);
+            if (optimizeWithSA){
+                optimizingSA = true;
+                saManager = gameObject.AddComponent<SimulatedAnneling>();
+                saManager.Initialize(
+                    maxGenerations,
+                    poblation[sortedIdxs[showingIndex]],
+                    aleoType
+                );
+            }
         }
 
         // =========================== GA ========================

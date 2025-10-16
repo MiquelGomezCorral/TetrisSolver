@@ -33,7 +33,7 @@ public class GAManager : MonoBehaviour{
     [SerializeField] float WeightedBlocksHFactor = -0.75f;
     [SerializeField] float ClearableLineHFactor = 1.0f;
     [SerializeField] float RoughnessHFactor = -1.0f;
-    [SerializeField] float ColHolesHFactor = -2.0f;
+    [SerializeField] float ColHolesHFactor = -5.0f;
     [SerializeField] float ConnectedHolesHFactor = -2.0f;
     [SerializeField] float BlockAboveHolesHFactor = -2.0f;
     [SerializeField] float PitHolePercentHFactor = -1.0f;

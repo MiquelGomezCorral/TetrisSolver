@@ -36,12 +36,12 @@ public class SimulatedAnneling : MonoBehaviour{
 
     [Header("Heuristic Parameters")]
     [SerializeField] float BlocksHFactor = -1.0f;
-    [SerializeField] float WeightedBlocksHFactor = -1.0f;
+    [SerializeField] float WeightedBlocksHFactor = -0.75f;
     [SerializeField] float ClearableLineHFactor = 1.0f;
     [SerializeField] float RoughnessHFactor = -1.0f;
-    [SerializeField] float ColHolesHFactor = -1.0f;
-    [SerializeField] float ConnectedHolesHFactor = -1.0f;
-    [SerializeField] float BlockAboveHolesHFactor = -1.0f;
+    [SerializeField] float ColHolesHFactor = -5.0f;
+    [SerializeField] float ConnectedHolesHFactor = -2.0f;
+    [SerializeField] float BlockAboveHolesHFactor = -2.0f;
     [SerializeField] float PitHolePercentHFactor = -1.0f;
     [SerializeField] float DeepestWellHFactor = -1.0f;
     

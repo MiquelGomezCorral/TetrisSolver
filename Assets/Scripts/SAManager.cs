@@ -47,8 +47,11 @@ public class SimulatedAnneling : MonoBehaviour{
     
 
     // ============= SA algorithm state =============
+    public Genotype currGenotype;
     public Genotype bestGenotype;
+
     public float score = float.MinValue; // minus infinity
+    public float bestScore = float.MinValue; // minus infinity
     public int[][] allMovements;
     public int movementIndex;
     public int possibleMovements;
@@ -128,7 +131,7 @@ public class SimulatedAnneling : MonoBehaviour{
         // Evaluate the initial genotype to have a starting score
         executing = true;
         Task.Run(() => {
-            score = EvaluateSample(bestGenotype);
+            score = EvaluateSample(currGenotype);
             executing = false;
         });
     }
@@ -138,7 +141,7 @@ public class SimulatedAnneling : MonoBehaviour{
     void OnDestroy(){
         threadLocalGameManager?.Dispose();
         logSA("SA Manager destroyed.");
-        logSA($"Best score {score} Genotype:\n{bestGenotype}");
+        logSA($"Best score {score} Genotype:\n{currGenotype}");
     }
     void logSA(string message) {
         if (logExecution && fileLogger != null){
@@ -161,19 +164,19 @@ public class SimulatedAnneling : MonoBehaviour{
             simulating = true;
 
             // EvaluateGenotype(bestGenotype new GameManager(), true);
-            StartCoroutine(playGenotype(bestGenotype));
+            StartCoroutine(playGenotype(currGenotype));
         }
 
         // =========================== GA ========================
         if (generationI >= maxGenerations) {
             logSA($"================== FINISHED ===================\n Score {score}:");
-            currentState = getPlayedState(bestGenotype);
+            currentState = getPlayedState(currGenotype);
             startPoblation();
 
             // Re-evaluate the initial genotype to have a starting score
             executing = true;
             Task.Run(() => {
-                score = EvaluateSample(bestGenotype);
+                score = EvaluateSample(currGenotype);
                 executing = false;
             });
 
@@ -192,7 +195,7 @@ public class SimulatedAnneling : MonoBehaviour{
    
     private void SAStep() {
         // =========================== GET NEIGHBOR ========================
-        Genotype neighbor = generateNeighbor(bestGenotype);
+        Genotype neighbor = generateNeighbor(currGenotype);
         
         // =========================== SORT BEST ========================
         float neighborScore = EvaluateSample(neighbor);
@@ -354,11 +357,11 @@ public class SimulatedAnneling : MonoBehaviour{
     // ========================================================
     void startPoblation(Genotype initialGenotype = null) {
         generationI = 0;
-        bestGenotype = initialGenotype ?? new Genotype(aleoType, nPieces);
+        currGenotype = initialGenotype ?? new Genotype(aleoType, nPieces);
         
 
         // ================= LIST OF MOVEMENTS =================
-        allMovements = bestGenotype.generateAllMovements();
+        allMovements = currGenotype.generateAllMovements();
         possibleMovements = 0;
         for (int i = 0; i < allMovements.Length; i++){
             possibleMovements += allMovements[i].Length;
@@ -372,7 +375,7 @@ public class SimulatedAnneling : MonoBehaviour{
         // ================= TABU LIST =================
         tabuSet = new HashSet<Genotype>();
         tabuQueue = new Queue<Genotype>();
-        AddToTabuList(bestGenotype);
+        AddToTabuList(currGenotype);
 
         // ================= BAG OF PIECES =================
         generatePlayingBags();
@@ -389,8 +392,14 @@ public class SimulatedAnneling : MonoBehaviour{
             logSA($"Gen: {generationI}. Updated: {score}. Temp: {Temperature}. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
             AddToTabuList(neighbor);
             
-            bestGenotype = neighbor;
+            currGenotype = neighbor;
             score = neighborScore;
+
+            if (score > bestScore){
+                bestScore = score;
+                bestGenotype = currGenotype;
+                logSA($"New best score: {bestScore} Genotype:\n{bestGenotype}");
+            }
 
             movementIndex = rnd.Next(possibleMovements);
         }else{ // keep trying with the next movement

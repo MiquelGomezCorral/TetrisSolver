@@ -1,10 +1,7 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using UnityEngine;
 
 public class GAManager : MonoBehaviour{
@@ -17,7 +14,7 @@ public class GAManager : MonoBehaviour{
     [SerializeField] int nPieces = 10;
     [SerializeField] float mutationChance = 0.15f;
 
-    [SerializeField] int maxGenerations = 200;
+    [SerializeField] int maxGenerations = 3000;
     [SerializeField] float timeDelay = 0.1f;
     [SerializeField] int showingIndex = 0;
     [SerializeField] int showEvery = 25;
@@ -56,16 +53,28 @@ public class GAManager : MonoBehaviour{
     // ============= Logging =============
     FileLogger fileLogger;
 
-    // ============= For parallel processing =============
-    // Batch size for work distribution
-    private const int MIN_BATCH_SIZE = 50; // Minimum work per thread to avoid overhead
-    public int threadCount;
-    private bool executing = false;
+    // ============= EXPERIMENTS =============
+    public int experimentI = 0;
+    public AleoType[] aleoTypes = new AleoType[] {
+        // AleoType.Simple,
+        // AleoType.Double,
+        AleoType.SwapSimple,
+        AleoType.SwapDoble
+    };
+    public int[] poblationSizes = new int[] {
+        10000, 20000, 30000
+    };
+    public float[] mutationChances = new float[] {
+        0.05f, 0.15f, 0.25f
+    };
+    public int[] nPiecesOptions = new int[] {
+        10, 20, 30
+    };
+
+    // ============= For single-threaded execution =============
     private bool simulating = false;
     private bool optimizingSA = false;
-
-    private ThreadLocal<GameManager> threadLocalGameManager = new ThreadLocal<GameManager>(() => new GameManager());
-    private ParallelOptions parallelOptions;
+    private GameManager gameManager = new GameManager();
 
     // ============= Visualizaton and random =============
     private GridViewer gridV; // Do to look for it every time
@@ -77,6 +86,59 @@ public class GAManager : MonoBehaviour{
     void Start(){
         if (!executeComputation)
             return;
+        // ============= Grid viewer to show results ============= 
+        gridV = FindFirstObjectByType<GridViewer>();
+        if (gridV == null) {
+            Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
+        }
+        startComputation();
+    }
+
+    
+    void startComputation(){
+        // ============= Initialize Configuration =============
+        selectParametersFromList();
+
+        // ============= Initialize logger =============
+        initLogger();
+
+        // ============= Initialize GA variables ============= 
+        startPoblation();
+
+        // ============= START ============= 
+        // Evaluate the first half of the genotypes to have some scores
+        // Rest will be evaluated in the processNextGeneration  
+        EvaluatePopulation(0, initialPoblation / 2);
+    }
+
+    void selectParametersFromList(){
+        if (experimentI >= aleoTypes.Length * poblationSizes.Length * mutationChances.Length * nPiecesOptions.Length){
+            logGA("All experiments completed.");
+            return;
+        }
+
+        int totalCombinations = poblationSizes.Length * mutationChances.Length * nPiecesOptions.Length;
+        int aleoTypeIndex = experimentI / totalCombinations;
+        int remainder = experimentI % totalCombinations;
+
+        int poblationSizeIndex = remainder / (mutationChances.Length * nPiecesOptions.Length);
+        remainder = remainder % (mutationChances.Length * nPiecesOptions.Length);
+
+        int mutationChanceIndex = remainder / nPiecesOptions.Length;
+        int nPiecesIndex = remainder % nPiecesOptions.Length;
+
+        // Set parameters for the next experiment
+        aleoType = aleoTypes[aleoTypeIndex];
+        initialPoblation = poblationSizes[poblationSizeIndex];
+        mutationChance = mutationChances[mutationChanceIndex];
+        nPieces = nPiecesOptions[nPiecesIndex];
+
+        logGA($"Starting experiment {experimentI + 1}/{aleoTypes.Length * poblationSizes.Length * mutationChances.Length * nPiecesOptions.Length}: AleoType={aleoType}, PoblationSize={initialPoblation}, MutationChance={mutationChance}, NPieces={nPieces}");
+
+        experimentI++;
+    }
+    
+    void initLogger() {
         if (logExecution){
             fileLogger = new FileLogger(
                 $"GA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
@@ -87,47 +149,6 @@ public class GAManager : MonoBehaviour{
                 $"-Seed_{TetriminoSettings.seed}"
             );
         }
-
-
-        logGA($"Initial poblation size: {initialPoblation}");
-        // ============= Grid viewer to show results ============= 
-        gridV = FindFirstObjectByType<GridViewer>();
-        if (gridV == null) {
-            Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
-        }
-        // ============= Initialize GA variables ============= 
-       logGA("Initial poblation size: " + initialPoblation);
-        startPoblation();
-
-        // ============= Setup parallel processing ============= 
-        // Use fewer threads if population is small
-        int maxUsefulThreads = Math.Max(initialPoblation / MIN_BATCH_SIZE, 1);
-        //threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
-        threadCount = 1;
-
-       logGA($"Using {threadCount} threads for population of {initialPoblation}");
-
-        // Setup parallel options
-        parallelOptions = new ParallelOptions {
-            MaxDegreeOfParallelism = threadCount
-        };
-
-
-        // ============= START ============= 
-        // Evaluate the fisrt half of the genotypes to have some scores
-        // Rest will be evaluated in the processNextGeneration  
-        executing = true;
-        Task.Run(() => {
-            EvaluatePopulation(0, initialPoblation / 2);
-            executing = false;
-        });
-    }
-
-
-    // remove threads on destroy
-    void OnDestroy(){
-        threadLocalGameManager?.Dispose();
-
     }
     
     void logGA(string message) {
@@ -143,12 +164,14 @@ public class GAManager : MonoBehaviour{
         if (optimizingSA){
             if (saManager.finished){
                 optimizingSA = false;
-                bestGenotype = saManager.bestGenotype;
+                bestGenotype = saManager.bestGenotype.DeepCopy();
                 logGA($"SA finished after {saManager.generationI} generations. Best score {saManager.score} Genotype:\n{bestGenotype}");
+                // Replace the worst genotype with the best from SA (use DeepCopy to avoid shared reference)
+                poblation[sortedIdxs[sortedIdxs.Length-1]] = bestGenotype;
                 Destroy(saManager);
             }
         }
-        if (executing || simulating || optimizingSA) return;
+        if (simulating || optimizingSA) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
            logGA($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
@@ -169,27 +192,19 @@ public class GAManager : MonoBehaviour{
 
         // =========================== GA ========================
         if (generationI >= maxGenerations) {
-           logGA($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
-            currentState = getPlayedState(poblation[sortedIdxs[0]]);
+            logGA($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
+            // currentState = getPlayedState(poblation[sortedIdxs[0]]);
+            selectParametersFromList();
+            initLogger();
             startPoblation();
 
-            // Re-evaluate the fisrt half of the genotypes to have some scores
-            executing = true;
-            Task.Run(() => {
-                EvaluatePopulation(0, initialPoblation / 2);
-                executing = false;
-            });
+            // Re-evaluate the first half of the genotypes to have some scores
+            EvaluatePopulation(0, initialPoblation / 2);
 
             return;
         }
 
-        executing = true;
-        Task.Run(() => {
-            GAStep();
-            executing = false;
-        });
-       
-        //threadCount = 1;
+        GAStep();
     }
 
    
@@ -209,33 +224,11 @@ public class GAManager : MonoBehaviour{
     }
 
     // ========================================================
-    //                          THREDING
+    //                          EVALUATION
     // ========================================================
     void EvaluatePopulation(int startIdx, int endIdx) {
-        int totalWork = endIdx - startIdx;
-        int batchSize = Math.Max(MIN_BATCH_SIZE, totalWork / (threadCount * 4)); // smaller batches for better load balancing
-
-        // Use Parallel.ForEach with partitioner for better load balancing
-        var partitioner = Partitioner.Create(startIdx, endIdx, batchSize);
-
-        try {
-            Parallel.ForEach(partitioner, parallelOptions, (range) => {
-                try {
-                    var localGameM = threadLocalGameManager.Value;
-
-                    for (int genIdx = range.Item1; genIdx < range.Item2; genIdx++) {
-                        scores[genIdx] = EvaluateGenotype(
-                            poblation[genIdx],
-                            localGameM
-                        );
-                    }
-                } catch (Exception e) {
-                    Debug.LogError("Error in parallel thread: " + e.Message + "\n" + e.StackTrace);
-                    throw; // Re-throw to stop the parallel execution
-                }
-            });
-        } catch (Exception e) {
-            Debug.LogError("Parallel.ForEach failed: " + e.Message + "\n" + e.StackTrace);
+        for (int genIdx = startIdx; genIdx < endIdx; genIdx++) {
+            scores[genIdx] = EvaluateGenotype(poblation[genIdx], gameManager);
         }
     }
 
@@ -243,9 +236,8 @@ public class GAManager : MonoBehaviour{
     //                          EVALUATE
     // ========================================================
     float EvaluateGenotype(Genotype genotype, GameManager gameM, bool logHeuristics = false) {
-        // Reset with pre-copied queue
+        // Reset with the saved queue
         gameM.resetGame(bagQueueSaved, currentState);
-
         int penalization = 0;
 
         // For each piece
@@ -257,9 +249,6 @@ public class GAManager : MonoBehaviour{
             gameM.lockPiece();
         }
         
-
-
-
         if (logHeuristics){
            logGA("penalization: " + penalization + " * " + penalizationFactor + " = " + (penalization * penalizationFactor));
            logGA("Score: " + gameM.getScore() + " * " + gameScoreFactor + " = " + (gameM.getScore() * gameScoreFactor));
@@ -371,6 +360,8 @@ public class GAManager : MonoBehaviour{
     //                            GA
     // ========================================================
     void startPoblation() {
+        logGA($"Initial poblation size: {initialPoblation}");
+
         generationI = 0;
         scores = new float[initialPoblation];
         poblation = new Genotype[initialPoblation];
@@ -401,12 +392,12 @@ public class GAManager : MonoBehaviour{
             Genotype parent1 = getRandomGenotype(sortedIdxs, probs);
             Genotype parent2 = getRandomGenotype(sortedIdxs, probs);
             newPoblation[i] = parent1.reproduce(parent2, mutationChance);
-            newPoblation[i] = parent1.reproduce(null, mutationChance);
             newScores[i] = 0f;
 
-            if (i+1 < initialPoblation) // not exeding array
+            if (i+1 < initialPoblation) { // not exeding array
                 newPoblation[i+ 1] = parent2.reproduce(parent1, mutationChance);
                 newScores[i + 1] = 0f;
+            }
         }
 
         poblation = newPoblation;

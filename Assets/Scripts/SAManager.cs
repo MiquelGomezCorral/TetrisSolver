@@ -386,7 +386,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
         if(update){ // we have selected one, so we need to change the movement
             // Add NEW genotype to tabu list (prevent revisiting)
-            logSA($"Gen: {generationI} - Updated: {score} (temp: {Temperature}, delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI}. Updated: {score}. Temp: {Temperature}. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
             AddToTabuList(neighbor);
             
             bestGenotype = neighbor;
@@ -394,7 +394,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
             movementIndex = rnd.Next(possibleMovements);
         }else{ // keep trying with the next movement
-            logSA($"Gen: {generationI} - Rejected: {score} | {neighborScore} (temp: {Temperature}, delta: {deltaFitness}, prob: {prob}, rand: {random})");
+            logSA($"Gen: {generationI}. Rejected: {score}. Neighbor: {neighborScore}. Temp: {Temperature}. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
             movementIndex = (movementIndex + 1) % possibleMovements;
         }
 

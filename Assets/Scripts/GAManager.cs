@@ -418,7 +418,7 @@ public class GAManager : MonoBehaviour{
         sortedIdxs = Enumerable.Range(0, scores.Length).ToArray();
         Array.Sort(sortedIdxs, (a, b) => scores[b].CompareTo(scores[a]));
 
-       logGA("Generation : " + generationI + " scored " + scores[sortedIdxs[showingIndex]]);
+       logGA($"Generation: {generationI}. Score: {scores[sortedIdxs[showingIndex]]}");
     }
 
     // ========================================================

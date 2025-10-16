@@ -16,7 +16,7 @@ public class GAManager : MonoBehaviour{
 
     [SerializeField] int maxGenerations = 3000;
     [SerializeField] int maxPatience = 400;
-    [SerializeField] float timeDelay = 0.1f;
+    [SerializeField] float timeDelay = 0.0f;
     [SerializeField] int showingIndex = 0;
     [SerializeField] int showEvery = 25;
 
@@ -176,10 +176,26 @@ public class GAManager : MonoBehaviour{
                 // Replace the worst genotype with the best from SA (use DeepCopy to avoid shared reference)
                 poblation[sortedIdxs[sortedIdxs.Length-1]] = bestGenotype;
                 Destroy(saManager);
+
+                // Resort population insert
+                SortPopulation();
             }
         }
         // =========================== Cooking... ========================
         if (simulating || optimizingSA) return;
+
+
+        // =========================== GA NEXT EXPERIMENT ========================
+        if (generationI >= maxGenerations) {
+            logGA($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
+            // currentState = getPlayedState(poblation[sortedIdxs[0]]);
+            startComputation();
+
+            return;
+        }
+
+        // =========================== GA NEXT STEP ========================
+        GAStep();
 
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
@@ -198,18 +214,6 @@ public class GAManager : MonoBehaviour{
                 );
             }
         }
-
-        // =========================== GA NEXT EXPERIMENT ========================
-        if (generationI >= maxGenerations) {
-            logGA($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
-            // currentState = getPlayedState(poblation[sortedIdxs[0]]);
-            startComputation();
-
-            return;
-        }
-
-        // =========================== GA NEXT STEP ========================
-        GAStep();
     }
 
    
@@ -219,14 +223,6 @@ public class GAManager : MonoBehaviour{
 
         // =========================== SORT BEST ========================
         SortPopulation();
-
-        // =========================== UPDATE GENERATION ========================
-        updateGeneration();
-        generationI++;
-
-        // =========================== UPDATE TEMP ========================
-        softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
-        // softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / generationI);
 
         // =========================== EARLY STOPPING ========================
         if (scores[sortedIdxs[0]] > lastBest) {
@@ -240,6 +236,14 @@ public class GAManager : MonoBehaviour{
                 generationI = maxGenerations; // to trigger next experiment
             }
         }
+        // =========================== UPDATE GENERATION ========================
+        updateGeneration();
+        generationI++;
+
+        // =========================== UPDATE TEMP ========================
+        softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / Mathf.Log(generationI + 2));
+        // softMaxTemp = Mathf.Max(0.1f, softMaxTempInitialTemp / generationI);
+
 
     }
 

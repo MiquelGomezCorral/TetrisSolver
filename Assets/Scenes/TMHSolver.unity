@@ -398,7 +398,7 @@ MonoBehaviour:
   mutationChance: 0.15
   maxGenerations: 3000
   maxPatience: 400
-  timeDelay: 0.1
+  timeDelay: 0
   showingIndex: 0
   showEvery: 25
   softMaxTemp: 100
@@ -410,7 +410,7 @@ MonoBehaviour:
   WeightedBlocksHFactor: -0.75
   ClearableLineHFactor: 1
   RoughnessHFactor: -1
-  ColHolesHFactor: -2
+  ColHolesHFactor: -5
   ConnectedHolesHFactor: -2
   BlockAboveHolesHFactor: -2
   PitHolePercentHFactor: -1
@@ -491,7 +491,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1899521601
+--- !u!1 &2073993348
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -499,8 +499,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1899521603}
-  - component: {fileID: 1899521602}
+  - component: {fileID: 2073993350}
+  - component: {fileID: 2073993349}
   m_Layer: 0
   m_Name: SA Manager
   m_TagString: Untagged
@@ -508,13 +508,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1899521602
+--- !u!114 &2073993349
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1899521601}
+  m_GameObject: {fileID: 2073993348}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ca3f9bbd3f3a847da9d0adc7640b89d1, type: 3}
@@ -522,27 +522,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SimulatedAnneling
   executeComputation: 0
   logExecution: 1
-  aleoType: 0
-  nPieces: 14
-  maxGenerations: 10000000
+  aleoType: 3
+  nPieces: 10
+  maxGenerations: 10000
   timeDelay: 0
   showEvery: 1000
   Temperature: 100
   InitialTemperature: 100
   updateTempFactor: 0.0005
-  maxPatience: 10
+  maxPatience: 50
   patience: 0
-  tabuSize: 100
+  tabuSize: 10000
   penalizationFactor: 1
-  gameScoreFactor: 1
+  gameScoreFactor: 2.5
   generalHeuristicFactor: 1
   BlocksHFactor: -1
-  WeightedBlocksHFactor: -1
+  WeightedBlocksHFactor: -0.75
   ClearableLineHFactor: 1
   RoughnessHFactor: -1
-  ColHolesHFactor: -1
-  ConnectedHolesHFactor: -1
-  BlockAboveHolesHFactor: -1
+  ColHolesHFactor: -5
+  ConnectedHolesHFactor: -2
+  BlockAboveHolesHFactor: -2
   PitHolePercentHFactor: -1
   DeepestWellHFactor: -1
   score: -3.4028235e+38
@@ -552,13 +552,13 @@ MonoBehaviour:
   generationI: 0
   threadCount: 0
   finished: 0
---- !u!4 &1899521603
+--- !u!4 &2073993350
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1899521601}
+  m_GameObject: {fileID: 2073993348}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -575,5 +575,5 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 1705091940}
   - {fileID: 611936572}
-  - {fileID: 1899521603}
   - {fileID: 1262288432}
+  - {fileID: 2073993350}

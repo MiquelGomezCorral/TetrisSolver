@@ -59,7 +59,7 @@ public class GAManager : MonoBehaviour{
     // ============= EXPERIMENTS =============
     public int experimentI = 0;
     public AleoType[] aleoTypes = new AleoType[] {
-        AleoType.Simple,
+        // AleoType.Simple,
         AleoType.Double,
         AleoType.SwapSimple,
         AleoType.SwapDoble

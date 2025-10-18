@@ -59,7 +59,7 @@ public class GAManager : MonoBehaviour{
     // ============= EXPERIMENTS =============
     public int experimentI = 0;
     public AleoType[] aleoTypes = new AleoType[] {
-        // AleoType.Simple,
+        AleoType.Simple,
         AleoType.Double,
         AleoType.SwapSimple,
         AleoType.SwapDoble
@@ -74,7 +74,7 @@ public class GAManager : MonoBehaviour{
         10, 20, 30
     };
 
-    // ============= For single-threaded execution =============
+    // ============= Execution States =============
     private bool simulating = false;
     private bool optimizingSA = false;
     private GameManager gameManager = new GameManager();
@@ -167,6 +167,7 @@ public class GAManager : MonoBehaviour{
     //                          UPDATE
     // ========================================================
     void Update(){
+        if (!executeComputation) return;
         // =========================== LOCAL OPTIMIZATION ========================
         if (optimizingSA){
             if (saManager.finished){

@@ -1,12 +1,7 @@
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Unity.VisualStudio.Editor;
 using UnityEngine;
 
 public class SimulatedAnneling : MonoBehaviour{
@@ -15,6 +10,11 @@ public class SimulatedAnneling : MonoBehaviour{
     [SerializeField] bool logExecution = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int nPieces = 10;
+    [SerializeField] int maxPatience = 50;
+    [SerializeField] int patience = 0;
+    [SerializeField] int tabuSize = 10000; 
+    private HashSet<Genotype> tabuSet;
+    private Queue<Genotype> tabuQueue; // To track insertion order for removal
 
     [SerializeField] int maxGenerations = 10000;
     [SerializeField] float timeDelay = 0.0f;
@@ -25,11 +25,6 @@ public class SimulatedAnneling : MonoBehaviour{
     [SerializeField] float Temperature = 100;
     [SerializeField] float InitialTemperature = 100;
     [SerializeField] float updateTempFactor = 0.0005f;
-    [SerializeField] int maxPatience = 50;
-    [SerializeField] int patience = 0;
-    [SerializeField] int tabuSize = 10000; 
-    private HashSet<Genotype> tabuSet;
-    private Queue<Genotype> tabuQueue; // To track insertion order for removal
     [SerializeField] float penalizationFactor = 1.0f;
     [SerializeField] float gameScoreFactor = 2.5f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
@@ -60,88 +55,111 @@ public class SimulatedAnneling : MonoBehaviour{
     TetriminoEnum[,] currentState;
     // ============= Logging =============
     FileLogger fileLogger;
-
-    // ============= For parallel processing =============
+    // ============= EXPERIMENTS =============
+    public int experimentI = 0;
+    public AleoType[] aleoTypes = new AleoType[] {
+        AleoType.Simple,
+        AleoType.Double,
+        AleoType.SwapSimple,
+        AleoType.SwapDoble
+    };
+    public int[] nPiecesOptions = new int[] {
+        10, 20, 30
+    };
+    public int[] tabuSizes = new int[] {
+        100, 1000, 10000, 50000
+    };
+    public float[] updateFactors = new float[] {
+        0.00005f, 0.0005f, 0.005f, 0.05f
+    };
+    int totalCombinations = int.MaxValue;
+    // ============= Executions States =============
     // Batch size for work distribution
-    private const int MIN_BATCH_SIZE = 50; // Minimum work per thread to avoid overhead
-    public int threadCount;
     public bool finished = false;
-    private bool executing = false;
     private bool simulating = false;
 
-    private ThreadLocal<GameManager> threadLocalGameManager = new ThreadLocal<GameManager>(() => new GameManager());
-    private ParallelOptions parallelOptions;
 
     // ============= Visualizaton and random =============
     private GridViewer gridV; // Do to look for it every time
     private System.Random rnd = new System.Random(TetriminoSettings.seed);
+    // Single GameManager instance for synchronous evaluation
+    private GameManager gameManager = new GameManager();
 
     // ========================================================
     //                          START
     // ========================================================
     void Start(){
-        Initialize(maxGenerations);
-    }
-
-    public void Initialize(int maxGenerations, Genotype initialGenotype = null, AleoType newAleoType = AleoType.None) {
         if (!executeComputation){
             return;
         }
-        if (logExecution){
-            fileLogger = new FileLogger(
-                $"SA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
-                $"-Aleo_{aleoType}" +
-                $"-Pieces_{nPieces}" +
-                $"InitialTemp_{InitialTemperature}" +
-                $"MaxTemp_{Temperature}" +
-                $"-Patience_{maxPatience}" +
-                $"-Tabu_{tabuSize}"
-            );
-        }
-        this.maxGenerations = maxGenerations;
-
-        logSA($"Starting Simulated Annealing with {nPieces} pieces of type {aleoType} for a max of {maxGenerations} generations");
         // ============= Grid viewer to show results ============= 
         gridV = FindFirstObjectByType<GridViewer>();
-        if (gridV == null) {
+        if (gridV == null){
             Debug.LogWarning("OptimizerManager: No GridViewer found in scene. UI preview will be disabled.");
         }
+        
+        Initialize(maxGenerations);
+    }
+
+    public void Initialize(int maxGenerations, Genotype initialGenotype = null, AleoType newAleoType = AleoType.None){
+        this.maxGenerations = maxGenerations;
+        // ============= Initialize Configuration =============
+        selectParametersFromList();
+        initLogger();
         // ============= Initialize GA variables ============= 
-        logSA("Initial genotype");
         if (newAleoType != AleoType.None){
             aleoType = newAleoType;
         }
         startPoblation(initialGenotype);
 
-        // ============= Setup parallel processing ============= 
-        // Use fewer threads if population is small
-        // int maxUsefulThreads = Math.Max(initialPoblation / MIN_BATCH_SIZE, 1);
-        //threadCount = Math.Min(Math.Max(Environment.ProcessorCount - 4, 1), maxUsefulThreads);
-        // threadCount = 1;
-
-        // logSA($"Using {threadCount} threads for population of {initialPoblation}");
-
-        // Setup parallel options
-        parallelOptions = new ParallelOptions {
-            MaxDegreeOfParallelism = 1
-        };
-
-
         // ============= START ============= 
-        // Evaluate the initial genotype to have a starting score
-        executing = true;
-        Task.Run(() => {
-            score = EvaluateSample(currGenotype);
-            executing = false;
-        });
+        score = EvaluateSample(currGenotype);
     }
 
-
-    // remove threads on destroy
     void OnDestroy(){
-        threadLocalGameManager?.Dispose();
         logSA("SA Manager destroyed.");
         logSA($"Best score {score} Genotype:\n{currGenotype}");
+    }
+    
+    void selectParametersFromList(){
+        // Rotate over combinations of: updateFactors, tabuSizes, nPiecesOptions, aleoTypes
+        totalCombinations = updateFactors.Length * tabuSizes.Length * nPiecesOptions.Length * aleoTypes.Length;
+        if (experimentI >= totalCombinations){
+            logSA("All experiments completed.");
+            return;
+        }
+
+        int innerCombinations = updateFactors.Length * tabuSizes.Length * nPiecesOptions.Length;
+        int aleoTypeIndex = experimentI / innerCombinations;
+        int remainder = experimentI % innerCombinations;
+
+        int updateFactorIndex = remainder / (tabuSizes.Length * nPiecesOptions.Length);
+        remainder = remainder % (tabuSizes.Length * nPiecesOptions.Length);
+
+        int tabuSizeIndex = remainder / nPiecesOptions.Length;
+        int nPiecesIndex = remainder % nPiecesOptions.Length;
+
+        // Set parameters for the next experiment
+        aleoType = aleoTypes[aleoTypeIndex];
+        updateTempFactor = updateFactors[updateFactorIndex];
+        tabuSize = tabuSizes[tabuSizeIndex];
+        nPieces = nPiecesOptions[nPiecesIndex];
+
+        logSA($"Starting experiment {experimentI + 1}/{totalCombinations}: AleoType={aleoType}, UpdateFactor={updateTempFactor}, TabuSize={tabuSize}, NPieces={nPieces}");
+
+        experimentI++;
+    }
+    void initLogger() {
+        if (logExecution){
+            fileLogger = new FileLogger(
+                $"GA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
+                $"-Aleo_{aleoType}" +
+                $"-Pieces_{nPieces}" +
+                $"-Tabu_{tabuSizes}" +
+                $"-UpdFact_{updateTempFactor}" +
+                $"-Seed_{TetriminoSettings.seed}"
+            );
+        }
     }
     void logSA(string message) {
         if (logExecution && fileLogger != null){
@@ -154,10 +172,15 @@ public class SimulatedAnneling : MonoBehaviour{
     //                          UPDATE
     // ========================================================
     void Update(){
+        if (!executeComputation || (experimentI >= totalCombinations)){
+            return;
+        }
+        
+
         if (generationI >= maxGenerations){
             finished = true;
         }
-        if (executing || simulating) return;
+        if (simulating) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
             logSA($"================== PALYING ===================\n Score {score}:");
@@ -170,24 +193,14 @@ public class SimulatedAnneling : MonoBehaviour{
         // =========================== GA ========================
         if (generationI >= maxGenerations) {
             logSA($"================== FINISHED ===================\n Score {score}:");
-            currentState = getPlayedState(currGenotype);
-            startPoblation();
+            // currentState = getPlayedState(currGenotype);
 
-            // Re-evaluate the initial genotype to have a starting score
-            executing = true;
-            Task.Run(() => {
-                score = EvaluateSample(currGenotype);
-                executing = false;
-            });
-
+            Initialize(maxGenerations);
             return;
         }
 
-        executing = true;
-        Task.Run(() => {
-            SAStep();
-            executing = false;
-        });
+        // Run SAStep synchronously (single-threaded)
+        SAStep();
        
         //threadCount = 1;
     }
@@ -218,8 +231,7 @@ public class SimulatedAnneling : MonoBehaviour{
     // ========================================================
     float EvaluateSample(Genotype genotype) {
         try{
-            var localGameM = threadLocalGameManager.Value;
-            return EvaluateGenotype(genotype, localGameM);
+            return EvaluateGenotype(genotype, gameManager);
         }
         catch (Exception e){
             Debug.LogError("Evaluation failed: " + e.Message + "\n" + e.StackTrace);
@@ -389,7 +401,7 @@ public class SimulatedAnneling : MonoBehaviour{
 
         if(update){ // we have selected one, so we need to change the movement
             // Add NEW genotype to tabu list (prevent revisiting)
-            logSA($"Gen: {generationI}. Updated: {score}. Temp: {Temperature}. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
+            logSA($"Gen: {generationI}. Updated: {score}. Temp: {Temperature}");//. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
             AddToTabuList(neighbor);
             
             currGenotype = neighbor;
@@ -398,12 +410,12 @@ public class SimulatedAnneling : MonoBehaviour{
             if (score > bestScore){
                 bestScore = score;
                 bestGenotype = currGenotype;
-                logSA($"New best score: {bestScore} Genotype:\n{bestGenotype}");
+                logSA($"Best score: {bestScore} Genotype:\n{bestGenotype}");
             }
 
             movementIndex = rnd.Next(possibleMovements);
         }else{ // keep trying with the next movement
-            logSA($"Gen: {generationI}. Rejected: {score}. Neighbor: {neighborScore}. Temp: {Temperature}. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
+            // logSA($"Gen: {generationI}. Rejected: {score}. Neighbor: {neighborScore}. Temp: {Temperature}. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
             movementIndex = (movementIndex + 1) % possibleMovements;
         }
 

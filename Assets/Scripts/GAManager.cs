@@ -59,16 +59,16 @@ public class GAManager : MonoBehaviour{
     // ============= EXPERIMENTS =============
     public int experimentI = 0;
     public AleoType[] aleoTypes = new AleoType[] {
+        AleoType.SwapDoble,
         AleoType.Simple,
         AleoType.Double,
         AleoType.SwapSimple,
-        AleoType.SwapDoble
     };
     public int[] poblationSizes = new int[] {
-        10000, 20000, 30000
+        20000, 10000, 30000
     };
     public float[] mutationChances = new float[] {
-        0.05f, 0.15f, 0.25f
+        0.15f, 0.05f, 0.25f
     };
     public int[] nPiecesOptions = new int[] {
         10, 20, 30
@@ -202,7 +202,7 @@ public class GAManager : MonoBehaviour{
 
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
-           logGA($"================== PALYING ===================\n Score {scores[sortedIdxs[0]]}:");
+            logGA($"================== PLAYING ===================\n Score {scores[sortedIdxs[0]]}:");
             simulating = true;
             // EvaluateGenotype(poblation[sortedIdxs[showingIndex]], new GameManager(), true);
             StartCoroutine(playGenotype(poblation[sortedIdxs[showingIndex]]));

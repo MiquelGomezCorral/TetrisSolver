@@ -14,7 +14,7 @@ public class Genotype {
     public static int[] swapRanges = { 0, 1 };
 
     public int[,] movement;
-    AleoType aleoType;
+    public AleoType aleoType;
     int nPieces;
 
     private static ThreadLocal<System.Random> rng = new ThreadLocal<System.Random>(() => new System.Random(TetriminoSettings.seed));

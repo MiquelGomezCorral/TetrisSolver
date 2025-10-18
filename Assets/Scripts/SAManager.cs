@@ -493,6 +493,12 @@ public class SimulatedAnneling : MonoBehaviour{
         // Each piece potentially needs multiple movements, so be generous
         int bagsNeeded = Math.Max(3, (nPieces + 6) / 7); // At least 3 bags, or enough for nPieces
         bagQueueSaved = new Queue<TetriminoEnum>(TetriminoSettings.produceRandomBag(bagsNeeded));
+
+        string bagPieces = "Bag pieces: ";
+        foreach (var piece in bagQueueSaved) {
+            bagPieces += piece.ToString() + " ";
+        }
+        logSA(bagPieces);
     }
     private int playMovement(GameManager gameM, int movement, int pos, AleoType aleoType) {
         // Penalize 1 point per each invalid movement

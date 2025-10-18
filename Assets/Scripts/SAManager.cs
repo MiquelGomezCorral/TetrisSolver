@@ -10,13 +10,15 @@ public class SimulatedAnneling : MonoBehaviour{
     [SerializeField] bool logExecution = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int nPieces = 10;
-    [SerializeField] int maxPatience = 50;
+    [SerializeField] int maxPatience = 10000;
+    [SerializeField] int maxTempPatience = 50;
     [SerializeField] int patience = 0;
+    [SerializeField] int tempPatience = 0;
     [SerializeField] int tabuSize = 10000; 
     private HashSet<Genotype> tabuSet;
     private Queue<Genotype> tabuQueue; // To track insertion order for removal
 
-    [SerializeField] int maxGenerations = 10000;
+    [SerializeField] int maxGenerations = 100000;
     [SerializeField] float timeDelay = 0.0f;
     [SerializeField] int showEvery = 1000;
 
@@ -112,6 +114,12 @@ public class SimulatedAnneling : MonoBehaviour{
         }
         startPoblation(initialGenotype);
 
+        // Reset patience and temperature-related state for a new experiment
+        patience = 0;
+        tempPatience = 0;
+        Temperature = InitialTemperature;
+        bestScore = float.MinValue;
+
         // ============= START ============= 
         score = EvaluateSample(currGenotype);
     }
@@ -152,10 +160,10 @@ public class SimulatedAnneling : MonoBehaviour{
     void initLogger() {
         if (logExecution){
             fileLogger = new FileLogger(
-                $"GA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
+                $"SA_Log_{DateTime.Now:yyyyMMdd_HHmmss}" +
                 $"-Aleo_{aleoType}" +
                 $"-Pieces_{nPieces}" +
-                $"-Tabu_{tabuSizes}" +
+                $"-Tabu_{tabuSize}" +
                 $"-UpdFact_{updateTempFactor}" +
                 $"-Seed_{TetriminoSettings.seed}"
             );
@@ -177,9 +185,6 @@ public class SimulatedAnneling : MonoBehaviour{
         }
         
 
-        if (generationI >= maxGenerations){
-            finished = true;
-        }
         if (simulating) return;
         // =========================== PLAY MOVEMENT ========================
         if (!simulating && generationI % showEvery == 0 && generationI != 0) {
@@ -192,9 +197,11 @@ public class SimulatedAnneling : MonoBehaviour{
 
         // =========================== GA ========================
         if (generationI >= maxGenerations) {
-            logSA($"================== FINISHED ===================\n Score {score}:");
+            finished = true;
+            logSA($"================== FINISHED ===================");
+            logSA($" Score {bestScore}");
+            logSA($" Best {bestGenotype}");
             // currentState = getPlayedState(currGenotype);
-
             Initialize(maxGenerations);
             return;
         }
@@ -217,9 +224,9 @@ public class SimulatedAnneling : MonoBehaviour{
         bool update = updateGeneration(neighbor, neighborScore);
 
         // =========================== UPDATE TEMP ========================
-        patience = update ? 0 : patience + 1;
+        tempPatience = update ? 0 : tempPatience + 1;
 
-        if (patience < maxPatience){ // If we have patience, keep going down
+        if (tempPatience < maxTempPatience){ // If we have patience, keep going down
             Temperature = Mathf.Max(0.1f, Temperature * (1 - updateTempFactor));
         }else{
             Temperature = Mathf.Max(0.1f, Temperature * (1 + updateTempFactor)); 
@@ -382,8 +389,8 @@ public class SimulatedAnneling : MonoBehaviour{
         movementIndex = rnd.Next(possibleMovements);
         logSA($"Possible movements: {possibleMovements} ({allMovements.Length} types for each {nPieces} pieces)");
 
-        maxPatience = possibleMovements;
-        tabuSize = possibleMovements * 4;
+        maxTempPatience = possibleMovements;
+        // tabuSize = possibleMovements * 4;
         // ================= TABU LIST =================
         tabuSet = new HashSet<Genotype>();
         tabuQueue = new Queue<Genotype>();
@@ -407,18 +414,30 @@ public class SimulatedAnneling : MonoBehaviour{
             currGenotype = neighbor;
             score = neighborScore;
 
+            
             if (score > bestScore){
                 bestScore = score;
                 bestGenotype = currGenotype;
+                patience = 0;
                 logSA($"Best score: {bestScore} Genotype:\n{bestGenotype}");
+            }else{
+                patience++;
             }
 
             movementIndex = rnd.Next(possibleMovements);
         }else{ // keep trying with the next movement
             // logSA($"Gen: {generationI}. Rejected: {score}. Neighbor: {neighborScore}. Temp: {Temperature}. Delta: {deltaFitness}. Prob: {prob}. Rand: {random}");
             movementIndex = (movementIndex + 1) % possibleMovements;
+            patience++;
         }
-
+        
+        
+        
+        if (patience >= maxPatience){
+            logSA($"Max patience {maxPatience} reached. Restarting with best genotype found.");
+            patience = 0;
+            generationI = maxGenerations;
+        }
         generationI++;
         return update;
     }

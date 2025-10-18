@@ -188,7 +188,9 @@ public class GAManager : MonoBehaviour{
 
         // =========================== GA NEXT EXPERIMENT ========================
         if (generationI >= maxGenerations) {
-            logGA($"================== FINISHED ===================\n Score {scores[sortedIdxs[0]]}:");
+            logGA($"================== FINISHED ===================");
+            logGA($" Score {scores[sortedIdxs[0]]}");
+            logGA($" Best {poblation[sortedIdxs[0]]}");
             // currentState = getPlayedState(poblation[sortedIdxs[0]]);
             startComputation();
 

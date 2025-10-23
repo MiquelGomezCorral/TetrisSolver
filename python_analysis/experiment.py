@@ -29,7 +29,8 @@ class GAExperiment:
 
     def load_log(self):
         gens, fits = [], []
-        with open(self.path, "r") as f:
+        # with open(self.path, "r", encoding="utf-8") as f:
+        with open(self.path, "r", encoding="utf-8", errors="replace") as f:
             for line in f:
                 if "Generation" in line:
                     parts = line.strip().split(". ")
@@ -42,7 +43,8 @@ class GAExperiment:
     def load_last_movements(self):
         last_movement = ''
         pieces = []
-        with open(self.path, "r") as f:
+        # with open(self.path, "r", encoding="utf-8", ) as f:
+        with open(self.path, "r", encoding="utf-8", errors="replace") as f:
             for line in f:
                 if 'Bag pieces' in line:
                     pieces = line.split("Bag pieces:")[1].split()
@@ -82,7 +84,7 @@ class SAExperiment:
         gens, fits, temps = [], [], []
         gens_best, fits_best = [], []
         generation = None
-        with open(self.path, "r") as f:
+        with open(self.path, "r", encoding="utf-8", errors="replace") as f:
             for line in f:
                 if "Gen:" in line and "Updated:" in line:
                     # [2025-10-18 19:13:04] Gen: 4466. Updated: -164.6786. Temp: 10.71466
@@ -111,7 +113,7 @@ class SAExperiment:
     def load_last_movements(self):
         last_movement = ''
         pieces = []
-        with open(self.path, "r") as f:
+        with open(self.path, "r", encoding="utf-8", errors="replace") as f:
             for line in f:
                 if 'Bag pieces' in line:
                     pieces = line.split(":")[1].split()
@@ -127,10 +129,11 @@ class SAExperiment:
 
 
 def load_experiments(CONFIG):
-    experiments, n = list_dir_files(CONFIG.raw_path, recursive=True)
-    GA_experiments = [exp for exp in experiments if 'GA' in exp]
-    SA_experiments = [exp for exp in experiments if 'SA' in exp]
-    print(f"Found {n} files in {CONFIG.raw_path}:")
+    experiments_ga, n = list_dir_files(CONFIG.raw_path_ga, recursive=True)
+    experiments_sa, n = list_dir_files(CONFIG.raw_path_sa, recursive=True)
+    GA_experiments = [exp for exp in experiments_ga if 'GA' in exp]
+    SA_experiments = [exp for exp in experiments_sa if 'SA' in exp]
+    print(f"Found {n} files in {CONFIG.raw_path_ga} & {CONFIG.raw_path_sa}:")
     print(f"Found {len(GA_experiments)} for GA")
     print(f"Found {len(SA_experiments)} for SA")
 

@@ -371,7 +371,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7fed6ef126b7c5b46be4fa37d3bd4d56, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: Assembly-CSharp::TetriminoSettings
   textureX: {fileID: 21300000, guid: 1979e04f30e55d642abb638d99969d5d, type: 3}
   textureI: {fileID: 21300000, guid: 5ab5264644b972a4ba41363462f28c50, type: 3}
   textureO: {fileID: 21300000, guid: bb3a7e3fe1b01744b8d4778bb4eb4335, type: 3}
@@ -460,7 +460,7 @@ MonoBehaviour:
   nPieces: 10
   mutationChance: 0.15
   maxGenerations: 3000
-  maxPatience: 400
+  maxPatience: 150
   timeDelay: 0
   showingIndex: 0
   showEvery: 25
@@ -485,9 +485,9 @@ MonoBehaviour:
   lastBest: -3.4028235e+38
   experimentI: 0
   aleoTypes: 03000000
-  poblationSizes: b8880000
+  poblationSizes: 30750000
   mutationChances:
-  - 0.2
+  - 0.25
   nPiecesOptions: 1e000000
 --- !u!1 &1705091938
 GameObject:

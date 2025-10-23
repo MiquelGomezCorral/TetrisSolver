@@ -22,8 +22,8 @@ public class GAManager : MonoBehaviour{
 
 
     [Header("Scoring Parameters")]
-    [SerializeField] float softMaxTemp = 100;
-    [SerializeField] float softMaxTempInitialTemp = 100;
+    [SerializeField] float softMaxTemp = 600;
+    [SerializeField] float softMaxTempInitialTemp = 600;
     [SerializeField] float penalizationFactor = 1.0f;
     [SerializeField] float gameScoreFactor = 2.5f;
     [SerializeField] float generalHeuristicFactor = 1.0f;
@@ -65,13 +65,13 @@ public class GAManager : MonoBehaviour{
         // AleoType.SwapDoble,
     };
     public int[] poblationSizes = new int[] {
-        10000, 20000, 30000
+        15000//10000, 20000, 30000
     };
     public float[] mutationChances = new float[] {
-        0.05f, 0.15f, 0.25f
+        0.25f //0.05f, 0.15f, 0.25f
     };
     public int[] nPiecesOptions = new int[] {
-        10, 20, 30
+        14//10, 20, 30
     };
 
     // ============= Execution States =============

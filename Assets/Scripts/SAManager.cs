@@ -24,8 +24,8 @@ public class SimulatedAnneling : MonoBehaviour{
 
 
     [Header("Scoring Parameters")]
-    [SerializeField] float Temperature = 100;
-    [SerializeField] float InitialTemperature = 100;
+    [SerializeField] float Temperature = 2;
+    [SerializeField] float InitialTemperature = 1;
     [SerializeField] float updateTempFactor = 0.0005f;
     [SerializeField] float penalizationFactor = 1.0f;
     [SerializeField] float gameScoreFactor = 2.5f;
@@ -69,10 +69,10 @@ public class SimulatedAnneling : MonoBehaviour{
         10, 20, 30
     };
     public int[] tabuSizes = new int[] {
-        100, 1000, 10000, 50000
+        10000// 100, 1000, 10000, 50000
     };
     public float[] updateFactors = new float[] {
-        0.00005f, 0.0005f, 0.005f, 0.05f
+        0.0005f// 0.00005f, 0.0005f, 0.005f, 0.05f
     };
     int totalCombinations = int.MaxValue;
     // ============= Executions States =============
@@ -103,16 +103,20 @@ public class SimulatedAnneling : MonoBehaviour{
         Initialize(maxGenerations);
     }
 
-    public void Initialize(int maxGenerations, Genotype initialGenotype = null, AleoType newAleoType = AleoType.None){
+    public void Initialize(int maxGenerations, Genotype initialGenotype = null, AleoType newAleoType = AleoType.None, Queue<TetriminoEnum> bagQueueSaved = null){
+        logSA("INITIALIZING SIMULATED ANNEALING");
         this.maxGenerations = maxGenerations;
         // ============= Initialize Configuration =============
         selectParametersFromList();
         initLogger();
         // ============= Initialize GA variables ============= 
-        if (newAleoType != AleoType.None){
+        if (newAleoType != AleoType.None) {
             aleoType = newAleoType;
         }
-        startPoblation(initialGenotype);
+        if (bagQueueSaved != null && bagQueueSaved.Count > 0) {
+            this.bagQueueSaved = bagQueueSaved;
+        }
+        startPoblation(initialGenotype, bagQueueSaved == null);
 
         // Reset patience and temperature-related state for a new experiment
         patience = 0;
@@ -374,7 +378,7 @@ public class SimulatedAnneling : MonoBehaviour{
     // ========================================================
     //                            SA
     // ========================================================
-    void startPoblation(Genotype initialGenotype = null) {
+    void startPoblation(Genotype initialGenotype = null, bool generateBags = true) {
         generationI = 0;
         currGenotype = initialGenotype ?? new Genotype(aleoType, nPieces);
         
@@ -397,7 +401,9 @@ public class SimulatedAnneling : MonoBehaviour{
         AddToTabuList(currGenotype);
 
         // ================= BAG OF PIECES =================
-        generatePlayingBags();
+        if (generateBags) {
+            generatePlayingBags();
+        }
     }
     
     bool updateGeneration(Genotype neighbor, float neighborScore){

@@ -7,7 +7,7 @@ using UnityEngine;
 public class GAManager : MonoBehaviour{
     [Header("Algorithm Parameters")]
     [SerializeField] bool executeComputation = true;
-    [SerializeField] bool optimizeWithSA = true;
+    [SerializeField] bool optimizeWithSA = false;
     [SerializeField] bool logExecution = true;
     [SerializeField] AleoType aleoType = AleoType.SwapDoble;
     [SerializeField] int initialPoblation = 20000;
@@ -59,16 +59,16 @@ public class GAManager : MonoBehaviour{
     // ============= EXPERIMENTS =============
     public int experimentI = 0;
     public AleoType[] aleoTypes = new AleoType[] {
-        AleoType.SwapDoble,
         AleoType.Simple,
-        AleoType.Double,
-        AleoType.SwapSimple,
+        // AleoType.Double,
+        // AleoType.SwapSimple,
+        // AleoType.SwapDoble,
     };
     public int[] poblationSizes = new int[] {
-        20000, 10000, 30000
+        10000, 20000, 30000
     };
     public float[] mutationChances = new float[] {
-        0.15f, 0.05f, 0.25f
+        0.05f, 0.15f, 0.25f
     };
     public int[] nPiecesOptions = new int[] {
         10, 20, 30
@@ -213,7 +213,8 @@ public class GAManager : MonoBehaviour{
                 saManager.Initialize(
                     maxGenerations,
                     poblation[sortedIdxs[showingIndex]],
-                    aleoType
+                    aleoType,
+                    new Queue<TetriminoEnum>(bagQueueSaved)
                 );
             }
         }

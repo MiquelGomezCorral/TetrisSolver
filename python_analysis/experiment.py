@@ -130,8 +130,9 @@ class SAExperiment:
 
 def load_experiments(CONFIG):
     experiments_ga, n = list_dir_files(CONFIG.raw_path_ga, recursive=True)
+    experiments_show, n = list_dir_files(CONFIG.show_path_ga, recursive=True)
     experiments_sa, n = list_dir_files(CONFIG.raw_path_sa, recursive=True)
-    GA_experiments = [exp for exp in experiments_ga if 'GA' in exp]
+    GA_experiments = [exp for exp in experiments_ga + experiments_show if 'GA' in exp]
     SA_experiments = [exp for exp in experiments_sa if 'SA' in exp]
     print(f"Found {n} files in {CONFIG.raw_path_ga} & {CONFIG.raw_path_sa}:")
     print(f"Found {len(GA_experiments)} for GA")

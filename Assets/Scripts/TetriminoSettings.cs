@@ -315,6 +315,9 @@ public class TetriminoSettings : MonoBehaviour {
     // ==============================================================================
     //                                  HEURISTICS
     // ==============================================================================
+    /// <summary>
+    /// Computes the total number of filled cells on the board.
+    /// </summary>
     public static float computeBlocks(TetriminoEnum[,] grid) {
         int count = 0;
         bool flag = true; // to check if there is at least one block
@@ -335,6 +338,9 @@ public class TetriminoSettings : MonoBehaviour {
             Debug.Log("Blocks: " + count);
         return count;
     }
+    /// <summary>
+    /// Computes the sum of the heights of each block, where height is its Y-coordinate.
+    /// </summary>
     public static float computeWeightedBlocks(TetriminoEnum[,] grid){
         // Level 0 gives 1, 1 gives 2...
         int count = 0;
@@ -352,6 +358,9 @@ public class TetriminoSettings : MonoBehaviour {
             Debug.Log("WeightedBlocks: " + count);
         return count;
     }
+    /// <summary>
+    /// Computes the maximum number of lines that could be cleared with a single I-piece.
+    /// </summary>
     public static float computeClearableLine(TetriminoEnum[,] grid){
         // maximum number of lines clearable by a single “I” (straight) piece in the current board configuration
         // Look for each column and get the highest block, then check the next four rows and compute how many are full
@@ -384,6 +393,9 @@ public class TetriminoSettings : MonoBehaviour {
             Debug.Log("ClearableLine: " + max);
         return max;
     }
+    /// <summary>
+    /// Computes the board's roughness, measured as the sum of absolute differences between the heights of adjacent columns.
+    /// </summary>
     public static float computeRoughness(TetriminoEnum[,] grid){
         // get the max height of each column and from left to righ
         // compute the difference between each level
@@ -405,6 +417,9 @@ public class TetriminoSettings : MonoBehaviour {
             Debug.Log("Roughness: " + roughness);
         return roughness;
     }
+    /// <summary>
+    /// Counts the number of columns that contain at least one hole.
+    /// </summary>
     public static float computeColHoles(TetriminoEnum[,] grid){
         int colsWithHoles = 0;
 
@@ -425,6 +440,9 @@ public class TetriminoSettings : MonoBehaviour {
             Debug.Log("ColHoles: " + colsWithHoles);
         return colsWithHoles;
     }
+    /// <summary>
+    /// Counts the total number of holes that are connected vertically.
+    /// </summary>
     public static float computeConnectedHoles(TetriminoEnum[,] grid){
         // Count number of connected holes en each column
         int connectedHoles = 0;
@@ -449,6 +467,9 @@ public class TetriminoSettings : MonoBehaviour {
         return connectedHoles;
     }
 
+    /// <summary>
+    /// Counts the number of blocks that are placed directly above holes.
+    /// </summary>
     public static float computeBlockAboveHoles(TetriminoEnum[,] grid) {
         // Count number of connected holes en each column
         int holesAbove = 0;
@@ -469,7 +490,9 @@ public class TetriminoSettings : MonoBehaviour {
         return holesAbove;
     }
 
-
+    /// <summary>
+    /// Computes the ratio of pits (holes with two adjacent filled columns) to the total number of holes.
+    /// </summary>
     public static float computePitHolePercent(TetriminoEnum[,] grid){
         // Bad in terms of 'unfillable space'
         float holes = 0f, pits = 0f;
@@ -531,6 +554,9 @@ public class TetriminoSettings : MonoBehaviour {
 
         return (holes == 0f) ? 0f : pits / holes;
     }
+    /// <summary>
+    /// Finds the deepest well on the board, measured as the minimum column height.
+    /// </summary>
     public static float computeDeepestWell(TetriminoEnum[,] grid){
         // Lowest non-holes and non-filled cell 
         int[] maxHeigth = new int[grid.GetLength(0)];

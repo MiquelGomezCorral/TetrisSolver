@@ -12,6 +12,45 @@ The paper of this project can be found at [this repo](https://github.com/MiquelG
 
 The implementation details, experiments done and decisions made are very well explained there.
 
+
+# Project structure
+```
+.
+├── Assets                                                     # Core Unity assets and resources
+│   ├── Prefabs
+│   │   └── ...                                                # Reusable game objects for cells and piece placeholders.
+│   ├── Scenes
+│   │   └── TMHSolver.unity                                    # Main scene for running the game and solvers.
+│   ├── Scripts                                                # Core C# scripts for game logic and AI/Solvers
+│   │   ├── ...
+│   │   │   ├── GameManager.cs
+│   │   │   ├── GridManager.cs                                 # Manages the Tetris board state.
+│   │   │   └── Tetrimino.cs                                   # Defines the falling pieces.
+│   │   ├── ...
+│   │   │   ├── GAManager.cs                                   # Genetic Algorithm implementation.
+│   │   │   └── SAManager.cs                                   # Simulated Annealing implementation.
+│   │   ├── ...
+│   │   │   └── Genotype.cs                                    # Represents the AI's parameter set.
+│   │   └── ...
+│   │       └── FileLogger.cs
+│   ├── Settings
+│   │   └── ...                                                # Configuration for Unity build profiles.
+│   └── Textures
+│       └── ...                                                # PNG files for cell colors and Tetrimino sprites.
+├── python_analysis                                            # External environment for data analysis and visualization
+│   ├── data
+│   │   └── ...                                                # Raw and processed solver experiment data (GA.rar, SA.rar).
+│   ├── plots
+│   │   └── ...                                                # Generated charts and images visualizing solver performance.
+│   ├── requirements.txt                                       # Python dependencies for analysis.
+│   ├── analysis.ipynb                                         # Jupyter Notebook for data analysis.
+│   └── visualizations.py                                      # Python scripts for plotting results.
+├── readme_images
+│   └── ...                                                    # GIFs and images used in the main README.
+├── LICENSE
+├── README.md                                                  # Project documentation.
+```
+
 # How to use this Repository
 
 1. Clone repo.
@@ -36,3 +75,4 @@ Also, when a certain solution is found and want to be replayed, the project cont
 
 ### Solution analysis
 At python_analysis folder, code is implemented to parse the logs of the executions and plot how the different experiments have influenced the solutions accomplish.
+

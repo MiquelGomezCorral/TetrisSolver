@@ -1,0 +1,1321 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       CARGA DE LA CLASE DE DOCUMENTO                        %
+%                                                                             %
+% Las opciones admisibles son:                                                %
+%      12pt / 11pt            (tamaño del cuerpo de letra; no usar 10pt)      %
+%                                                                             %
+% catalan/spanish/english     (idioma principal del trabajo)                  %
+%                                                                             % 
+% french/italian/german...  (si necesitáis usar otro idioma adicional)      %
+%                                                                             %
+% listoffigures               (El documento incluye un Índice de figuras)     %
+% listoftables                (El documento incluye un Índice de tablas)      %
+% listofquadres               (El documento incluye un Índice de cuadros)     %
+% listofalgorithms            (El documento incluye un Índice de algoritmos)  %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[11pt,spanish,listoffigures,listoftables]{tfgetsinf}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                     CODIFICACIÓN DEL ARCHIVO FUENTE                         %
+%                                                                             %
+%    Windows suele usar 'ansinew'                                             %
+%    en Linux es posible que sea 'latin1' o 'latin9'                          %
+%    Pero lo más recomendable es usar utf8 (unicode 8)                        %
+%                                          (si vuestro editor lo permite)     % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[utf8]{inputenc} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                       OTROS PAQUETES Y DEFINICIONES                         %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{glossaries}
+\usepackage{textcomp}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Configuración para usar punto decimal en lugar de coma
+% \usepackage{icomma}
+% \decimalpoint
+
+% Listings para código
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  breaklines=true,
+  postbreak=\mbox{\textcolor{gray}{$\hookrightarrow$}\space},
+  columns=fullflexible,
+  keepspaces=true,
+  numbers=none
+}
+
+% Bibliografía
+\usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
+\addbibresource{bibliografia.bib}
+
+% Hyperref siempre al final
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=cyan,
+  citecolor=black
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                          DATOS DEL TRABAJO                                  %
+%                                                                             %
+% título alumno, titor y curso académico                                      %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title{Tetris Solver \\ Jugando al Tetris con técnicas metaheurísticas}
+\author{Miquel Gómez}
+% \tutor{No}
+% \curs{MUIARFID}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                     PARAULES CLAU/PALABRAS CLAVE/KEY WORDS                  %
+%                                                                             %
+% Independentment de la llengua del treball, s'hi han d'incloure              %
+% les paraules clau i el resum en els tres idiomes                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\keywords{
+    Tetris; Optimització; Algorismes genètics; Metaheurístiques; Recobriment
+} % Paraules clau 
+{
+   Tetris; Optimización; Algoritmos genéticos; Metaheurísticas; Enfriamiento simulado; Problema de cobertura
+} % Palabras clave
+{
+    Tetris; Optimization; Genetic algorithms; Metaheuristics; Simulated annealing; Coverage problem
+} % Key words
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                              INICI DEL DOCUMENT                             %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document} 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%              RESUMENES DEL TFG EN VALENCIA, CASTELLA I ANGLES               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{abstract}[spanish]
+Este trabajo explora la resolución del juego de Tetris desde la perspectiva de la optimización, transformándolo en un problema de cobertura cuyo objetivo es minimizar el espacio ocupado por un conjunto predefinido de piezas. Para abordar este desafío combinatorio, se ha desarrollado una simulación de una versión moderna de Tetris y se han implementado dos algoritmos metaheurísticos: un Algoritmo Genético y un Enfriamiento Simulado.
+
+La principal innovación de este enfoque radica en la codificación de las soluciones. En lugar de representar directamente las coordenadas finales de las piezas, cada posible solución se codifica como una secuencia de movimientos para cada una de las piezas disponibles. Este método garantiza la validez de todas las configuraciones generadas, ya que se obtienen a través de una simulación que respeta las reglas del juego. 
+
+El estado final del tablero, o fenotipo, se evalúa mediante una función de aptitud compuesta. Dicha función no solo considera la puntuación del juego (líneas completadas), sino que también integra un conjunto de heurísticas diseñadas para medir la calidad estructural del tablero, como la altura, el número de agujeros y la rugosidad, junto con una penalización por movimientos ineficientes, etc.
+
+A través de la optimización iterativa, los algoritmos buscan la secuencia de movimientos que conduce a la disposición más compacta de las piezas, demostrando la viabilidad de las técnicas metaheurísticas para resolver problemas complejos de planificación y optimización en entornos dinámicos y con restricciones como el Tetris, cuando una buena codificación para simular los individuos es implementada.
+\end{abstract}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                              CONTENIDO DEL TREBAJO                          %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                  ÍNDICE                                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\tableofcontents
+% \listoffigures
+% \listoftables
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                GLOSARIO                                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \glsaddall
+% \printglossaries
+% \printnoidxglossaries
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                  INTRODUCCION                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Introducción}
+El Tetris, uno de los videojuegos más icónicos de la historia, ha trascendido su condición de mero entretenimiento para convertirse en un fascinante campo de estudio en la inteligencia artificial y la optimización. A primera vista, el objetivo es simple: encajar una secuencia de piezas geométricas que caen, llamadas tetrominos, para formar líneas horizontales completas que, una vez llenas, desaparecen. Sin embargo, detrás de esta aparente sencillez se esconde un problema combinatorio de gran complejidad.
+
+Este trabajo aborda el Tetris no como un juego en tiempo real, sino como un problema de optimización: dado un conjunto finito de piezas, ¿cuál es la disposición óptima de estas en el tablero para minimizar el espacio total ocupado? Este enfoque transforma el juego en un problema de cubrimiento, donde el objetivo es encontrar la configuración más densa posible que deje con menos bloques el tablero final. Decimos menos bloques, porque como condiciones del juego, al completar una línea esta se limpia, lo que puede reducir el espacio ocupado.
+
+Esta condición puede simular un problema real donde tras apilar ciertos elementos de una forma concreta, se consigue que 'estén listos para su eliminado', añadiendo más realismo al problema de optimización planteado y por supuesto, más complejidad.
+
+Para resolver este problema, se exploran dos técnicas metaheurísticas: un Algoritmo Genético (GA) y un Enfriamiento Simulado (SA). La hipótesis de partida es que estos algoritmos, inspirados en la evolución natural y en procesos físicos de la materia, son capaces de navegar eficientemente por el espacio de soluciones para encontrar configuraciones de alta calidad.
+
+Una de las claves de este proyecto reside en la codificación de las soluciones. En lugar de representar directamente las posiciones finales de las piezas, cada solución (o individuo) se codifica como una secuencia de movimientos para cada pieza. Este enfoque tiene una ventaja fundamental: garantiza que todas las soluciones generadas sean válidas según las reglas del juego, ya que se simula la colocación de cada pieza en el tablero siguiendo estos movimientos. El resultado de esta simulación, el estado final del tablero, constituye el fenotipo que será evaluado.
+
+La evaluación de la calidad de cada solución se realiza mediante una función de aptitud diseñada para ser maximizada. Esta función no solo considera la puntuación obtenida en la partida, sino que también incorpora una penalización por movimientos ineficientes, y un conjunto de heurísticas que miden la "calidad" del tablero resultante, codificando el objetivo de minimización de la cobertura.
+
+A lo largo de este documento, se detallará la codificación de los individuos, la formulación de la función objetivo y las heurísticas, para finalmente, analizar los resultados obtenidos por los algoritmos metaheurísticos en su tarea de resolver el problema de optimización planteado.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                         ANÁLISIS DEL PROBLEMA                               %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\mainmatter
+
+\chapter{Codificación}
+En este apartado se habla de como se han codificado los individuos para abordar el problema. Cabe recordar que el objetivo es encontrar, para un set de piezas concreto, la posición y orientación óptima de cada pieza para minimizar el espacio ocupado. A esto se deben añadir dos reglas del juego: primero que al completar una línea esta se limpia, y segundo que las piezas no pueden estar flotando al colocarse.
+
+Con esto, se parte de la idea de 'jugar' al Tetris. La propuesta tras esta premisa no es jugar al juego de verdad, sino conseguir una codificación que permita cumplir las restricciones impuestas, consiguiendo soluciones que minimicen el espacio ocupado sin necesidad de descartar individuos inválidos. 
+
+La forma de atacar este problema de cobertura, será definiendo una serie de movimiento posibles. Se codifica la posición final de cada pieza como una secuencia de estos. Así pues, cada genotipo será una secuencia de movimientos, de forma que si hay $x$ movimientos válidos y se dispone de $n$ piezas, la codificación de un genotipo será una secuencia $x \times n$ movimientos.
+
+Al codificar los genotipos de esta forma, los individuos resultantes serán siempre válidos, ya que cada pieza se colocará en el tablero siguiendo las reglas del juego. Esto implica también que se debe ser capaz de simular el juego para poder evaluar cada individuo, \textbf{ya que el fenotipo de cada individuo será el estado final del tablero tras colocar todas las piezas siguiendo los movimientos indicados en el genotipo}.
+
+También, habrá movimientos que resulten en '\textit{no-op}', como intentar mover una pieza a la izquierda cuando ya está en el borde izquierdo del tablero. Más adelante se muestra cómo se gestionan estos casos con la función objetivo.
+
+\section{Movimientos posibles y tipos de genotipo}
+Cuando se dice codificar los individuos como una secuencia de movimientos, es necesario definir cuales son estos. Si se observa el juego original, los movimientos posibles que puede hacer un jugador son:
+
+\begin{itemize}
+    \item Mover la pieza a la izquierda.
+    \item Mover la pieza a la derecha.
+    \item Rotar la pieza en el sentido de las agujas del reloj.
+    \item Rotar la pieza en sentido contrario a las agujas del reloj.
+    \item Dejar caer la pieza.
+    \item Bloquear la pieza.
+    \item Intercambiar la pieza actual por la siguiente (o por una ya cambiada anteriormente)
+\end{itemize}
+
+En las versiones originales, cuando se dejaba caer una pieza y esta toca el suelo, se bloqueaba al instante. Sin embargo, en versiones más modernas esto no es así y aún habiendo tocado el suelo, se permite mover la pieza con unas ciertas reglas. En este caso, se estaría hablando de un Tetris moderno como el Tetris 99 \cite{tetris99-tetriscompany-no-date}, donde se permite que las piezas se muevan con más libertad y por tanto, se da más capacidad de representación al jugador. 
+
+Es por todo esto que se ha elegido usar esta versión del juego y no la clásica para abordar el problema. El objetivo de esta decisión es dotar a los individuos de más capacidad de representación, lo que potencialmente debería permitir llegar a mejores soluciones.
+
+Ahora, con cierta experiencia en el juego, se puede apreciar que no en todas las situaciones todos los movimientos son necesarios para llegar a una solución concreta. Sin ir más lejos, en casos donde el tablero está casi vacío y no hay piezas creando agujeros, siempre se podrá poner una pieza en cualquiera de las posiciones validas con una \textit{rotación} y un \textit{movimiento lateral}.
+
+Como tampoco se quiere eliminar de la experimentación, la posibilidad de ver los efectos que tiene el sí hacer más movimientos una vez las piezas han tocado el suelo, se han planteado cuatro sets posibles de movimientos que podrán usar los individuos:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Tipo} & \textbf{Secuencia de movimientos} \\
+        \midrule
+        Simple & \begin{tabular}[t]{@{}l@{}}
+            1. Mover la pieza \\
+            2. Rotar la pieza
+        \end{tabular} \\
+        \midrule
+        Double & \begin{tabular}[t]{@{}l@{}}
+            1. Mover la pieza \\
+            2. Rotar la pieza \\
+            3. \textit{Dejar caer la pieza} \\
+            4. Mover la pieza \\
+            5. Rotar la pieza
+        \end{tabular} \\
+        \midrule
+        SwapSimple & \begin{tabular}[t]{@{}l@{}}
+            1. Intercambiar la pieza actual \\
+            2. Mover la pieza \\
+            3. Rotar la pieza
+        \end{tabular} \\
+        \midrule
+        SwapDouble & \begin{tabular}[t]{@{}l@{}}
+            1. Intercambiar la pieza actual \\
+            2. Mover la pieza \\
+            3. Rotar la pieza \\
+            4. \textit{Dejar caer la pieza} \\
+            5. Mover la pieza \\
+            6. Rotar la pieza
+        \end{tabular} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Sets de movimientos posibles para los individuos.}
+    \label{tab:sets_movimientos}
+\end{table}
+    
+Donde el paso de \textit{dejar caer la pieza} NO es configurable por el individuo (es fijo) y el resto de movimientos serán un entero que indicará cuántas veces se realiza ese movimiento. Los rangos permitidos para cada tipo de movimiento se detallan en la Tabla \ref{tab:rangos_movimientos}.
+
+Como optimización en este punto se ha propuesto lo siguiente: dado que las piezas aparecen en cierta posición concreta, el rango de movimientos laterales que se hace al principio se ha limitado a un rango de -5 a 5. Esto es, si una pieza aparece en la columna 5 del tablero, no tendría sentido moverla más de 5 veces a izquierda o derecha (ya que se saldría del tablero). Una vez esta haya caído, el rango de movimientos a considerar ha de ser mayor, ya que la pieza puede estar en cualquier posición del tablero. Por ello, el rango de movimientos laterales tras dejar caer la pieza se ha establecido entre -9 y 9.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lp{8cm}}
+        \toprule
+        \textbf{Movimiento} & \textbf{Rango y descripción} \\
+        \midrule
+        Intercambiar la pieza actual & $\{0, 1\}$ \\ 
+        & 0 si no se quiere intercambiar, 1 si se quiere intercambiar. \\
+        \midrule
+        Mover la pieza (inicial) & $\{-5, \dots, 5\}$ \\ 
+        & Un entero positivo o negativo. Si es positivo, se moverá esa cantidad de veces a la derecha; si es negativo, se moverá esa cantidad de veces a la izquierda (o hasta que no se pueda mover más). \\
+        \midrule
+        Rotar la pieza (inicial) & $\{0, 1, 2, 3\}$ \\ 
+        & Un entero entre 0 y 3, indicando cuántas veces se rotará la pieza en el sentido de las agujas del reloj. \\
+        \midrule
+        \textit{Dejar caer la pieza} & No configurable \\ 
+        & La pieza caerá hasta que toque el suelo o otra pieza. \\
+        \midrule
+        Mover la pieza (final) & $\{-9, \dots, 9\}$ \\ 
+        & Igual que el movimiento lateral inicial. \\
+        \midrule
+        Rotar la pieza (final) & $\{0, 1, 2, 3\}$ \\ 
+        & Igual que la rotación inicial. \\
+        \bottomrule
+    \end{tabular}
+    \caption{Rangos de valores permitidos para cada tipo de movimiento.}
+    \label{tab:rangos_movimientos}
+\end{table}
+
+También cabe mencionar que cuando una pieza termine de ser movida se bloqueará al momento, dejándola caer hasta tocar el suelo u otra pieza y añadiéndola al tablero.
+
+En la siguiente figura se muestran los movimientos posibles para los genotipos SwapSimple y SwapDouble. Aquí se pueden apreciar situaciones como en las de la derecha, donde la pieza azul de la izquierda puede aprovechar esos movimientos dobles para introducirse en la 'cueva' que crear la otra 'pseudo pieza'.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/movements_simple.png}
+        \caption{Movientos SwapSimple}
+        \label{fig:movements_simple}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/movements_double.png}
+        \caption{Movientos SwapDouble}
+        \label{fig:movements_double}
+    \end{subfigure}
+    
+    % \vspace{0.5cm}
+    
+    % \begin{subfigure}[b]{0.48\textwidth}
+    %     \centering
+    %     \includegraphics[width=\textwidth]{images/GA_np-30_movements.png}
+    %     \caption{30 piezas (Difícil)}
+    %     \label{fig:ga_np30_movements}
+    % \end{subfigure}
+    \caption{Esquema visual de movimientos posibles en genotipos SwapSimple y SwapDouble.}
+    \label{fig:pieces_movements}
+\end{figure}
+
+
+\section{Talla del problema}
+En este trabajo se considerarán tres tallas del problema diferentes, con 10, 20 y 30 piezas siendo estás consideradas como fácil, media y difícil respectivamente.
+
+Ahora, al definir los movimientos de la forma considerada, se ha de tener en cuenta la explosión combinatoria que se genera. Si se tiene un set de piezas de tamaño $N$ y cada pieza se tiene distintos movimientos $M_1, M_2, \ldots, M_k$ cada uno con su espacio, el espacio de búsqueda total $S$ se puede calcular como, el producto de todas las posibles combinaciones de movimientos para cada pieza, elevado al número de piezas:
+
+\begin{align*}
+S = (M_1 \times M_2 \times ... \times M_k)^N
+\end{align*}
+
+Por ejemplo, para ver el tamaño con un set de movimientos \texttt{Simple} y \texttt{SwapDouble} (2 y 5 movimientos posibles) y un set de piezas de tamaño 10, el espacio de búsqueda sería:
+\begin{align*}
+S_{Simple,10} &= (11 \times 4)^{10} = 44^{10} \approx 2.72 \times 10^{16} \\
+S_{SwapDouble,10} &= (2 \times 11 \times 4 \times 19 \times 4)^{10} = 6688^{10} \approx 1,79 \times 10^{38}
+\end{align*}
+
+Ahora, en el caso de tallas más complejas, como un set de 30 pieazas, el espacio de búsqueda se vuelve inmanejable:
+\begin{align*}
+S_{Simple,30} &= (11 \times 4)^{30} = 44^{30} \approx 2.01 \times 10^{49} \\
+S_{SwapDouble,30} &= (2 \times 11 \times 4 \times 19 \times 4)^{30} = 6688^{30} \approx 5.94 \times 10^{114}
+\end{align*}
+
+Como referencia, el número estimado de átomos en el universo observable es aproximadamente $10^{80}$ \cite{cuantosatomos-rol-2019}. Por lo tanto, incluso con un set de piezas relativamente pequeño, el espacio de búsqueda se vuelve inmanejable para una búsqueda exhaustiva. Esto justifica el uso de técnicas metaheurísticas como los Algoritmos Genéticos y el Enfriamiento Simulado para explorar eficientemente este vasto espacio de soluciones.
+
+También, cabe destacar que al usar este tipo de codificación, muchas de estas combinaciones resultarán en el mismo tablero final, ya que muchos movimientos pueden resultar en '\textit{no-op}' o movimientos que no cambian el estado final del tablero. Esto introduce redundancia en el espacio de búsqueda, pero sigue siendo preferible a generar soluciones inválidas.
+
+
+\section{Conversión genotipo a fenotipo}
+Como se ha mencionado, la idea es simular el juego a partir de los movimientos establecidos para cada pieza. De tal forma que un genotipo, representado por una secuencia de enteros (movimientos), se convierta en un fenotipo, aplicando cada jugada a la secuencia de piezas predeterminada, siendo que el estado final del tablero tras colocar todas las piezas será el fenotipo asociado.
+
+Antes de definir un genotipo, habrá que definir un set de piezas concreto y qué movimientos se pueden realizar con cada una de ellas. A estos sets o tipos se les ha llamado \texttt{Genotype}. Con ambos datos, se podrá simular el juego con los movimientos indicados en el genotipo y el tablero final será el fenotipo asociado.
+
+Este set de piezas será el mismo para todos los individuos, y se generará aleatoriamente al inicio de la ejecución del algoritmo. 
+
+\section{Función objetivo}
+Una vez se sabe como convertir un genotipo en fenotipo, es necesario definir una función objetivo que permita evaluar la calidad de cada solución. Dado que el objetivo es minimizar el espacio ocupado en el tablero, se ha definido la siguiente función objetivo:
+
+\begin{align*}
+\text{Fitness(genotipo)} = f(g) &= \text{factor juego}\times\text{puntuación juego} \\
+&+ \text{factor penalización}\times\text{penalización} \\
+&+ \text{factor heurísticas}\times\text{heurísticas}
+\end{align*}
+
+Esta función se pretende \textbf{MAXIMIZAR}. A continuación se desglosa cada uno de los términos:
+\begin{itemize}
+    \item \textbf{Puntuación juego}: es la puntuación obtenida tras jugar la partida con el genotipo indicado. Esta puntuación se calcula como en el juego original, donde se otorgan puntos por cada línea completada, y se otorgan puntos extra por completar varias líneas a la vez (doble, triple, tetris) \cite{lineclear-harddropwiki-no-date}. Se omiten puntos extra por combos o por dejar caer las piezas rápidamente, ya que no aportan nada a la calidad de la solución. También se omiten los \texttt{T-spins} \cite{tspin-tetriswiki-no-date}, de nuevo por no aportar nada a la calidad de la solución.
+    
+    \item \textbf{Penalización}: es una penalización que se aplica en caso de que el genotipo contenga movimientos que no hagan nada o '\textit{no-op}' como se han definido anteriormente. La penalización será proporcional al número de movimientos inválidos realizados. Estas son calculadas durante la conversión de genotipo a fenotipo, en la simulación del juego.
+    
+    \item \textbf{Heurísticas}: son una serie de métricas que evalúan la calidad del tablero final tras colocar todas las piezas. En este punto es donde más se puede influir en la calidad de la solución, ya que la puntuación del juego puede ser similar para tableros muy diferentes, pero las heurísticas permitirán guiar a los algoritmos hacia mejores soluciones sin necesidad de completar muchas líneas. Además, cada heurística tendrá un peso o factor asociado, que permitirá ajustar su importancia en la función objetivo. 
+\end{itemize}
+
+\subsection{Heurísticas}
+Se han definido las siguientes heurísticas para evaluar la calidad del tablero final. El origen de todas ellas es una mezcla entre heurísticas clásicas usadas en la literatura para jugar al Tetris con IA \cite{tetrisgenetic-lewis-2015}, videos de youtube \cite{tetrisai-uci-2020} y experiencia personal. La idea principal tras estas, es codificar el objetivo de 'minimización' del espacio ocupado y guiar la búsqueda hacia soluciones buenas.
+
+\begin{itemize}
+    \item \textbf{Bloques ocupados (Blocks)}: Suma absoluta de la cantidad de bloques ocupados que hay en el tablero. 
+    \item \textbf{Altura Ponderada (Weighted Blocks)}: Similar a la anterior, pero las filas más altas tienen un peso mayor. Esto penaliza de forma más severa la creación de picos o torres altas en el tablero. De esta forma, los bloques en la primera fila tienen un peso de 1, los de la segunda fila un peso de 2, y así sucesivamente.
+    \item \textbf{Líneas Limpiables (Clearable Lines)}: Recompensa el número de líneas completas que se pueden eliminar con una sola pieza 'I' (la línea recta). Es una métrica directa de la puntuación que se obtendría en el juego. Su Implementación está orientada a que soluciones vecinas completen más líneas al explorar, más que a la solución actual.
+    \item \textbf{Rugosidad (Roughness)}: Suma de las diferencias de altura absolutas entre columnas adyacentes. Un valor alto indica un tablero no plano, lo que crea una solución peor 'compacta' y que ocupa potencialmente más espacio.
+    \item \textbf{Agujeros por Columna (Column Holes)}: Número de columnas con agujeros. Una agujero se define como un espacio vacío que tiene al menos un bloque por encima en la misma columna. Penaliza la creación de agujeros en las soluciones.
+    \item \textbf{Agujeros Conectados (Connected Holes)}: Número de agujeros que son adyacentes a otros agujeros (en la misma columna). Penaliza la creación de grandes bolsas de aire que son difíciles de rellenar.
+    \item \textbf{Bloques sobre Agujeros (Blocks Above Holes)}: Número de bloques que se encuentran directamente encima de un agujero. Penaliza fuertemente los agujeros que están enterrados, ya que dejan grandes cavidades.
+    \item \textbf{Porcentaje de Hoyos respecto a agujeros (Pit Hole Percent)}: Porcentaje de 'hoyos' contra agujeros. Un hoyo se define como una columna que tiene bloques más altos en ambas columnas adyacentes. Este porcentaje se calcula como:
+    $$\frac{\text{Hoyos}}{\text{Hoyos} + \text{Agujeros}}$$
+    La idea tras esta métrica es penalizar tableros con muchos agujeros que no sean 'hoyos', ya que los hoyos son más fáciles de rellenar. Es también una métrica de dispersión de los agujeros en el tablero.
+    \item \textbf{Hoyos más Profundo (Deepest Well)}: La profundidad de la columna más profunda de todas. Sería el mínimo del máximo (bloque más alto) de cada columna.
+\end{itemize}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/heuristics.png}
+    \caption{Esquema visual de heuristicas: Rugosidad, Agujeros por columna, bloques, y bloques sobre agujeros.}
+    \label{fig:ga_evolution}
+\end{figure}
+
+La combinación de estas heurísticas, cada una con su respectivo factor de ponderación, conforma la puntuación final de la heurística, como se muestra en la siguiente fórmula:
+
+\begin{align*}
+\text{Heurísticas} = \sum_{h \in H} w_h \times \text{score}(h)
+\end{align*}
+
+Donde $H$ es el conjunto de todas las heurísticas mencionadas, $w_h$ es el factor de ponderación para la heurística $h$, y $\text{score}(h)$ es el valor calculado para dicha heurística en el tablero final. 
+
+\subsection{Pesos de la función objetivo}
+Los factores que ponderan cada uno de los términos de la función objetivo, se han establecido tras una serie de pruebas preliminares, referencias en la literatura \cite{tetrisgenetic-lewis-2015} y 'a ojo'. Lo ideal sería poder lanzar una serie de experimentos para ajustar estos pesos, pero por limitaciones computacionales y de 'sentido' no ha sido posible.
+
+Se dice 'sentido' porque alrededor de ajustar estos pesos, que al final no dejan de ser hiperparámetros, se podrían crear proyectos enteros. Un ejemplo sería usar técnicas metaheurísticas para ajustar estos pesos, como un algoritmo genético que optimice los pesos de las heurísticas, o incluso alguna técnica bayesiana más moderna.
+
+Es por todo esto que al final se ha decidido fijar unos pesos 'a mano' basándonos lo mencionado anteriormente. En concreto, se han elegido los siguientes pesos:
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Componente} & \textbf{Peso} \\
+        \midrule
+        Factor de Puntuación del Juego & 2.5 \\
+        Factor de Penalización & -1.0 \\
+        Factor General de Heurísticas & 1.0 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Pesos de los componentes principales de la función objetivo.}
+    \label{tab:pesos_principales}
+\end{table}
+
+A su vez, los pesos para cada una de las heurísticas individuales, que componen el término de heurísticas, se detallan en la Tabla \ref{tab:pesos_heuristicas}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lc}
+        \toprule
+        \textbf{Heurística} & \textbf{Peso} \\
+        \midrule
+        Blocks & -1.0 \\
+        Weighted Blocks & -0.75 \\
+        Clearable Lines & 1.0 \\
+        Roughness & -1.0 \\
+        Column Holes & -5.0 \\
+        Connected Holes & -2.0 \\
+        Blocks Above Holes & -2.0 \\
+        Pit Hole Percent & -1.0 \\
+        Deepest Well & -1.0 \\
+        \bottomrule
+    \end{tabular}
+    \caption{Pesos para cada heurística individual.}
+    \label{tab:pesos_heuristicas}
+\end{table}
+
+Como se puede observar, gran parte de estos factores son negativos. El problema a solucionar es \textbf{minimización} del espacio ocupado, pero la función objetivo está planteada como \textbf{maximización}. La idea tras todo esto es que \textbf{estas heurísticas codifiquen el concepto de 'minimización del espacio'} y guíen la búsqueda de soluciones. Por lo tanto, se penaliza todo aquello que aleje al tablero de este ideal y se recompensa lo que lo acerque.
+
+\subsection{Notas}
+Cabe comentar ciertos aspectos importantes a modo de resumen sobre la función objetivo:
+\begin{itemize}
+    \item Como se ha mencionado, el problema consiste en la minimización del espacio ocupado. La función objetivo \textbf{codifica este concepto a través de las heurísticas}, que penalizan tableros con mucho espacio vacío, agujeros, rugosidad, etc.
+    \item La puntuación del juego se incluye para incentivar la eliminación de líneas, que es un objetivo secundario pero relevante en el Tetris y puede ayudar a la búsqueda de soluciones óptimas, ya que al limpiar piezas, se libera espacio en el tablero.
+    \item La penalización por movimientos inválidos, se incluye para evitar individuos con movimientos innecesarios. Ya que se simula el juego, NO se tienen individuos inválidos, pero siempre se prefiere un genotipo que use todos sus movimientos a aquel que no se intenta mover innecesariamente.
+    \item Con los factores puestos a ojo, y las diferentes heurísticas, se considera que un individuo es 'bueno' si su fitness supera los $-50$ puntos.
+\end{itemize}
+
+    
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           TÉCNOLOGÍAS PLANTEADAS                            %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Implementación}
+En este capítulo se describen las tecnologías y herramientas usadas para implementar las soluciones propuestas en este trabajo. Se habla del lenguaje de programación, librerías y frameworks usados, así como de la arquitectura general del sistema.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Tecnología de Implementación}
+El desarrollo del proyecto se ha realizado mayoritariamente en C\#. Para lo que sería la parte visual se ha utilizado el framework Unity \cite{unityplatform-unitytechnologies-no-date}, que permite crear aplicaciones gráficas de forma sencilla y rápida. También se ha usado Python para la visualización de resultados y generación de gráficos.
+
+La implementación del juego se ha hecho mediante C\# y Unity de forma que se han podido representar las soluciones de forma visual y dinámica. Unity permite crear escenas 2D y 3D de forma sencilla, y cuenta con una gran comunidad y documentación, por lo que para simular un juego como el Tetris, es una opción muy adecuada.
+
+Respecto a la implementación de los algoritmos metaheurísticos, se ha optado por usar C\# para mantener la coherencia con el resto del proyecto. C\# es un lenguaje potente y versátil, que permite implementar algoritmos complejos de forma eficiente y sin tener tantas complicaciones técnicas como C or C++.
+
+Los resultados de los experimentos se han almacenado en logs, de forma que se puedan analizar posteriormente en Python. Estos logs contienen información relevante como la puntuación obtenida, el tiempo de ejecución, los parámetros usados, etc.
+
+Por último, para la visualización de estos resultados, su análisis y generación de gráficos, se ha usado Python con librerías como Matplotlib \cite{matplotlib-org-no-date} y Plotly \cite{plotlydata-plotly-no-date}. Estas librerías permiten crear gráficos de forma sencilla y personalizable, lo que facilita la presentación de los resultados obtenidos en los experimentos.
+
+La Implementación de todo el código se puede encontrar en el repositorio de GitHub \cite{tetrissolver-miquelgomezcorral-no-date}.
+
+\section{Implementación del Tetris}
+Como ya se ha mencionado, la versión del Tetris utilizada es una versión moderna. Para tener control absoluto del juego y su simulación, se ha implementado el juego desde cero usando la guía oficial para el desarrollo de juegos Tetris \cite{tetrisguideline-blueplanet-2009}.
+
+Para poder hacer la simulación del juego, se ha abstraído todo mediante clases y objetos que representan las piezas, el tablero y las reglas del juego. De esta forma, se puede simular el juego de forma independiente de la parte visual y la parte lógica de los algoritmo. 
+
+La Implementación se ha realizado de la forma más optima posible, eliminando operaciones innecesarias y optimizando el código para que la simulación sea lo más rápida posible. Se planeaba paralelizar los experimentos, pero por limitaciones de Unity el resultado era más lento que la versión secuencial, por lo que se ha optado por dejar el paralelismo para futuros trabajos.
+
+De igual forma, el cálculo de la función objetivo y las heurísticas se ha optimizado al máximo, evitando cálculos redundantes y almacenando resultados intermedios cuando es posible. Por ejemplo, en el algoritmo genético se evitaba re-calcular la función objetivo para individuos que no hayan sido reemplazados entre generaciones, más detalles en el capítulo de su Implementación.
+
+Con todo esto, se ha conseguido una Implementación eficiente y robusta del Tetris, que permite simular el juego de forma rápida y precisa de forma independiente a los algoritmos. Todo esto, facilita la experimentación con los algoritmos metaheurísticos propuestos y proporciona una base sólida para futuras mejoras o reutilización de partes del proyecto gracias a su modularidad.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           ALGORITMOS                                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Algoritmos}
+En esta sección, se presentan los algoritmos implementados y las decisiones de diseño tomadas durante su desarrollo. La sección se centra en las técnicas y operadores utilizados de cada algoritmo, más que en la descripción de estos.
+
+El proceso de desarrollo incluyó una exploración manual inicial de parámetros y técnicas no documentada, motivada por las limitaciones temporales del curso. Esta fase preliminar ha servido para acotar la experimentación exhaustiva que se ha hecho más tarde, lo que ha permitido identificar los enfoques que prometen los mejores resultados.
+
+Las decisiones finales sobre los algoritmos y el razonamiento de su elección se detallan aquí, mientras que los parámetros específicos que se usaron en la experimentación exhaustiva se explican en la sección de Experimentación. No se pretende omitir todo lo experimentado, sino que se hablará del porqué de las decisiones junto con las alternativas consideradas.
+
+Además, ya que esta memoria tiene como principal objetivo el ser evaluada por el profesor responsable de la asignatura, no se entrará en detalles básicos sobre el funcionamiento de los algoritmos, sino que se explicarán la forma en la que ha implementado cada parte de ellos.
+
+\section{Algoritmo genético}
+El algoritmo genético (Genetic Algorithm, GA) \cite{geneticalgorithm-alam-2020} se ha implementado siguiendo los principios básicos de esta técnica de optimización. Siguiendo lo mencionado anteriormente, se habla de como se llevan a cabo los pasos del algoritmo, en concreto: de la Población inicial, el Cruce, la Mutación, la Selección y el Reemplazo.
+
+\subsection{Población inicial}
+En esta sección se habla de los pasos a seguir para generar individuos nuevos. En las solución final propuesta, solo se generan nuevos individuos al inicio. Sin embargo, se ha experimentado incluyendo nuevos individuos en cada generación, pero los resultados no han sido concluyentes por falta de pruebas más exhaustivas. Es por ello que se ha optado por una población inicial fija que cambia únicamente vía cruce.
+
+El número de individuos generados es un hiperámetro y se mantendrá constante durante toda la ejecución del algoritmo. A su vez, hay que definir el tipo de individuo a generar (el set de movimientos) junto con el número de piezas con las que se hará la optimización.
+
+Una vez definidos estos parámetros, se generan los $N$ individuos de forma independiente rellenando sus sets de movimientos. Se va a indicar como se haría para el tipo de individuo \texttt{SwapDouble}, el resto de tipos son iguales pero con menos movimientos.
+
+\begin{enumerate}
+    \item Para cada individuo $i$ desde $1$ hasta $N$:
+    \begin{enumerate}
+        \item Crear un nuevo $individuo_i$ vacío
+        \item Para cada pieza $j$ desde $1$ hasta $P$:
+        \begin{enumerate}
+            \item Generar $swap \gets$ entero aleatorio en $\{0, 1\}$
+            \item Generar $movLateralInicial \gets$ entero aleatorio en $\{-5, \dots, 5\}$
+            \item Generar $rotacionInicial \gets$ entero aleatorio en $\{0, 1, 2, 3\}$
+            \item Generar $movLateralFinal \gets$ entero aleatorio en $\{-9, \dots, 9\}$
+            \item Generar $rotacionFinal \gets$ entero aleatorio en $\{0, 1, 2, 3\}$
+            \item Añadir todos estos movimientos a $individuo_i$ para la pieza $j$
+        \end{enumerate}
+    \end{enumerate}
+    \item Devolver la población con los $N$ individuos generados
+\end{enumerate}
+
+Se recuerda que cada movimiento está acotado a un rango concreto para evitar la mayor cantidad de movimiento inválidos posibles \ref{appendix:movimientos}. Aún así, como se ha mencionado en la sección de la función objetivo, se penalizan los \textit{no-op}s para evitar que los individuos generen movimientos innecesarios.
+
+\subsection{Selección}
+Para la selección se ha optado por probar tanto el método elitista como el método de tarta con probabilidad. 
+
+Para el método elitista se probaron varios tamaños de élite, pero a la larga no se conseguían buenas soluciones, quedando el algoritmo rápidamente estancado en óptimos locales. 
+
+Por otro lado, el método de tarta parecía llegar a buenos resultados de forma consistente, por lo que se ha optado por usarlo en la solución final. En la selección por tarta, se seleccionan dos padres para el cruce de forma proporcional a su fitness. Es decir, cuanto mejor sea el fitness de un individuo, más probabilidad tendrá de ser seleccionado como padre.
+
+A todos los individuos se les asigna una probabilidad usando la función Softmax \cite{softmax-wikipedia-2024}. Esta función transforma los valores de fitness en probabilidades entre 0 y 1, de forma que la suma de todas las probabilidades sea 1.
+
+Al inicio se ha optado por usar la Softmax 'pura', pero se ha visto que los individuos con mejor fitness acaparaban casi toda la probabilidad de ser seleccionados, por lo que se ha optado por escalar con la versión 'temperatura' de la Softmax. Esta versión introduce un parámetro de temperatura $T$ que controla la 'suavidad' de la distribución de probabilidades. A mayor $T$, más uniforme será la distribución (más exploración), y a menor $T$, más se acentuará la diferencia entre los individuos, seleccionando solo los mejores (más explotación).
+
+Haciendo varias pruebas se ha optado por una escala de decremento de la temperatura con decremento logarítmico. Esta sigue la formula:
+\begin{align*}
+    temp = \max(0.1\quad, \quad\frac{InitialTemp}{\log(generationI + 2)})
+\end{align*}
+
+Se han probado distintas temperaturas iniciales, pero al final se ha optado por una temperatura MUY alta que favorece la exploración de $InitialTemp = 100$. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/GA_temp_evolution.png}
+    \caption{Evolución de la temperatura a lo largo de las generaciones.}
+    \label{fig:temp_evolution}
+\end{figure}
+
+Como se puede observar en la gráfica, siempre se usan valores muy elevados de temperatura. A lo largo de la memoria se hará más incapié en este punto, pero la EXPLORACIÓN es lo que más ha beneficiado a la generación de buenas soluciones. En esa línea se seleccionan más parámetros en los siguientes puntos. 
+
+\subsection{Cruce}
+El cruce parte de poder usar la función de selección para elegir dos padres. Con ellos, se generan dos hijos usando el operador que mejores resultados ha dado. Este operador junta la mitad de las piezas de cada padre para generar un hijo. El proceso es el siguiente:
+
+\begin{enumerate}
+    \item Seleccionar dos padres $padre_1$ y $padre_2$ usando la función de selección.
+    \item Crear hijo $hijo_1$ usando la primera mitad de 'piezas' del $padre_1$ y la segunda mitad de 'piezas' de $padre_2$.
+    \item Crear hijo $hijo_2$ usando la primera mitad de 'piezas' del $padre_2$ y la segunda mitad de 'piezas' del $padre_1$.
+    \item Mutar con probabilidad $p_{mutacion}$ hijo $hijo_1$ (ver sección de mutación).
+    \item Mutar con probabilidad $p_{mutacion}$ hijo $hijo_2$ (ver sección de mutación).
+    \item Devolver $hijo_1$ y $hijo_2$.
+\end{enumerate}
+
+Cuando se dice 'piezas', se hace referencia a todos los movimientos asociados a cada pieza concreta. Por ejemplo, en el tipo de individuo \texttt{Simple}, cada pieza tiene dos movimientos asociados (movimiento lateral inicial, rotación inicial). Por lo tanto, si se está optimizando con diez piezas al hacer el cruce, se copian todos los movimientos asociados a las piezas $\{1\dots5\}$ del $padre_1$ y las $\{6\dots10\}$ del padre $padre_2$ para generar $hijo_1$, mientras que se copian los movimientos de las piezas $\{1\dots5\}$ del $padre_2$ y las $\{6\dots10\}$ del $padre_1$ para generar $hijo_2$.
+
+Ya que ambos padres se codifican como una secuencia de enteros, se podría explicar como
+\begin{align*}
+padre_1 &= [m_{1,1}, m_{1,2},  m_{2,1}, m_{2,2} \dots, m_{10,1}, m_{10,2}] \\
+padre_2 &= [m'_{1,1}, m'_{1,2},  m'_{2,1}, m'_{2,2} \dots, m'_{10,1}, m'_{10,2}] \\
+hijo_1 &= [m_{1,1}, m_{1,2}, \dots, m_{5,1}, m_{5,2}, \quad m'_{6,1}, m'_{6,2} \dots, m'_{10,1}, m'_{10,2}] \\
+hijo_2 &= [m'_{1,1}, m'_{1,2}, \dots, m'_{5,1}, m'_{5,2},\quad m_{6,1}, m_{6,2} \dots, m_{10,1}, m_{10,2}]
+\end{align*}
+
+Por la naturaleza del problema, es apropiado hacer un cruce a nivel de \textbf{piezas continuas}, y no elegir piezas alternadamente de un padre y de otro. La razón tras esto es la dependencia que hay entre una pieza y todas aquellas colocadas a continuación. Si se mezclan piezas de ambos padres de forma alternada, se puede romper la coherencia entre las piezas y generar soluciones peores con mayor probabilidad. 
+
+Esto se ha descubierto tras probar ambos métodos, y ver que el cruce por piezas continuas generaba mejores soluciones de forma consistente.
+
+También se ha probado creando solo un hijo en lugar de dos y / o NO usando ningún padre (es decir solo mutar). A la larga ninguna otra combinación ha dado mejores resultados que la propuesta, por lo que se ha optado por esta.
+
+\subsection{Mutación}
+La mutación se aplica al individuo resultante del cruce de dos padres con una probabilidad determinada. De nuevo, este será un hiperámetro a definir en la experimentación y cada hijo resultante de un cruce se selecciona para ser mutado de forma independiente con probabilidad $p_{mutacion}$.
+
+Una vez un individuo ha sido elegido para ser mutado, se hace lo siguiente:
+\begin{enumerate}
+    \item Seleccionar una pieza al azar del individuo.
+    \item Seleccionar un movimiento al azar dentro de esa pieza.
+    \item Mutar el movimiento seleccionado generando un nuevo 'valor aleatorio total' dentro del rango permitido para ese movimiento.
+\end{enumerate}
+
+Como ya se ha comentado anteriormente, para cada tipo de movimiento hay un rango permitido (véase apéndice \ref{appendix:movimientos}). Se han planteado dos formas de elegir el nuevo valor del movimiento:
+\begin{itemize}
+    \item \textbf{Mutación aleatoria total}: generar un nuevo valor aleatorio dentro del rango permitido para ese movimiento.
+    \item \textbf{Mutación cercana}: generar un nuevo valor cercano al valor actual del movimiento.
+\end{itemize}
+
+Cuando se dice 'mutación cercana', se hace referencia al hecho de NO variar el valor actuar en más de uno y solo elegir 'vecinos inmediatos'. Por ejemplo, si el movimiento es un desplazamiento lateral de 3, solo se mutaría a 2 o 4 en la versión cercana, pero en la aleatoria total, se generaría un nuevo valor aleatorio entre -5 y 5 (en este caso).
+
+La razón de aplicar la estrategia de mutación aleatoria total, es aumentar la diversidad de la población y poder escapar de óptimos locales con mayor probabilidad. Se han probado ambos formatos y la generación de soluciones buenas se veía muy ralentizada al aplicar mutaciones cercanas (costaba salir de óptimos locales). Es por ello que se ha optado por usar mutaciones aleatorias totales en la solución final.
+
+\subsection{Reemplazo}
+El reemplazo, como ya se sabe, consiste en decidir qué individuos de la generación actual pasan a la siguiente y cuales son reemplazados. 
+
+Sin muchas sorpresas, se ha optado por un reemplazo generaciónal parcial, donde la mitad peor de individuos es totalmente reemplazada por aquellos creados mediante el cruce y la mutación.
+
+Ya que por cada cruce se generan dos hijos, se realizan $N/4$ cruces para generar $N/2$ nuevos individuos que reemplazan a la mitad peor de la población actual. 
+
+Cabe destacar que además, a la hora de evaluar las fitness de la nueva generación y ordenar los individuos, se ahorra la mitad de los cálculos al haber mantenido la mitad de la generación anterior. Esto es, solo se evalúan los $N/2$ nuevos individuos y se combinan con los $N/2$ individuos de la generación anterior, cuyos fitness ya se conocen.
+
+
+\section{Enfriamiento simulado}
+De forma similar a como se ha hecho en el apartado anterior, el Enfriamiento simulado (Simulated Annealing, SA) \cite{simulatedannealing-henderson-2006} se ha implementado siguiendo los principios básicos de esta técnica de optimización. 
+
+Siguiendo lo mencionado en la introducción a este apartado, se habla de como se llevan a cabo los pasos del algoritmo, en concreto: la definición de Vecindario, la lista Tabu, la Paciencia y el Enfriamiento de la temperatura.
+
+Primero que todo mencionar que, a diferencia del algoritmo genético, el Enfriamiento simulado parte de un único individuo inicial y va explorando soluciones vecinas a este individuo. Por lo tanto, no hay una población de individuos, sino un único individuo que se va actualizando a lo largo de la ejecución del algoritmo.
+
+Este individuo es generado de forma aleatoria al inicio, similar a como se ha hecho en la sección de Población inicial del algoritmo genético. Se plantea más abajo el usar como individuo inicial el mejor individuo encontrado por el algoritmo genético, pero por limitaciones de tiempo no se ha podido implementar.
+
+Recordar también que el algoritmo de Enfriamiento simulado tiene un parámetro de temperatura que controla la probabilidad de aceptar soluciones peores a la actual. Si una mejor solución aparece SIEMPRE la elegimos, pero si no, se acepta con una probabilidad que depende de la temperatura, de forma que se pueda escapar de óptimos locales. Ya que estamos maximizando, la probabilidad de aceptar en estos casos se calcula como:
+
+$$
+P(aceptar) = \min(1, \quad e^{\frac{\Delta fitness}{temp}})
+$$
+
+Donde $\Delta fitness$ es la diferencia de fitness entre la solución actual y la nueva solución vecina, y $temp$ es la temperatura actual del sistema.
+
+\subsection{Vecindario}
+Una vez se tiene este individuo inicial, es necesario definir cómo se generan soluciones vecinas a partir de él.
+
+Dada la naturaleza del problema y la codificación elegida, no hay otra forma de definir el vecindario que no sean aquellos individuos cuyos valores en el genotipo difieran en un único movimiento. Es decir, se generan soluciones vecinas mutando un único movimiento del individuo actual.
+
+La primera implementación de este vecindario se hizo usando la mutación cercana, es decir, generando un nuevo valor cercano al valor actual del movimiento. Sin embargo, tras varias pruebas se vio que este método no generaba soluciones vecinas suficientemente diversas, por lo que se optó por usar la mutación aleatoria total, generando un nuevo valor aleatorio dentro del rango permitido para ese movimiento. \textit{Se observa lo mismo que antes, la exploración limitada de mutaciones cercanas no permite escapar de óptimos locales.}
+
+Con algo más de experimentación se vió que este método generaba buenas soluciones, pero parecía saltarse algunas posibles intermedias o se quedaba estancado sin saltar de individuo. Por ello, se ha terminado optando por generar una lista de todos los movimientos posibles para cada pieza (según el tipo de individuo) e iterar sobre todas ellas para generar soluciones vecinas de forma ordenada. Cuando todas las soluciones de una pieza han sido exploradas, se pasa a la siguiente pieza y se repite el proceso hasta haber explorado todas las piezas.
+
+La forma en la que se generan esta lista es simple y compleja a la vez, ya que se hace optimizando el espacio y no generando de verdad todas las combinaciones. Partimos de saber todos los valores posibles para cada movimiento (ver Apéndice \ref{appendix:movimientos}), así pues es posible indexar en una lista los valores que puede tener cada movimiento. Por ejemplo, si estamos en \texttt{SwapSimple}, los posibles valores son 
+
+$$
+[0, 1, \quad -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, \quad 0, 1, 2, 3]
+$$
+
+Donde los primeros dos valores corresponden al intercambio de pieza, los siguientes once al movimiento lateral inicial, y los últimos cuatro a la rotación inicial.
+
+Ya que estos $M$ movimientos son fijos, y se tienen $N$ piezas, se puede iterar de $0$ a $N\times M - 1$ con un índice $idx$ y calcular a qué pieza y movimiento corresponde dicho valor, intercambiarlo generando un nuevo individuo y evaluarlo. El cálculo es el siguiente:
+
+\begin{lstlisting}[language={[Sharp]C}, basicstyle=\ttfamily\small, frame=single, numbers=left, breaklines=true]
+Genotype getGenotypeFromIndex(Genotype baseGenotype, int idx) {
+    // Create a neighbor by mutating the current genotype
+    // First compute indices for piece, movement type for that piece and value
+    int pieceIndex = idx % nPieces;
+    int moveTypeIndex = (idx / nPieces) % allMovements.Length;
+    int valueIndex = idx / (nPieces * allMovements.Length);
+
+    // Ensure valueIndex is within bounds
+    valueIndex = valueIndex % allMovements[moveTypeIndex].Length;
+
+    // Generate new genotype by mutating the selected movement
+    return baseGenotype.mutateAtCopy(
+        pieceIndex,
+        moveTypeIndex,
+        allMovements[moveTypeIndex][valueIndex]
+    );
+}
+\end{lstlisting}
+
+Con esto, cada vez que se itera con $idx$, se obtiene la pieza y el movimiento a modificar, junto con el nuevo valor que se asignará. Con esos tres datos, se pueden generar nuevos genotipos mutando el genotipo base. 
+
+Así pues, se consigue explorar todas las soluciones vecinas de forma ordenada. Si al terminar de explorar todas los los vecinos NO se ha encontrado una mejor solución, se reinicia el índice $idx$ a $0$ y se vuelve a empezar con una temperatura mayor (ver sección de Enfriamiento de la temperatura).
+
+También cabe mencionar que para añadir estocasticidad a la exploración, no se empieza por $idx = 0$, sino que se genera un valor aleatorio entre $0$ y $N \times M - 1$ para empezar la exploración desde ahí. De esta forma, se evita explorar siempre las mismas soluciones en el mismo orden, lo que podría llevar a estancamientos.
+
+\subsection{Lista Tabu}
+Debido a la naturaleza del vecindario y la forma en la que se exploran las soluciones vecinas, es posible que el algoritmo vuelva a explorar soluciones ya visitadas. Además, por las dependencias que se crean entre las primeras y últimas piezas, se puede intuir que el espacio se soluciones está lleno de valles gigantes en los que se puede ver estancado el algoritmo. 
+
+Para mitigar esto, se ha implementado una lista Tabu que almacena los últimos $K$ individuos visitados. De esa forma, cuando se vaya a explorar una nueva solución, se comprobará si ya ha sido visitada anteriormente. En tal caso, se descartará y se generará una nueva solución en su lugar.
+
+El tamaño de la lista Tabu $K$ es un hiperámetro a definir en la experimentación. Se han probado distintos valores para esta lista, en la fase de experimentación se definen cuales han sido los candidatos para experimentar. 
+
+\subsection{Paciencia y Enfriamiento de la temperatura}
+La idea principal del enfriamiento simulado, es definir un parámetro de exploración / explotación que vaya variando a lo largo de la ejecución. El valor de este parámetro afecta directamente a la probabilidad de aceptar soluciones peores a la actual, de forma que se pueda escapar de óptimos locales y no quedarse atrapado en ellos.
+
+Después de probar distintas formas de variar valor, se ha optado por usar una temperatura inicial baja que vaya decreciendo linealmente a lo largo de la ejecución con un factor de enfriamiento (también hiperparámetros). En cada iteración, el valor de la temperatura se reduce con la fórmula:
+
+$$
+temp_i = \max(0.1\quad, \quad temp_{i-1}\times (1 - coolingFactor))
+$$
+
+Ahora, no se puede siempre decrementar este valor, hay que ser conscientes de si el algoritmo se está quedando estancado o no. La forma de medir este estancamiento se controla mediante una 'paciencia'. 
+
+Si durante $T_{paciencia}$ iteraciones no se encuentra una mejor solución a la actual (que no mejor solución global), se puede considerar que el algoritmo está estancado y en cada iteración se aumenta la temperatura con la siguiente fórmula:
+
+$$
+temp_i = \max(0.1\quad, \quad temp_{i-1} \times (1 + coolingFactor))
+$$
+
+De esta forma, si el algoritmo se queda estancado, se aumenta la temperatura para favorecer la exploración y poder escapar de óptimos locales. Mientras se supere la paciencia, se aumenta la temperatura en cada iteración hasta que se encuentre una mejor solución. En tal punto, se reinicia el contador de paciencia y se vuelve a decrementar la temperatura en cada iteración. 
+
+\subsection{Temperatura inicial}
+Tras diversas pruebas y ver el comportamiento del algoritmo, se ha visto que con temperaturas medianas / elevadas el algoritmo parece elegir y saltar a soluciones peores con demasiada frecuencia y no consigue 'nada' hasta que el valor no baja de 1. 
+
+Es así como se ha optado por elegir $temp_{initial} = 2$, de forma que el algoritmo tenga iteraciones suficientes 
+para explorar, pero no haga una gran cantidad de saltos innecesarios sin encontrar un camino por el que poder avanzar.
+
+\subsection{Notas}
+Cabe comentar ciertos aspectos importantes a modo de resumen sobre el enfriamiento simulado:
+\begin{itemize}
+    \item Se usan dos mecanismos para evitar estancamientos: la lista Tabu y la paciencia con el aumento de temperatura.
+    \item El vecindario se explora de forma ordenada para evitar saltarse soluciones intermedias y asegurar una exploración completa.
+    \item Durante el algoritmo se guardan dos individuos: el actual y el mejor encontrado hasta el momento. La temperatura afecta a la probabilidad de aceptar soluciones peores que el actual, pero el mejor encontrado se mantiene siempre separado.
+    \item Se han definido dos paciencias, una para el aumento de temperatura y otra para el fin del algoritmo (ver sección de Experimentación). La primera paciencia NO depende de la mejor solución global, sino de la que se esté considerando actualmente. Ambas paciencias son hiperparámetros a definir en la experimentación, de nuevo, consultar la sección de Experimentación para más detalles sobre qué valores se les ha asignado.
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                           EXPERIMENTACIÓN                                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Experimentación}
+En este capítulo se describen los experimentos realizados para evaluar el rendimiento de los algoritmos implementados. Se detallan los parámetros probados de cada algoritmo, en que rango se han explorado y las decisiones tomadas para elegir los valores finales usados en la sección de Resultados.
+
+Como se ha mencionado, la primera acotación de los parámetros a probar se hizo de forma manual y no documentada. Sin embargo, esta fase preliminar ha servido para acotar la experimentación exhaustiva que se plantea en este apartado, lo que ha permitido identificar los enfoques que prometen los mejores resultados.
+
+\section{Algoritmo genético}
+Una vez definidas las partes principales del algoritmo genético, es necesario definir los parámetros a probar y los valores que se han explorado para cada uno de ellos. 
+
+Para cada tipo de dificultad: 10 piezas, 20 piezas y 30 piezas (Fácil, Medio y Difícil), se han probado los siguientes parámetros:
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Parámetro} & \textbf{Valores probados} \\
+        \midrule
+        Tipo de individuo & Simple, Double, SwapSimple, SwapDouble \\
+        Tamaño de la población & $10000$, $20000$, $30000$ individuos \\
+        Probabilidad de mutación & $5\%$, $15\%$, $25\%$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Parámetros probados para el algoritmo genético}
+    \label{tab:parametros_ga}
+\end{table}
+
+En total, con estos parámetros, se han realizado $4 \times 3 \times 3 = 36$ experimentos para cada tipo de dificultad, por lo que en total han sido, SOLO para el algoritmo genético, $36 \times 3 = 108$ experimentos.
+
+Cada experimento se ha ejecutado durante un máximo de $3000$ generaciones y con una paciencia de $400$ generaciones. En caso de no conseguir una mejor solución tras $400$ generaciones o en caso de superar las $3000$, se ha registrado el mejor individuo encontrado hasta el momento como solución final.
+
+Durante cada iteración se ha registrado el mejor fitness de la generación actual, junto con la temperatura en ese momento. De esta forma, se puede analizar la evolución del algoritmo a lo largo del tiempo.
+
+\section{Enfriamiento simulado}
+De forma similar a como se ha hecho en el apartado anterior, para el Enfriamiento simulado se han probado los siguientes parámetros para cada tipo de dificultad: 10 piezas, 20 piezas y 30 piezas (Fácil, Medio y Difícil):
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Parámetro} & \textbf{Valores probados} \\
+        \midrule
+        Tipo de individuo & Simple, Double, SwapSimple, SwapDouble \\
+        Factor de enfriamiento & $0.00005$, $0.0005$, $0.005$, $0.05$ \\
+        Tamaño lista tabú & $100$, $1000$, $10000$, $50000$ \\
+        \bottomrule
+    \end{tabular}
+    \caption{Parámetros probados para el enfriamiento simulado}
+    \label{tab:parametros_sa}
+\end{table}
+
+Para la paciencia que maneja el incremento de la temperatura, se ha optado por un valor dinámico que depende del número de piezas y de la cantidad de movimientos por pieza. La fórmula usada es simple:
+$$
+T_{paciencia} = nPiezas \times nMovimientosPorPieza 
+$$
+
+De esta forma, se asegura visitar todos los vecinos al menos una vez antes de considerar que el algoritmo está estancado y aumentar la temperatura.
+
+En total, con estos parámetros, se han realizado $4 \times 4 \times 4 = 64$ experimentos para cada tipo de dificultad, por lo que en total han sido, SOLO para el enfriamiento simulado, $64 \times 3 = 192$ experimentos.
+
+Cada experimento se ha ejecutado durante un máximo de $100\;000$ iteraciones y con una paciencia de $10\;000$ iteraciones. En caso de no conseguir una mejor solución tras $10\;000$ iteraciones o en caso de superar las $100\;000$, se ha registrado el mejor individuo encontrado hasta el momento como solución final (que no el individuo actual).
+
+Durante la ejecución, se ha registrado la fitness del individuo actual y la del mejor encontrado hasta el momento. Cuando se ha cambiado de individuo se registra su fitness (mejor o pero a la previa) y cuando esta mejora la mejor solución encontrada, se registra también. También, en cada actualización se ha registrado la temperatura en ese momento. Así, se puede analizar la evolución del algoritmo a lo largo del tiempo.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                               RESULTADOS DE LA SOLUCIón                     %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Resultado}
+En este apartado se muestran los resultados obtenidos tras la experimentación exhaustiva realizada. Se presentan comparaciones de como cada tipo de parámetro afecta a las soluciones finales (a su fitness). También se presentan las mejores configuraciones encontradas para cada tipo de dificultad y se analizan las gráficas de evolución de los algoritmos.
+
+No se mostrarán todas las gráficas obtenidas en este apartado, estas estarán en el anexo \ref{appendix:resultados_experimentacion} para aquellos interesados en verlas todas. Aquí se mostrarán las más relevantes y aquellas que ayuden a entender el comportamiento de los algoritmos.
+
+Se mencionarán uno a uno los parámetros modificados y como afectan a los resultados finales.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Algoritmo genético}
+Para el algoritmo genético, se han probado los parámetros mencionados en la sección de Experimentación: Tipo de individuo, Tamaño de la población y Probabilidad de mutación. A continuación se analizan los resultados obtenidos al variar cada uno de estos parámetros.
+
+\subsection{Tamaño de la población}
+Al variar el tamaño de la población, se ve que a mayor tamaño, se conseguien buenas soluciones de forma más consitentes que con poblaciones pequeñas. Esto es algo bastante esperable y un comportamiento comúme en los algoritmos genéticos.
+
+La razón de esto es que, a mayor tamaño de población, hay una mayor diversidad genética entre los individuos. Esto permite explorar una mayor variedad de soluciones y evita que el algoritmo se quede estancado en óptimos locales.
+
+En el caso concreto de este trabajo, se ve que a partir de $20000$ individuos, las soluciones obtenidas suelen ser buenas, superando el umbral de aceptación de $-50$. Ahora, esto es solo para tallas medianas y pequeñas del problema. Para casos complejos como 30 piezas, el tamaño de la población parece afectar simple posibilidad de encontrar una solución aceptable.
+
+Si se ven los resultados con 30 piezas, por lo general solo con $30000$ individuos se consiguen soluciones aceptables, mientras que con $10000$ y $20000$ individuos, las soluciones suelen ser malas exceptuando algún caso.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/GA_np-30_population.png}
+    \caption{Comparación de fitness final para distintos tamaños de población con 30 piezas.}
+    \label{fig:ga_np30_population_big}
+\end{figure}
+
+Se puede deducir que en caso de aplicar este método a problemas con más de 30 piezas, será necesario escalar de forma proporcional el tamaño de la población para conseguir soluciones aceptables. 
+
+\subsection{Probabilidad de mutación}
+Con respecto a la probabilidad de mutación, se ha visto que una probabilidad baja (5\%) no permite explorar suficiente el espacio de soluciones, quedando el algoritmo estancado en óptimos locales con frecuencia.
+
+Por otro lado, probabilidades más altas (25\%) no parecen tener ninguna ventaja clara sobre probabilidades medias (15\%). De hecho, en algunos casos, las probabilidades altas parecen dificultar la convergencia del algoritmo, ya que se generan demasiadas mutaciones y se pierde la coherencia entre generaciones.
+
+En la siguiente gráfica se aprecia la clara tendencia a generar peores soluciones con una probabilidad de mutación del 5\% en comparación con las otras dos.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/GA_np-20_mutation.png}
+    \caption{Comparación de fitness final para distintas probabilidades de mutación con 20 piezas.}
+    \label{fig:ga_np20_mutation_big}
+\end{figure}
+
+Es por eso que una mutación entre 15\% y 25\% parece ser la mejor opción para este problema en concreto, siendo un compromiso en permitir que el algoritmo llegue a soluciones aceptables sin incrementar demasiado la aleatoriedad.
+
+
+\subsection{Tipo de individuo}
+En este apartado en donde se la mayor diferencia entre parametrizaciones. El tipo de individuo afecta de forma muy clara a la calidad de las soluciones obtenidas.
+
+Como se ha mencionado, los individuos que permiten más movimientos, son los que dan mayor capacidad de expresión a las soluciones y por lo tanto, permiten encontrar soluciones mejores.
+
+En este caso, lo que se ha visto es que contra mayor la complejidad del problema, más clara se ve esta diferencia. Siendo que con 10 piezas, los cuatro tipos de individuos consiguen soluciones aceptables (exceptuando en algunos casos el tipo \texttt{simple}), pero a medida que se aumenta la dificultad, es necesaria la introducción de los movimientos dobles.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-10_movements.png}
+        \caption{10 piezas (Fácil)}
+        \label{fig:ga_np10_movements_big}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-30_movements.png}
+        \caption{30 piezas (Difícil)}
+        \label{fig:ga_np30_movements_big}
+    \end{subfigure}
+
+    \caption{Efecto del tipo de individuo en el algoritmo genético para 10 y 30 piezas.}
+    \label{fig:ga_movements_big}
+\end{figure}
+
+En este caso, la introducción del \texttt{swap} parece tener efecto en los resultados pero es tan severo como la introducción del \texttt{double}. Siendo que ha sido el único tipo de movimientos que ha permitido encontrar soluciones decentes para este caso, la expresividad del \texttt{SwapDouble} es clave.
+
+Por lo tanto, se puede concluir que la elección del tipo de individuo es crucial para el rendimiento del algoritmo genético, especialmente en problemas de mayor complejidad.
+
+\section{Enfriamiento simulado}
+Al igual que en el apartado anterior, se han probado los parámetros mencionados en la sección de Experimentación: Tipo de individuo, Factor de enfriamiento y Tamaño de la lista tabú. 
+
+A continuación se analizarían los resultados obtenidos al variar cada uno de estos parámetros. Sin embargo, lo que se ha observado es que \textbf{ninguno de los parámetros propios del algoritmo, afecta de forma significativa a la calidad de las soluciones obtenidas}.
+
+El único parámetro que parece tener un efecto es el tipo de individuo, de nuevo demostrando que la expresividad del individuo es crucial para encontrar buenas soluciones. Aún así, la diferencia entre tipos de individuos no es tan clara como en el caso del algoritmo genético.
+
+\subsection{Tipo de individuo}
+Al variar el tipo de individuo, se observa que los individuos más complejos (\texttt{Double} y \texttt{SwapDouble}) son los únicos que llegan a soluciones aceptables por encima de $-50$ en fitness.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/SA_np-10_movements.png}
+    \caption{Comparación de fitness final para tipos de individuo con 10 piezas.}
+    \label{fig:sa_np10_mutation_big}
+\end{figure}
+
+Ahora, esto solo sucede con tallas pequeñas del problema, ya que en casos como las 30 piezas, ningún tipo de individuo consigue soluciones aceptables. El único caso en el que se ha observado posibilidad de convergencia hacía soluciones aceptables, ha sido con el tipo \texttt{SwapDouble}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/SA_np-30_movements.png}
+    \caption{Comparación de fitness final para distintos tipos de individuo con 30 piezas.}
+    \label{fig:sa_np30_mutation_big}
+\end{figure}
+
+La razón por la que pueda estar pasando esto, es por la naturaleza del problema. Al modificar una pieza, todas las piezas posteriores se ven afectadas, por lo que el espacio de soluciones es muy complejo y lleno de valles profundos. 
+
+Enfriamiento simulado, parte de modificar la solución actual valor a valor. Esto quiere decir que unicamente se modifica una pieza a la vez, lo que puede dificultar el posicionamiento correcto de varias piezas consecutivas.
+
+Esta \textbf{dependencia entre las primeras piezas y las últimas} complica enormemente la exploración del espacio de soluciones, ya que al modificar una pieza, todas las posteriores se ven afectadas y es difícil encontrar un camino claro hacía soluciones buenas.
+
+A continuación se analiza la evolución de ambos algoritmos para observar este comportamiento, pero como se puede intuir, el enfriamiento simulado no parece ser el algoritmo más adecuado para este problema.
+
+\section{Evolución}
+A continuación se muestra la evolución de las mejores soluciones obtenidas por ambos algoritmos a lo largo de sus ejecuciones para cada tipo de dificultad. Se muestran las gráficas de fitness a lo largo de las generaciones / iteraciones y se analizan los comportamientos observados.
+
+\subsection{Algoritmo genético}
+A continuación se muestra la figura con la evolución de varios ejemplos del algoritmo genético para 10, 20 y 30 piezas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/GA_evolution.png}
+    \caption{Evolución del mejor fitness en el algoritmo genético para 10, 20 y 30 piezas.}
+    \label{fig:ga_evolution_full}
+\end{figure}
+
+Lo que se puede observar es el comportamiento típico de un algoritmo genético. En las primeras generaciones, se observa una mejora rápida en la fitness, ya que la diversidad genética es alta y se exploran muchas soluciones diferentes.
+
+A medida que avanzan las generaciones, la tasa de mejora disminuye, ya que la población comienza a converger hacia soluciones similares. Sin embargo, gracias a la mutación y al cruce, el algoritmo sigue explorando nuevas soluciones y puede escapar de óptimos locales.
+
+Como detalle que se discute en la siguiente sección de duración de los experimentos, se observa que en problemas de talla pequeña la convergencia es inmediata, durando poco más de 400 iteraciones (por la paciencia). Sin embargo, en problemas más complejos, la convergencia es notoriamente más lenta y puede llegar a durar las 3000 generaciones completas. 
+
+Se observa que la mayoría de estas ejecuciones no dejan de mejorar poco a poco hasta el final, lo que indica que el algoritmo sigue explorando y mejorando la solución a lo largo de toda la ejecución.
+
+\textbf{Mejor solución encontrada:} Si se observa la gráfica, se puede apreciar una ejecución de 10 piezas que consigue una solución por encima de $0$. Cabe mencionar que esta ha sido la única ejecución que ha conseguido llegar al objetivo ideal del problema, limpiando todo el tablero sin dejar ningún bloque.
+
+Es un caso bastante exceptional, pero demuestra que el algoritmo genético es capaz de encontrar soluciones óptimas en problemas de talla pequeña.
+
+\subsection{Enfriamiento simulado}
+A continuación se muestra la figura con la evolución de varios ejemplos del enfriamiento simulado para 10, 20 y 30 piezas.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/SA_evolution.png}
+    \caption{Evolución del mejor fitness en el algoritmo de enfriamiento simulado para 10, 20 y 30 piezas.}
+    \label{fig:sa_evolution_full}
+\end{figure}
+
+Lo que se puede apreciar es un comportamiento similar al algoritmo genético en las primeras etapas de la ejecución. Se observa una mejora rápida en la fitness al inicio, para luego ralentizarse a medida que avanza la ejecución.
+
+Otros detalle importante a resaltar es la cantidad de saltos que ocurren con el fitness de la solución actual en tallas grandes del problema. Cuando planteamos 10 la convergencia es inmediata y no hay apenas saltos. Para 20 se ven picos pero nada que ver con lo que ocurre con 30 piezas. En estos casos, se observa como la solución actual salta constantemente entre diferentes valores de fitness, lo que indica que el algoritmo está explorando muchas soluciones diferentes e intenta no quedarse estancado.
+
+Poco a poco tiende a converger a valor, pero nunca parece alcanzar buenas soluciones. Más bien, se queda estancado en valores muy bajos de fitness, sin poder encontrar soluciones aceptables. De nuevo mostrando la poca viabilidad de este algoritmo para problemas de esta naturaleza.
+
+\section{Duración experimentos}
+En total se han realizado $108 + 192 = 300$ experimentos, cada uno con distintas duraciones dependiendo de los parámetros usados.
+
+Todos los experimentos se han ejecutado en mi máquina personal. La máquina tiene como procesador un CPU Ryzen 9 9000 con 64GB RAM, por lo que se puede considerar una capacidad de cómputo alta. Ahora, el tiempo de ejecución de cada experimento varía mucho dependiendo del tipo de algoritmo, el tipo de individuo y la cantidad de piezas a optimizar. 
+
+Por ejemplo, los experimentos del algoritmo genético con 10 piezas tardan entre $1$ y $15$ minutos en completarse, mientras que los experimentos con 20 y 30 piezas pueden tardar entre $10$ y $120$ minutos o incluso más, variando también según la cantidad de individuos y si converge o no antes de llegar al límite de generaciones.
+
+Para el algoritmo de enfriamiento simulado, los tiempos son generalmente más cortos, oscilando entre $1$ y $10$ minutos para 10 piezas, y entre $5$ y $20$ minutos para 20 y 30 piezas. Esto se debe a la naturaleza más simple de los movimientos y la estructura del algoritmo en comparación con el algoritmo genético. Aún así, no se han podido registrar datos consistentes a lo largo de estos experimentos debido a la variabilidad en los tiempos de ejecución.
+
+\subsection{Cuando usar técnicas metaheurísticas}
+Como se ha mencionado, cuando la talla del problema supera las 10 piezas, los tiempos de computo tienden a superar las decenas de minutos, llegando incluso a varias horas. Por limitaciones temporales se han cortado las ejecuciones a un máximo de 3000 generaciones para el algoritmo genético y 100.000 iteraciones para el enfriamiento simulado. En caso de haberlas dejado más tiempo, las ejecuciones podrían haber durado varias horas o incluso días.
+
+Ahora, esto es solo así para más de 10 piezas. Para problemas pequeños, como los de 5 o 10 piezas, se podrían usar técnicas exactas como A* para encontrar la solución óptima en tiempos razonables (segundos o minutos). A pesar de que la complejidad combinatoria es muy muy alta como se ha visto en la introducción, para problemas pequeños se pueden encontrar soluciones óptimas en tiempos razonables.
+
+En el caso de problemas medianos o grandes (más de 10 piezas), las técnicas exactas se vuelven inviable debido a los tiempos de cómputo. En estos casos, las técnicas metaheurísticas como las implementadas en este proyecto son la mejor opción para encontrar soluciones buenas en tiempos razonables. Destacando como ya se ha visto, el algoritmo genético.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                 CONCLUSIONES                                 %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Conclusiones}
+
+A lo largo de este trabajo, se ha abordado el problema de optimización de la colocación de piezas de Tetris utilizando dos técnicas metaheurísticas con el objetivo de minimizar el espacio ocupado / la cantidad de bloques restantes en el tablero. Tras una fase de implementación y una extensa experimentación, se han extraído varias conclusiones clave sobre la naturaleza del problema y la efectividad de los métodos propuestos.
+
+En primer lugar, se ha demostrado que la \textbf{capacidad de expresión de los individuos es un factor crucial} para el éxito de los algoritmos. Los resultados muestran de manera consistente que los genotipos más complejos, como \texttt{SwapDouble}, que permiten un mayor número de movimientos y la capacidad de intercambiar piezas, obtienen soluciones significativamente mejores, especialmente a medida que aumenta la complejidad del problema (el número de piezas). Esto sugiere que dotar a los individuos de una mayor flexibilidad para explorar configuraciones complejas es fundamental para encontrar soluciones de alta calidad.
+
+En segundo lugar, este problema se beneficia enormemente de la \textbf{exploración sobre la explotación}. En el algoritmo genético, se observó que una temperatura inicial alta en la selección por tarta y una probabilidad de mutación relativamente elevada (15-25\%) eran necesarias para evitar el estancamiento en óptimos locales. De manera similar, en el enfriamiento simulado, la exploración de vecinos mediante mutaciones aleatorias totales fue más efectiva que la exploración de vecinos cercanos. La alta dependencia entre la posición de una pieza y las siguientes crea un espacio de soluciones muy accidentado, con valles de tamaños gigantes, donde una estrategia que use como fuera principal la explotación queda atrapada con facilidad.
+
+Comparando ambos algoritmos, el \textbf{algoritmo genético ha demostrado ser superior al enfriamiento simulado} para este problema. Mientras que el GA ha sido capaz de encontrar soluciones de alta calidad, e incluso la solución óptima en una ocasión para 10 piezas, el SA tuvo dificultades para converger hacia soluciones hasta con problemas de tallas no tan grandes. Esto se debe probablemente a que el operador de cruce del GA permite combinar sub-soluciones prometedoras (secuencias de piezas bien colocadas), superando la limitación del SA, que solo modifica una pieza a la vez y lucha por coordinar cambios complejos que involucran múltiples piezas.
+
+Cabe destacar en esta línea de nuevo, la importancia de la secuencialidad de las piezas, siendo que existe esta gran dependencia entre unas piezas y las siguientes, es crucial tener en cuenta este factor a la hora de diseñar los algoritmos. Técnicas que puedan modificar múltiples piezas a la vez o que puedan combinar soluciones parciales, funcionan mejor al unir movimientos consecutivos, más que modificar piezas de forma aislada o alternada. Como ejemplo se puede considerar el cruce elegido para el algoritmo genético, en el que juntan piezas de forma consecutiva y no aislada o alternada.
+
+Finalmente, es importante contextualizar el uso de estas técnicas. Para \textbf{tallas pequeñas del problema (e.g., 10 piezas o menos), es más recomendable el uso de algoritmos exactos como A*}, que pueden encontrar la solución óptima en un tiempo razonable. Sin embargo, a medida que la dimensionalidad del problema crece, estos métodos se vuelven computacionalmente inviables, y es en este escenario donde las metaheurísticas, y en especial el algoritmo genético, demuestran su valía al proporcionar soluciones de buena calidad en tiempos de ejecución asumibles.
+
+\section{Trabajos futuro}
+Como primer paso a considerar, se hará una implementación paralela del algoritmo genético. Dado que la evaluación de individuos es una operación independiente para cada uno, se puede paralelizar fácilmente esta parte del algoritmo para aprovechar múltiples núcleos de CPU, reduciendo significativamente el tiempo de ejecución.
+
+Luego, a nivel de evaluación, se podrían plantear más heurísticas y encontrar una ponderación óptima entre ellas. Actualmente, se usan nueve heurísticas con pesos fijos + una de penalización + otra por puntuación del juego. Aquí se podría explorar la optimización de estos pesos mediante técnicas como la optimización bayesiana o algoritmos genéticos adicionales.
+
+Otra línea de trabajo para mejorar el funcionamiento tanto del algoritmo genético como del enfriamiento simulado, sería la implementación de algoritmos híbridos. Por ejemplo, tras ciertas iteraciones, se podría escoger la mejor solución encontrada hasta el momento por el genético y optimizarse con enfriamiento simulado como un paso de refinamiento local. Luego, ese resultado encontrado se podría aplicar a los mejores individuos de la población del genético para mejorar su calidad. De esta forma, se crearía un ciclo de mejora realimentada entre ambos algoritmos.
+
+Esto se podría hacer hasta incluso con varios individuos a la vez de forma paralela, y al terminal los refinamientos de todos, introducirse de nuevo en la población del genético. De esta forma, se combinaría la exploración global del genético con la búsqueda local del enfriamiento simulado, pudiendo mejorar los resultados obtenidos.
+
+Mencionar que se comenzó a desarrollar parte del código en esta línea. Sin embargo, por falta de tiempo y alcance del proyecto, no se pudo completar ni experimentar con ello. Aún así, es una línea de trabajo muy prometedora para mejorar los resultados obtenidos en este proyecto.
+
+También por supuesto, se podrían usar otras técnicas exactas como A* o métodos voraces en lugar del enfriamiento simulado para el paso de optimización local. Esto podría mejorar aún más los resultados obtenidos, aunque también incrementaría el tiempo de cómputo necesario.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                BIBLIOGRAFIA                                 %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cleardoublepage
+\printbibliography
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                                                                             %
+%                                 APÉNDICESS                                  %
+%                                                                             %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                        LISTADO DE SETS DE MOVIMIENTOS Y RANGOS              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Tablas de movimientos}
+\label{appendix:movimientos}
+
+En este apéndice se incluyen las tablas completas que detallan los sets de movimientos posibles y los rangos de valores para cada tipo de movimiento. Estas tablas se presentan originalmente en el Capítulo 2 (Codificación), sección 2.2 (Movimientos posibles y tipos de genotipo).
+
+\section{Sets de movimientos}
+
+La Tabla \ref{tab:sets_movimientos_appendix} muestra los cuatro tipos de sets de movimientos que pueden usar los individuos en el algoritmo genético.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        \textbf{Tipo} & \textbf{Secuencia de movimientos} \\
+        \midrule
+        Simple & \begin{tabular}[t]{@{}l@{}}
+            1. Mover la pieza \\
+            2. Rotar la pieza
+        \end{tabular} \\
+        \midrule
+        Double & \begin{tabular}[t]{@{}l@{}}
+            1. Mover la pieza \\
+            2. Rotar la pieza \\
+            3. \textit{Dejar caer la pieza} \\
+            4. Mover la pieza \\
+            5. Rotar la pieza
+        \end{tabular} \\
+        \midrule
+        SwapSimple & \begin{tabular}[t]{@{}l@{}}
+            1. Intercambiar la pieza actual \\
+            2. Mover la pieza \\
+            3. Rotar la pieza
+        \end{tabular} \\
+        \midrule
+        SwapDouble & \begin{tabular}[t]{@{}l@{}}
+            1. Intercambiar la pieza actual \\
+            2. Mover la pieza \\
+            3. Rotar la pieza \\
+            4. \textit{Dejar caer la pieza} \\
+            5. Mover la pieza \\
+            6. Rotar la pieza
+        \end{tabular} \\
+        \bottomrule
+    \end{tabular}
+    \caption{Sets de movimientos posibles para los individuos (ver Tabla \ref{tab:sets_movimientos} en el Capítulo 2).}
+    \label{tab:sets_movimientos_appendix}
+\end{table}
+
+\section{Rangos de valores}
+
+La Tabla \ref{tab:rangos_movimientos_appendix} detalla los rangos de valores permitidos para cada tipo de movimiento, incluyendo una descripción completa de su comportamiento.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{lp{8cm}}
+        \toprule
+        \textbf{Movimiento} & \textbf{Rango y descripción} \\
+        \midrule
+        Intercambiar la pieza actual & $\{0, 1\}$ \\ 
+        & 0 si no se quiere intercambiar, 1 si se quiere intercambiar. \\
+        \midrule
+        Mover la pieza (inicial) & $\{-5, \dots, 5\}$ \\ 
+        & Un entero positivo o negativo. Si es positivo, se moverá esa cantidad de veces a la derecha; si es negativo, se moverá esa cantidad de veces a la izquierda (o hasta que no se pueda mover más). \\
+        \midrule
+        Rotar la pieza (inicial) & $\{0, 1, 2, 3\}$ \\ 
+        & Un entero entre 0 y 3, indicando cuántas veces se rotará la pieza en el sentido de las agujas del reloj. \\
+        \midrule
+        \textit{Dejar caer la pieza} & No configurable \\ 
+        & La pieza caerá hasta que toque el suelo o otra pieza. \\
+        \midrule
+        Mover la pieza (final) & $\{-9, \dots, 9\}$ \\ 
+        & Igual que el movimiento lateral inicial. \\
+        \midrule
+        Rotar la pieza (final) & $\{0, 1, 2, 3\}$ \\ 
+        & Igual que la rotación inicial. \\
+        \bottomrule
+    \end{tabular}
+    \caption{Rangos de valores permitidos para cada tipo de movimiento (ver Tabla \ref{tab:rangos_movimientos} en el Capítulo 2).}
+    \label{tab:rangos_movimientos_appendix}
+
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                        RESULTADOS POR CADA HIPERPARÁMETROS                   %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Resultado de la experimentación}
+\label{appendix:resultados_experimentacion}
+
+En este apéndice se incluyen todas las gráficas obtenidas durante la experimentación exhaustiva realizada. Estas gráficas muestran cómo cada tipo de parámetro afecta a las soluciones finales (a su fitness) para ambos algoritmos implementados.
+
+\section{Algoritmo genético}
+
+\subsection{Evolución general}
+
+A continuación se muestran las gráficas de evolución del algoritmo genético. La Figura \ref{fig:ga_evolution} muestra la evolución del fitness a lo largo de las generaciones, mientras que la Figura \ref{fig:ga_temp_evolution} muestra cómo evoluciona la temperatura del algoritmo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/GA_evolution.png}
+    \caption{Evolución del fitness del algoritmo genético a lo largo de las generaciones.}
+    \label{fig:ga_evolution}
+\end{figure}
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{images/GA_temp_evolution.png}
+%     \caption{Evolución de la temperatura del algoritmo genético a lo largo de las generaciones.}
+%     \label{fig:ga_temp_evolution}
+% \end{figure}
+
+\subsection{Efecto del tipo de individuo (movimientos)}
+
+Las siguientes gráficas muestran cómo el tipo de individuo (Simple, Double, SwapSimple, SwapDouble) afecta al fitness final obtenido para diferentes cantidades de piezas.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-10_movements.png}
+        \caption{10 piezas (Fácil)}
+        \label{fig:ga_np10_movements}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-20_movements.png}
+        \caption{20 piezas (Medio)}
+        \label{fig:ga_np20_movements}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-30_movements.png}
+        \caption{30 piezas (Difícil)}
+        \label{fig:ga_np30_movements}
+    \end{subfigure}
+    \caption{Efecto del tipo de individuo en el algoritmo genético para diferente Nº de piezas.}
+    \label{fig:ga_movements}
+\end{figure}
+
+\subsection{Efecto de la probabilidad de mutación}
+
+Las siguientes gráficas muestran cómo la probabilidad de mutación (5\%, 15\%, 25\%) afecta al fitness final obtenido para diferentes cantidades de piezas.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-10_mutation.png}
+        \caption{10 piezas (Fácil)}
+        \label{fig:ga_np10_mutation}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-20_mutation.png}
+        \caption{20 piezas (Medio)}
+        \label{fig:ga_np20_mutation}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-30_mutation.png}
+        \caption{30 piezas (Difícil)}
+        \label{fig:ga_np30_mutation}
+    \end{subfigure}
+    \caption{Efecto de la \% de mutación en el algoritmo genético para diferente Nº de piezas.}
+    \label{fig:ga_mutation}
+\end{figure}
+
+\subsection{Efecto del tamaño de población}
+
+Las siguientes gráficas muestran cómo el tamaño de la población (10000, 20000, 30000 individuos) afecta al fitness final obtenido para diferentes cantidades de piezas.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-10_population.png}
+        \caption{10 piezas (Fácil)}
+        \label{fig:ga_np10_population}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-20_population.png}
+        \caption{20 piezas (Medio)}
+        \label{fig:ga_np20_population}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/GA_np-30_population.png}
+        \caption{30 piezas (Difícil)}
+        \label{fig:ga_np30_population}
+    \end{subfigure}
+    \caption{Efecto del tamaño de población en el algoritmo genético para diferente Nº de piezas.}
+    \label{fig:ga_population}
+\end{figure}
+
+\clearpage
+\section{Enfriamiento simulado}
+
+\subsection{Evolución general}
+
+A continuación se muestra la gráfica de evolución del algoritmo de enfriamiento simulado. La Figura \ref{fig:sa_evolution} muestra la evolución del fitness a lo largo de las iteraciones.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/SA_evolution.png}
+    \caption{Evolución del fitness del algoritmo de enfriamiento simulado a lo largo de las iteraciones.}
+    \label{fig:sa_evolution}
+\end{figure}
+
+\subsection{Efecto del tipo de individuo (movimientos)}
+
+Las siguientes gráficas muestran cómo el tipo de individuo (Simple, Double, SwapSimple, SwapDouble) afecta al fitness final obtenido para diferentes cantidades de piezas.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-10_movements.png}
+        \caption{10 piezas (Fácil)}
+        \label{fig:sa_np10_movements}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-20_movements.png}
+        \caption{20 piezas (Medio)}
+        \label{fig:sa_np20_movements}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-30_movements.png}
+        \caption{30 piezas (Difícil)}
+        \label{fig:sa_np30_movements}
+    \end{subfigure}
+    \caption{Efecto del tipo de individuo en el enfriamiento simulado para diferente Nº de piezas.}
+    \label{fig:sa_movements}
+\end{figure}
+
+\subsection{Efecto del tamaño de la lista tabú}
+
+% Las siguientes gráficas muestran cómo el tamaño de la lista tabú (5, 10, 20) afecta al fitness final obtenido para diferentes cantidades de piezas.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-10_tabu.png}
+        \caption{10 piezas (Fácil)}
+        \label{fig:sa_np10_tabu}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-20_tabu.png}
+        \caption{20 piezas (Medio)}
+        \label{fig:sa_np20_tabu}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-30_tabu.png}
+        \caption{30 piezas (Difícil)}
+        \label{fig:sa_np30_tabu}
+    \end{subfigure}
+    \caption{Efecto del tamaño lista tabú en el enfriamiento simulado para diferente Nº de piezas.}
+    \label{fig:sa_tabu}
+\end{figure}
+
+\subsection{Efecto del factor de enfriamiento}
+
+% Ahora, el factor de enfriamiento (0.00005, 0.0005, 0.005, 0.05) afecta al fitness final.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-10_updatefactor.png}
+        \caption{10 piezas (Fácil)}
+        \label{fig:sa_np10_updatefactor}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-20_updatefactor.png}
+        \caption{20 piezas (Medio)}
+        \label{fig:sa_np20_updatefactor}
+    \end{subfigure}
+    
+    \vspace{0.5cm}
+    
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{images/SA_np-30_updatefactor.png}
+        \caption{30 piezas (Difícil)}
+        \label{fig:sa_np30_updatefactor}
+    \end{subfigure}
+    \caption{Efecto factor de enfriamiento en el enfriamiento simulado para diferente Nº de piezas.}
+    \label{fig:sa_updatefactor}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                              FIN DEL DOCUMENTO                              %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

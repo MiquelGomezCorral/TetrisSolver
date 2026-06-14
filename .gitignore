@@ -97,3 +97,36 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# --- paper/ LaTeX auxiliary and build files ---
+*.aux
+*.log
+*.out
+*.toc
+*.lot
+*.lof
+*.fls
+*.fdb_latexmk
+*.run.xml
+*.synctex.gz
+*.bbl
+*.blg
+*.bbl-SAVE-ERROR
+*.bcf-SAVE-ERROR
+*.idx
+*.ind
+*.ilg
+*.inx
+*.glo
+*.gls
+*.glsdefs
+*.ist
+*.brf
+*.maf
+*.mtc*
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.bcf
+_minted-*/

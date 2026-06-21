@@ -1,10 +1,10 @@
 title:
-  en: Tetris Solver: Genetic Algorithm & Simulated Annealing in Unity
-  es: Solucionador de Tetris: Algoritmo Genético y Simulated Annealing en Unity
+  en: "Tetris Solver: Genetic Algorithm & Simulated Annealing in Unity"
+  es: "Solucionador de Tetris: Algoritmo Genético y Simulated Annealing en Unity"
 finished: finished
 descriptionShort:
-  en: Modern Tetris implementation in Unity solved with two metaheuristics: Genetic Algorithm (GA) and Simulated Annealing (SA). Each solution is a sequence of piece placements evaluated by a fitness function that minimizes board space. Includes Python analysis tools and a research paper.
-  es: Implementación moderna de Tetris en Unity resuelta con dos metaheurísticas: Algoritmo Genético (GA) y Simulated Annealing (SA). Cada solución es una secuencia de colocaciones evaluadas por una función de fitness que minimiza el espacio ocupado. Incluye herramientas de análisis en Python y un paper de investigación.
+  en: "Modern Tetris implementation in Unity solved with two metaheuristics: Genetic Algorithm (GA) and Simulated Annealing (SA). Each solution is a sequence of piece placements evaluated by a fitness function that minimizes board space. Includes Python analysis tools and a research paper."
+  es: "Implementación moderna de Tetris en Unity resuelta con dos metaheurísticas: Algoritmo Genético (GA) y Simulated Annealing (SA). Cada solución es una secuencia de colocaciones evaluadas por una función de fitness que minimiza el espacio ocupado. Incluye herramientas de análisis en Python y un paper de investigación."
 descriptionLong:
   en: |
     This project implements a modern version of Tetris in Unity alongside two metaheuristic algorithms to autonomously solve piece placement: a Genetic Algorithm (GA) and Simulated Annealing (SA). The objective is finding the best arrangement for a sequence of pieces that minimizes the occupied board space. Each candidate solution encodes a sequence of piece movements. A custom fitness function evaluates the final board state. Both algorithms run extensive iteration-based experiments with configurable hyperparameters. A solution visualizer replays the best found placements in real-time during computation. The companion Python analysis module parses execution logs to generate detailed performance plots comparing GA vs SA across different configurations. A full research paper documents all implementation details, experiments, and decisions made.

@@ -16,6 +16,10 @@ logo: readme_images/Long.gif
 screenShoots:
   - readme_images/Long.gif
   - readme_images/short.gif
+keywords:
+  en: [Tetris solver, genetic algorithm, simulated annealing, metaheuristic, Unity, piece placement, fitness function, optimization, game AI, combinatorial search, C# solver, log analysis]
+  es: [solucionador de Tetris, algoritmo genético, simulated annealing, metaheurística, Unity, colocación de piezas, función de fitness, optimización, IA de juego, búsqueda combinatoria, solucionador C#, análisis de logs]
 slug: TetrisSolver
 order: 76
 featured: false
+

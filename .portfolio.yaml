@@ -10,7 +10,7 @@ descriptionLong:
     This project implements a modern version of Tetris in Unity alongside two metaheuristic algorithms to autonomously solve piece placement: a Genetic Algorithm (GA) and Simulated Annealing (SA). The objective is finding the best arrangement for a sequence of pieces that minimizes the occupied board space. Each candidate solution encodes a sequence of piece movements. A custom fitness function evaluates the final board state. Both algorithms run extensive iteration-based experiments with configurable hyperparameters. A solution visualizer replays the best found placements in real-time during computation. The companion Python analysis module parses execution logs to generate detailed performance plots comparing GA vs SA across different configurations. A full research paper documents all implementation details, experiments, and decisions made.
   es: |
     Este proyecto implementa una versión moderna de Tetris en Unity junto con dos algoritmos metaheurísticos para resolver automáticamente la colocación de piezas: un Algoritmo Genético (GA) y Simulated Annealing (SA). El objetivo es encontrar la mejor disposición para una secuencia de piezas que minimice el espacio ocupado en el tablero. Cada solución candidata codifica una secuencia de movimientos. Una función de fitness evalúa el estado final del tablero. Ambos algoritmos ejecutan experimentos iterativos extensivos con hiperparámetros configurables. Un visualizador de soluciones muestra en tiempo real la mejor colocación encontrada. El módulo de análisis en Python procesa los logs de ejecución para generar gráficos detallados comparando GA vs SA bajo diferentes configuraciones. Un paper de investigación documenta todos los detalles de implementación, experimentos y decisiones tomadas.
-technologies: [latex, c-sharp, unity, ai]
+technologies: [ai, c-sharp, jupyter, latex, matplot, pandas, plotly, python, unity]
 tags: [class]
 logo: readme_images/Long.gif
 screenShoots:
@@ -25,6 +25,8 @@ keywords:
 slug: TetrisSolver
 order: 76
 featured: false
+
+
 
 
 

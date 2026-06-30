@@ -1,6 +1,6 @@
 title:
-  en: Tetris Solver: GA & Simulated Annealing
-  es: Solucionador de Tetris: GA y Simulated Annealing
+  en: "Tetris Solver: GA & Simulated Annealing"
+  es: "Solucionador de Tetris: GA y Simulated Annealing"
 finished: finished
 descriptionShort:
   en: "Modern Tetris implementation in Unity solved with two metaheuristics: Genetic Algorithm (GA) and Simulated Annealing (SA). Each solution is a sequence of piece placements evaluated by a fitness function that minimizes board space. Includes Python analysis tools and a research paper."
@@ -25,7 +25,6 @@ keywords:
 slug: TetrisSolver
 relevancy: 85
 featured: false
-
 
 
 
